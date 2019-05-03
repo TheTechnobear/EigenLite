@@ -75,12 +75,6 @@ if(NOT DISABLE_LIBUSB)
 add_subdirectory(external/libusb libusb)
 endif()
 
-#add_subdirectory(external/oscpack oscpack)
-#add_subdirectory(external/portaudio portaudio)
-#add_subdirectory(external/cJSON cjson)
-#add_subdirectory(external/rtmidi rtmidi)
-#add_subdirectory(external/moodycamel)
-
-
 add_subdirectory(eigenapi)
+add_subdirectory(tests)
 
