@@ -1,9 +1,11 @@
 #include <Bela.h>
 
+#include <string>
+#include <algorithm>
 #include <eigenapi.h>
 #include <math.h>
 
-EigenApi::Eigenharp 	gApi=NULL;
+EigenApi::Eigenharp*	gApi=NULL;
 class BelaCallback;
 BelaCallback* 	gCallback=NULL;
 
@@ -17,11 +19,13 @@ public:
 		;
 	}
 
-	void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals) {
+	void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals) override {
+		rt_printf("device %s : %d - %d, %d : %d %d",dev, (int) dt, rows,cols,ribbons,pedals);
+		dev_=dev;
 		rows_=rows;
 		cols_=cols;
 		ribbons_=ribbons;
-		pedals_=pedals_;
+		pedals=pedals_;
 		type_=dt;
 
 
@@ -35,54 +39,61 @@ public:
 //		}
 	}
 
-	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {
-		 rt_printf("key %s , %d : %d,  %d  , %d %d %d \n", dev, course, key, a, p , r , y );
+	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
+		 //rt_printf("key %s , %d : %d,  %d  , %d %d %d \n", dev, course, key, a, p , r , y );
 
 		float note = course * 128 + key;
-		float mx = bipolar(r);
-		float my = bipolar(y);
-		float mz = unipolar(p);
-		if(active_) {
-			// currently have an active key
-			if(touchId_==key) {
-				// its this key, so update
-				active_=a;  // might be off!
-				touchId_=key;
-				note_=note;
-				x_=mx;
-				y_=my;
-				z_=mz;
-			}
-
+		if(course) {
+			button(key,a);
 		} else {
-			// no active key, so take this one
-			if(a) {
-				active_ = true;
-				touchId_ = key;
-				note_ = note;
-				x_ = mx;
-				y_ = my;
-				z_ = mz;
+			float mx = bipolar(r);
+			float my = bipolar(y);
+			float mz = unipolar(p);
+			if(active_) {
+				// currently have an active key
+				if(touchId_==key) {
+					// its this key, so update
+					active_=a;  // might be off!
+					touchId_=key;
+					note_=note;
+					x_=mx;
+					y_=my;
+					z_=mz;
+				}
+	
+			} else {
+				// no active key, so take this one
+				if(a) {
+					active_ = true;
+					touchId_ = key;
+					note_ = note;
+					x_ = mx;
+					y_ = my;
+					z_ = mz;
+				}
 			}
 		}
 	}
 
-	void breath(const char* dev, unsigned long long t, unsigned val) {
-		rt_printf("breath %s , %d ", dev, val);
-		breath_ = unipolar(val)
+	void breath(const char* dev, unsigned long long t, unsigned val) override {
+		// rt_printf("breath %s , %d ", dev, val);
+		breath_ = unipolar(val);
 	}
 
-	void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val) {
-		rt_printf("strip %s , %d %d ", dev, strip, val);
-		ribbon_ = unipolar(val)
+	void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val) override {
+		// rt_printf("strip %s , %d %d ", dev, strip, val);
+		ribbon_ = unipolar(val);
 	}
 
-	void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) {
-		rt_printf("pedal %s , %d %d ", dev, pedal, val);
+	void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) override {
+		// rt_printf("pedal %s , %d %d ", dev, pedal, val);
 	};
 
 
-
+	void button(unsigned key, bool a) {
+		// rt_printf("button %d %d ", key, a);
+		gApi->setLED(dev_.c_str(),key+18,a);
+	}
 
     void render(BelaContext *context) {
 		float a0=transpose(note_,0,0);
@@ -146,6 +157,7 @@ private:
 
 	static constexpr float semiMult_ = (1.0f / (OUT_VOLT_RANGE * 12.0f)); // 1.0 = 10v = 10 octaves 
 
+	std::string dev_;
 	float rows_;
 	float cols_;
 	float ribbons_;
@@ -171,17 +183,18 @@ private:
 
 void eliteProcess(void* pvApi) {
 	EigenApi::Eigenharp *pApi = (EigenApi::Eigenharp*) pvApi;
-	pApi->poll(1000);
+	pApi->poll(0);
 }
 
 
 bool setup(BelaContext *context, void *userData) {
-	gApi=EigenApi::Eigenharp(".");
+	gApi= new EigenApi::Eigenharp("./");
+	gCallback=new BelaCallback();
+	gApi->addCallback(gCallback);
+
 	gApi->create();
 
-	gCallback=new BelaCallback();
 	gApi->start();
-	gApi->addCallback(gCallback);
 	
     // Initialise auxiliary tasks
 
@@ -218,7 +231,8 @@ void cleanup(BelaContext *context, void *userData)
 {
 	gApi->clearCallbacks();
 	delete gCallback;
+	
 	gApi->stop();
-	gApi.destroy();
+	gApi->destroy();
 	delete gApi;
 }

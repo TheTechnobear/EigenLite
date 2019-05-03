@@ -71,7 +71,7 @@ void intHandler(int dummy) {
 int main(int ac, char **av)
 {
     signal(SIGINT, intHandler);
-    EigenApi::Eigenharp myD("../eigenharp/resources/");
+    EigenApi::Eigenharp myD("./");
     myD.addCallback(new PrinterCallback(myD));
     if(!myD.create())
     {
