@@ -35,7 +35,7 @@ namespace EigenApi
 
 // public interface
 
-EF_BaseStation::EF_BaseStation(EigenFreeD& efd, const char* fwDir) : 
+EF_BaseStation::EF_BaseStation(EigenLite& efd, const char* fwDir) : 
     EF_Harp(efd,fwDir), pLoop_(NULL)
 {
 }

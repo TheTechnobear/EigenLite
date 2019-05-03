@@ -75,13 +75,13 @@ int main(int ac, char **av)
     myD.addCallback(new PrinterCallback(myD));
     if(!myD.create())
     {
-		std::cout  << "unable to create EigenFreeD";
+		std::cout  << "unable to create EigenLite";
 		return -1;
     }
 
     if(!myD.start())
     {
-		std::cout  << "unable to start EigenFreeD";
+		std::cout  << "unable to start EigenLite";
 		return -1;
     }
     while(keepRunning)

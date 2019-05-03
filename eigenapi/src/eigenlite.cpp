@@ -15,7 +15,7 @@ namespace EigenApi
 {
 
 
-void EigenFreeD::logmsg(const char* msg)
+void EigenLite::logmsg(const char* msg)
 {
     pic::logmsg() << msg;
 }
@@ -23,16 +23,16 @@ void EigenFreeD::logmsg(const char* msg)
 
 // public interface
 
-EigenFreeD::EigenFreeD(const char* fwDir) : fwDir_(fwDir),lastPollTime(0)
+EigenLite::EigenLite(const char* fwDir) : fwDir_(fwDir),lastPollTime(0)
 {
 }
 
-EigenFreeD::~EigenFreeD()
+EigenLite::~EigenLite()
 {
     destroy();
 }
 
-void EigenFreeD::addCallback(EigenApi::Callback* api)
+void EigenLite::addCallback(EigenApi::Callback* api)
 {
     // do not allow callback to be added twice
     std::vector<Callback*>::iterator iter;
@@ -46,7 +46,7 @@ void EigenFreeD::addCallback(EigenApi::Callback* api)
     callbacks_.push_back(api);
 }
 
-void EigenFreeD::removeCallback(EigenApi::Callback* api)
+void EigenLite::removeCallback(EigenApi::Callback* api)
 {
     std::vector<Callback*>::iterator iter;
     for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
@@ -59,7 +59,7 @@ void EigenFreeD::removeCallback(EigenApi::Callback* api)
     }
 }
 
-void EigenFreeD::clearCallbacks()
+void EigenLite::clearCallbacks()
 {
     std::vector<Callback*>::iterator iter;
     while(!callbacks_.empty())
@@ -70,10 +70,10 @@ void EigenFreeD::clearCallbacks()
 
 
 
-bool EigenFreeD::create()
+bool EigenLite::create()
 {
     logmsg(VERSION_STRING);
-    logmsg("create EigenFreeD");
+    logmsg("create EigenLite");
     pic_init_time();
     pic_set_foreground(true);
     if(EF_BaseStation::isAvailable()) 
@@ -91,9 +91,9 @@ bool EigenFreeD::create()
     return devices_.size() > 0;
 }
 
-bool EigenFreeD::destroy()
+bool EigenLite::destroy()
 {
-    logmsg("destroy EigenFreeD....");
+    logmsg("destroy EigenLite....");
     //? stop();
     bool ret = true;
     std::vector<EF_Harp*>::iterator iter;
@@ -103,11 +103,11 @@ bool EigenFreeD::destroy()
 		ret &= pDevice->destroy();
 	}	
 	devices_.clear();
-    logmsg("destroyed EigenFreeD");
+    logmsg("destroyed EigenLite");
     return true;
 }
 
-bool EigenFreeD::start()
+bool EigenLite::start()
 {
     bool ret = true;
     std::vector<EF_Harp*>::iterator iter;
@@ -119,7 +119,7 @@ bool EigenFreeD::start()
     return true;
 }
 
-bool EigenFreeD::stop()
+bool EigenLite::stop()
 {
     bool ret = true;
     std::vector<EF_Harp*>::iterator iter;
@@ -133,7 +133,7 @@ bool EigenFreeD::stop()
     return true;
 }
 
-bool EigenFreeD::poll(long uSleepTime,long minPollTime)
+bool EigenLite::poll(long uSleepTime,long minPollTime)
 {
     long long t=pic_microtime();
     long long diff = t-lastPollTime;
@@ -158,7 +158,7 @@ bool EigenFreeD::poll(long uSleepTime,long minPollTime)
 }
 
     
-void EigenFreeD::fireDeviceEvent(const char* dev, 
+void EigenLite::fireDeviceEvent(const char* dev, 
                                  Callback::DeviceType dt, int rows, int cols, int ribbons, int pedals)
 {
     std::vector<EigenApi::Callback*>::iterator iter;
@@ -168,7 +168,7 @@ void EigenFreeD::fireDeviceEvent(const char* dev,
 		cb->device(dev, dt, rows, cols, ribbons, pedals);
 	}
 }
-void EigenFreeD::fireKeyEvent(const char* dev,unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
+void EigenLite::fireKeyEvent(const char* dev,unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
 {
     std::vector<EigenApi::Callback*>::iterator iter;
     for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
@@ -178,7 +178,7 @@ void EigenFreeD::fireKeyEvent(const char* dev,unsigned long long t, unsigned cou
     }
 }
     
-void EigenFreeD::fireBreathEvent(const char* dev, unsigned long long t, unsigned val)
+void EigenLite::fireBreathEvent(const char* dev, unsigned long long t, unsigned val)
 {
     std::vector<EigenApi::Callback*>::iterator iter;
     for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
@@ -188,7 +188,7 @@ void EigenFreeD::fireBreathEvent(const char* dev, unsigned long long t, unsigned
     }
 }
     
-void EigenFreeD::fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val)
+void EigenLite::fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val)
 {
     std::vector<EigenApi::Callback*>::iterator iter;
     for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
@@ -198,7 +198,7 @@ void EigenFreeD::fireStripEvent(const char* dev, unsigned long long t, unsigned 
     }
 }
     
-void EigenFreeD::firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val)
+void EigenLite::firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val)
 {
     std::vector<EigenApi::Callback*>::iterator iter;
     for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
@@ -208,7 +208,7 @@ void EigenFreeD::firePedalEvent(const char* dev, unsigned long long t, unsigned 
     }
 }
     
-void EigenFreeD::setLED(const char* dev, unsigned int keynum,unsigned int colour)
+void EigenLite::setLED(const char* dev, unsigned int keynum,unsigned int colour)
 {
     std::vector<EF_Harp*>::iterator iter;
     for(iter=devices_.begin();iter!=devices_.end();iter++)

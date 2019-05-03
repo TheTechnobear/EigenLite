@@ -10,10 +10,10 @@ namespace EigenApi
 {
 	class EF_Harp;
 	
-    class EigenFreeD {
+    class EigenLite {
     public:
-        EigenFreeD(const char* fwDir);
-        virtual ~EigenFreeD();
+        EigenLite(const char* fwDir);
+        virtual ~EigenLite();
 
         void addCallback(Callback* api);
         void removeCallback(Callback* api);
@@ -46,7 +46,7 @@ namespace EigenApi
     {
     public:
         
-        EF_Harp(EigenFreeD& efd, const char* fwDir);
+        EF_Harp(EigenLite& efd, const char* fwDir);
         virtual ~EF_Harp();
         
         const char* name();
@@ -73,7 +73,7 @@ namespace EigenApi
         static bool loadFirmware(pic::usbdevice_t* pDevice,std::string ihxFile);
         static void logmsg(const char* msg);
 
-        EigenFreeD& efd_;
+        EigenLite& efd_;
 protected:
         virtual std::string findDevice() = 0;
 private:        
@@ -111,7 +111,7 @@ private:
     class EF_Pico : public EF_Harp
     {
     public:
-        EF_Pico(EigenFreeD& efd, const char* fwDir);
+        EF_Pico(EigenLite& efd, const char* fwDir);
         virtual ~EF_Pico();
         
         virtual bool create();
@@ -156,7 +156,7 @@ private:
     class EF_BaseStation : public EF_Harp
     {
     public:
-        EF_BaseStation(EigenFreeD& efd, const char* fwDir);
+        EF_BaseStation(EigenLite& efd, const char* fwDir);
         virtual ~EF_BaseStation();
         
         virtual bool create();

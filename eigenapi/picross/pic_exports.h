@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef EigenFreeD_pic_exports_h
-#define EigenFreeD_pic_exports_h
+#pragma once
+
 
 #define PIC_DECLSPEC_CLASS 
 #define PIC_DECLSPEC_FUNC(x) x
@@ -17,5 +17,3 @@
 #define PI_RELEASE "NA"
 #define PI_COMPATIBLE "NA"
 
-
-#endif

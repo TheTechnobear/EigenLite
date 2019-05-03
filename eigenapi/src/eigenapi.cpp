@@ -7,60 +7,60 @@
 namespace EigenApi
 {
     
-    // api just forwards to the EigenFreeD objects
+    // api just forwards to the EigenLite objects
     Eigenharp::Eigenharp(const char* fwDir)
     {
-        impl=new EigenFreeD(fwDir);
+        impl=new EigenLite(fwDir);
     }
     
     Eigenharp::~Eigenharp()
     {
-        delete static_cast<EigenFreeD*>(impl);
+        delete static_cast<EigenLite*>(impl);
     }
     
     bool Eigenharp::create()
     {
-        return static_cast<EigenFreeD*>(impl)->create();
+        return static_cast<EigenLite*>(impl)->create();
     }
     
     bool Eigenharp::destroy()
     {
-        return static_cast<EigenFreeD*>(impl)->destroy();
+        return static_cast<EigenLite*>(impl)->destroy();
     }
     
     bool Eigenharp::start()
     {
-        return static_cast<EigenFreeD*>(impl)->start();
+        return static_cast<EigenLite*>(impl)->start();
     }
     
     bool Eigenharp::stop()
     {
-        return static_cast<EigenFreeD*>(impl)->stop();
+        return static_cast<EigenLite*>(impl)->stop();
     }
     
     bool Eigenharp::poll(long uSleep,long minPollTime)
     {
-        return static_cast<EigenFreeD*>(impl)->poll(uSleep,minPollTime);
+        return static_cast<EigenLite*>(impl)->poll(uSleep,minPollTime);
     }
     
     void Eigenharp::addCallback(Callback* api)
     {
-        static_cast<EigenFreeD*>(impl)->addCallback(api);
+        static_cast<EigenLite*>(impl)->addCallback(api);
     }
         
     void Eigenharp::removeCallback(Callback* api)
     {
-        static_cast<EigenFreeD*>(impl)->removeCallback(api);
+        static_cast<EigenLite*>(impl)->removeCallback(api);
     }
         
     void Eigenharp::clearCallbacks()
     {
-        static_cast<EigenFreeD*>(impl)->clearCallbacks();
+        static_cast<EigenLite*>(impl)->clearCallbacks();
     }
     
     void Eigenharp::setLED(const char* dev, unsigned int keynum,unsigned int colour)
     {
-        static_cast<EigenFreeD*>(impl)->setLED(dev,keynum,colour);
+        static_cast<EigenLite*>(impl)->setLED(dev,keynum,colour);
     }
     
     // basic logger, if its not overriden
