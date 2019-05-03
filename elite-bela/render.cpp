@@ -42,10 +42,10 @@ public:
 	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
 		 //rt_printf("key %s , %d : %d,  %d  , %d %d %d \n", dev, course, key, a, p , r , y );
 
-		float note = course * 128 + key;
 		if(course) {
 			button(key,a);
 		} else {
+            float note = key;
 			float mx = bipolar(r);
 			float my = bipolar(y);
 			float mz = unipolar(p);
@@ -92,7 +92,7 @@ public:
 
 	void button(unsigned key, bool a) {
 		// rt_printf("button %d %d ", key, a);
-		gApi->setLED(dev_.c_str(),key+18,a);
+		gApi->setLED(dev_.c_str(),1, key,a);
 	}
 
     void render(BelaContext *context) {
