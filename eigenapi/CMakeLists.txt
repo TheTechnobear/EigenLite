@@ -70,6 +70,12 @@ add_library(eigenapi SHARED ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
 
 target_link_libraries (eigenapi picodecoder)
 
+target_include_directories(eigenapi PUBLIC
+        .
+        )
+
+
+
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   target_link_libraries(eigenapi atomic)
 endif()
