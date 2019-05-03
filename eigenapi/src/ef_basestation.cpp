@@ -36,7 +36,7 @@ namespace EigenApi
 // public interface
 
 EF_BaseStation::EF_BaseStation(EigenLite& efd, const char* fwDir) : 
-    EF_Harp(efd,fwDir), pLoop_(NULL)
+    EF_Harp(efd,fwDir), pLoop_(NULL),isAlpha_(false)
 {
 }
 
@@ -59,14 +59,17 @@ bool EF_BaseStation::create()
         delegate_ = nullptr;
         switch((long) inst_config[0]) {
             case 1:
+                isAlpha_ = true;
                 logmsg("ALPHA detected");
                 delegate_ = std::shared_ptr<alpha2::active_t::delegate_t> (new EF_Alpha(*this));
                 break; 
             case 2:
+                isAlpha_ = false;
                 logmsg("TAU detected");
                 delegate_ = std::shared_ptr<alpha2::active_t::delegate_t> (new EF_Tau(*this));
                 break; 
             default:
+                isAlpha_ = true;
                 logmsg("unknown instrumented detected, assume ALPHA");
                 delegate_ = std::shared_ptr<alpha2::active_t::delegate_t> (new EF_Alpha(*this));
                 break; 
@@ -76,18 +79,11 @@ bool EF_BaseStation::create()
         logmsg("created basestation loop");
 
 
-        switch((long) inst_config[0]) {
-            case 1:
-                efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::ALPHA, 0, 0, 2, 4);
-                break; 
-            case 2:
-                efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::TAU, 0, 0, 1, 4);
-                break;
-            default:
-                efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::ALPHA, 0, 0, 2, 4);
-                break;
+        if(isAlpha_) {
+            efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::ALPHA, 24, 5, 2, 4);
+        } else {
+            efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::TAU, 20, 4, 1, 4);
         }
-
 
     } catch (pic::error& e) {
         // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
@@ -141,9 +137,11 @@ bool EF_BaseStation::poll(long long t)
     return true;
 }
 
-void EF_BaseStation::setLED(unsigned int keynum,unsigned int colour)
+void EF_BaseStation::setLED(unsigned course, unsigned int key,unsigned int colour)
 {
     if(pLoop_==NULL) return;
+
+    unsigned keynum = course * (isAlpha_ ? 120 : 84)  + key;
     pLoop_->msg_set_led(keynum, colour);
 }
 

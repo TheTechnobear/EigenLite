@@ -208,14 +208,14 @@ void EigenLite::firePedalEvent(const char* dev, unsigned long long t, unsigned p
     }
 }
     
-void EigenLite::setLED(const char* dev, unsigned int keynum,unsigned int colour)
+void EigenLite::setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour)
 {
     std::vector<EF_Harp*>::iterator iter;
     for(iter=devices_.begin();iter!=devices_.end();iter++)
     {
         EF_Harp* pDevice = *iter;
         if(dev == NULL || dev == pDevice->name() || strcmp(dev,pDevice->name()) == 0) {
-            pDevice->setLED(keynum,colour);
+            pDevice->setLED(course, key,colour);
         }
     }
 }

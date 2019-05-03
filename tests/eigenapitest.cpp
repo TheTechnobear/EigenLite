@@ -32,7 +32,7 @@ public:
         bool led = course > 0;
         if (led_ != led) {
             led_ = led;
-            eh_.setLED(dev,1,led_);
+            eh_.setLED(dev,course, key,led_);
 //            std::cout  << min_[0] << " to " << max_[0] << ", " << min_[1] << " to " << max_[1] << ", " << min_[2] << " to " << max_[2] << std::endl;
         }
     }

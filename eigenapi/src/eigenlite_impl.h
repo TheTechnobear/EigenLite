@@ -24,7 +24,7 @@ namespace EigenApi
         virtual bool stop();
         virtual bool poll(long uSleep,long minPollTime);
 
-        void setLED(const char* dev, unsigned int keynum,unsigned int colour);
+        void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
 		// logging
         static void logmsg(const char* msg);
@@ -64,7 +64,7 @@ namespace EigenApi
         virtual void firePedalEvent(unsigned long long t, unsigned pedal, unsigned val);
         
         virtual void restartKeyboard() = 0;
-        virtual void setLED(unsigned int keynum,unsigned int colour) = 0;
+        virtual void setLED(unsigned course, unsigned int keynum,unsigned int colour) = 0;
 
         pic::usbdevice_t* usbDevice() { return pDevice_;}
 
@@ -114,21 +114,21 @@ private:
         EF_Pico(EigenLite& efd, const char* fwDir);
         virtual ~EF_Pico();
         
-        virtual bool create();
-        virtual bool destroy();
-        virtual bool start();
-        virtual bool stop();
-        virtual bool poll(long long t);
+        bool create() override;
+        bool destroy() override;
+        bool start() override;
+        bool stop() override;
+        bool poll(long long t) override ;
         
-        virtual void restartKeyboard();
+        void restartKeyboard() override;
 
-        virtual void setLED(unsigned int keynum,unsigned int colour);
-        virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
+        void setLED(unsigned course, unsigned int keynum,unsigned int colour) override;
+        void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override;
         
 		static bool isAvailable();
 
     private:
-        std::string findDevice();
+        std::string findDevice() override;
         bool loadPicoFirmware();
         pico::active_t *pLoop_;
         unsigned lastMode_[4];
@@ -158,17 +158,16 @@ private:
     public:
         EF_BaseStation(EigenLite& efd, const char* fwDir);
         virtual ~EF_BaseStation();
-        
-        virtual bool create();
-        virtual bool destroy();
-        virtual bool start();
-        virtual bool stop();
-        virtual bool poll(long long t);
-        
-        virtual void restartKeyboard();
-        virtual void setLED(unsigned int keynum,unsigned int colour);
 
-        void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
+        bool create() override;
+        bool destroy() override;
+        bool start() override;
+        bool stop() override;
+        bool poll(long long t) override ;
+
+        void restartKeyboard() override;
+
+        void setLED(unsigned course, unsigned int keynum,unsigned int colour) override;
 
         static bool isAvailable();
 
@@ -178,11 +177,12 @@ private:
     protected:
         alpha2::active_t* loop() { return pLoop_;}
     private:
-        std::string findDevice();
+        std::string findDevice() override;
         bool loadBaseStation();
         std::shared_ptr<alpha2::active_t::delegate_t> delegate_; 
         alpha2::active_t *pLoop_;
         unsigned short curmap_[9],skpmap_[9];
+        bool isAlpha_;
     };
 
     class EF_Alpha : public alpha2::active_t::delegate_t

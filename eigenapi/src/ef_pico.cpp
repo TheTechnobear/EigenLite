@@ -26,7 +26,7 @@
 #define STRIP_MIN 110
 #define STRIP_MAX 3050
 
-
+#define PICO_MAINKEYS 18
 
 namespace EigenApi
 {
@@ -54,7 +54,7 @@ bool EF_Pico::create()
         pLoop_ = new pico::active_t(usbDevice()->name(), &delegate_);
         pLoop_->load_calibration_from_device();
         logmsg("created pico loop");
-        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 0, 0, 1, 0);
+        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 9, 2, 1, 0);
 
     } catch (pic::error& e) {
         // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
@@ -127,9 +127,10 @@ bool EF_Pico::poll(long long t)
     return true;
 }
 
-void EF_Pico::setLED(unsigned int keynum,unsigned int colour)
+void EF_Pico::setLED(unsigned course, unsigned int key,unsigned int colour)
 {
     if(pLoop_==NULL) return;
+    unsigned keynum = course * PICO_MAINKEYS + key;
     pLoop_->set_led(keynum, colour);
 }
 
@@ -307,7 +308,7 @@ void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned b)
 
 void EF_Pico::Delegate::kbd_mode(unsigned long long t, unsigned key, unsigned m)
 {
-    parent_.fireKeyEvent(t,1,key - 18,m > 0,m,0,0);
+    parent_.fireKeyEvent(t,1,key - PICO_MAINKEYS,m > 0,m,0,0);
 }
     
 } // namespace EigenApi

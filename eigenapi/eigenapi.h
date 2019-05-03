@@ -39,7 +39,7 @@ namespace EigenApi
         void removeCallback(Callback* api);
         void clearCallbacks();
         
-        void setLED(const char* dev, unsigned int keynum,unsigned int colour);
+        void setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour);
 
     private:
         void *impl;

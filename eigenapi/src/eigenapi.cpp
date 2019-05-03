@@ -58,9 +58,9 @@ namespace EigenApi
         static_cast<EigenLite*>(impl)->clearCallbacks();
     }
     
-    void Eigenharp::setLED(const char* dev, unsigned int keynum,unsigned int colour)
+    void Eigenharp::setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour)
     {
-        static_cast<EigenLite*>(impl)->setLED(dev,keynum,colour);
+        static_cast<EigenLite*>(impl)->setLED(dev,course, key, colour);
     }
     
     // basic logger, if its not overriden
