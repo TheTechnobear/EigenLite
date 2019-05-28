@@ -5,13 +5,32 @@
 #include <eigenapi.h>
 #include <math.h>
 
+#include "seq.h"
+
 EigenApi::Eigenharp*	gApi=NULL;
 class BelaCallback;
 BelaCallback* 	gCallback=NULL;
 
-
 AuxiliaryTask gProcessTask;
+AuxiliaryTask gLEDTask;
 
+Sequencer gSeq;
+
+
+// only good for pico!
+static constexpr unsigned MAX_COLS=2;
+static constexpr unsigned MAX_ROWS=18;
+
+static unsigned gLeds[MAX_COLS][MAX_ROWS];
+static unsigned gLedsSent[MAX_COLS][MAX_ROWS];
+
+void setLED(unsigned col, unsigned row, unsigned value) {
+	if(col<MAX_COLS && row < MAX_ROWS) {
+		gLeds[col][row]=value;
+	}
+}
+
+std::string gDev;
 
 
 // really simple scale implmentation
@@ -35,7 +54,8 @@ public:
 	//========================== callback interface	======================
 	void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals) override {
 		rt_printf("device %s : %d - %d, %d : %d %d",dev, (int) dt, rows,cols,ribbons,pedals);
-		dev_=dev;
+		gDev = dev; // for leds
+		// dev_=dev;
 		rows_=rows;
 		cols_=cols;
 		ribbons_=ribbons;
@@ -55,41 +75,72 @@ public:
 	}
 
 	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
-		 //rt_printf("key %s , %d : %d,  %d  , %d %d %d \n", dev, course, key, a, p , r , y );
+		//rt_printf("key %s , %d : %d,  %d  , %d %d %d \n", dev, course, key, a, p , r , y );
+		// static unsigned long long lastT = 0;
+		// if(t<lastT) {
+		// 	rt_printf("old event %d %d\n", lastT,t );
+		// 	lastT=t;
+		// 	return;
+		// }
+		 
 
 		if(course) {
 			button(key,a);
 		} else {
 			switch(mode_) {
 				case 0: {
-					playNote(key,a,p,r,y);
+					if(mainMode_==0) {
+						// playing
+						playNote(key,a,p,r,y);
+					} else if (mainMode_ ==1) {
+						
+					}
 					break;
 				}
 				case 1: {
-					if(a && key<MAX_OCTAVE && key!=octave_) {
-						gApi->setLED(dev_.c_str(),0,octave_,2);
-						octave_=key;
-						gApi->setLED(dev_.c_str(),0,octave_,1);
+					if(mainMode_==0) {
+						if(a && key<MAX_OCTAVE && key!=octave_) {
+							setLED(0,octave_,2);
+							octave_=key;
+							setLED(0,octave_,1);
+						} 
+					} else if(mainMode_ ==1 ) {
+						note_ = scaleNote(key);
 					}
 					break;
 				}
 				case 2: {
-					if(a && key<MAX_SCALE && key!=scaleIdx_) {
-						gApi->setLED(dev_.c_str(),0,scaleIdx_,2);
-						scaleIdx_=key;
-						gApi->setLED(dev_.c_str(),0,scaleIdx_,1);
+					if(mainMode_==0) {
+						// scale
+						if(a && key<MAX_SCALE && key!=scaleIdx_) {
+							setLED(0,scaleIdx_,2);
+							scaleIdx_=key;
+							setLED(0,scaleIdx_,1);
+						}
+					} else if(mainMode_ ==1 ) {
+
 					}
 					break;
 				}
 				case 3: {
-					if(a && key<12 && key!=tonic_) {
-						gApi->setLED(dev_.c_str(),0,tonic_,2);
-						tonic_=key;
-						gApi->setLED(dev_.c_str(),0,tonic_,1);
+					if(mainMode_==0) {
+						// tonic
+						if(a && key<12 && key!=tonic_) {
+							setLED(0,tonic_,2);
+							tonic_=key;
+							setLED(0,tonic_,1);
+						}
+					} else if(mainMode_ ==1 ) {
 					}
 					break;
 				}
 				case 4: {
+					if(mainMode_==0) {
+						if(!a) {
+							sequenceNote(key,a,p,r,y);
+						}
+					} else if(mainMode_ ==1 ) {
+					}
 					break;
 				}
 			}//switch
@@ -116,6 +167,7 @@ public:
 		float mx = bipolar(r);
 		float my = bipolar(y);
 		float mz = unipolar(p);
+
 		if(active_) {
 			// currently have an active key
 			if(touchId_==key) {
@@ -141,13 +193,38 @@ public:
 			}
 		}
 	}
+
+	void sequenceNote( unsigned key, bool a, unsigned p, int r, int y) {
+		unsigned st = key - (key>7);
+		if(st>gSeq.endStep()) return;
+		
+		Step cs = gSeq.step(st);
+		bool active = !cs.active();
+		float note = cs.note();
+		float sx = 0.0;
+		float sy = 0.0;
+		float sz = float(active);
+		if(active) {
+			note = note_;
+			// for now, not using x, y
+			// and z is constant, 1 or 0
+		} else {
+			// leave alone
+			// note = cs.note();
+			;
+		}
+		Step s(active, note, sx, sy, sz);
+		gSeq.step(st ,s);
+		displaySequence();
+	}
 	
 
 	void button(unsigned key, bool a) {
 		// rt_printf("button %d %d ", key, a);
 		int mode = key + 1;
 		if(a) {
-			if(mode_==0) { mode_=mode; enterMode(mode);}
+			enterMode(mode);
+			mode_=mode;
 		} else {
 			if(mode_==mode) {mode_=0; enterMode(0);} 
 		}
@@ -156,39 +233,35 @@ public:
 	void enterMode(unsigned mode) {
 		switch(mode) {
 			case 0: {
-				// playing mode
 				displayScale();
 				break;
 			}
 			case 1: {
 				// select octave
 				for(unsigned i=0;i<(rows_*cols_);i++) {
-					gApi->setLED(dev_.c_str(),0, i,(i<MAX_OCTAVE ? 2  : 0)  ); 
+					setLED(0, i,(i<MAX_OCTAVE ? 2  : 0)  ); 
 				}
-				gApi->setLED(dev_.c_str(),0,octave_,1);
+				setLED(0,octave_,1);
 				break;
 			}
 			case 2: {
 				// select scale
 				for(unsigned i=0;i<(rows_*cols_);i++) {
-					gApi->setLED(dev_.c_str(),0, i,(i<MAX_SCALE ? 2 : 0) ); 
+					setLED(0, i,(i<MAX_SCALE ? 2 : 0) ); 
 				}
-				gApi->setLED(dev_.c_str(),0,scaleIdx_,1);
+				setLED(0,scaleIdx_,1);
 				break;
 			}
 			case 3: {
 				// select tonic
 				for(unsigned i=0;i<(rows_*cols_);i++) {
-					gApi->setLED(dev_.c_str(),0, i,(i<12 ? 2 : 0)); 
+					setLED(0, i,(i<12 ? 2 : 0)); 
 				}
-				gApi->setLED(dev_.c_str(),0,tonic_,1);
+				setLED(0,tonic_,1);
 				break;
 			}
 			case 4: {
-				// undecided mode :) 
-				for(unsigned i=0;i<(rows_*cols_);i++) {
-					gApi->setLED(dev_.c_str(),0, i,(i + 1) % 2 ); 
-				}
+				displaySequence();
 				break;
 			}
 		}
@@ -198,8 +271,21 @@ public:
 		unsigned scalelen=SCALES[scaleIdx_][0];
 		for(unsigned i=0;i<(rows_*cols_);i++) {
 			// turn off all lights
-			gApi->setLED(dev_.c_str(),0, i,(i%scalelen) == 0); 
+			setLED(0, i,(i%scalelen) == 0); 
 		}
+	}
+
+	void displaySequence() {
+		// green for unused keys 
+		setLED(0, 8, 1);
+		setLED(0, 17, 1);
+		for(unsigned i=0;i<16;i++) {
+			Step s = gSeq.step(i);
+			bool a = i < gSeq.endStep() && s.active();
+			setLED(0, i + (i>7), a);
+		}
+		unsigned cur = gSeq.curStep();
+		setLED(0, cur + (cur>7), 2);
 	}
 	
 	float scaleNote(unsigned key) {
@@ -211,24 +297,35 @@ public:
 	}
 
     void render(BelaContext *context) {
-		float a0=transpose(note_ + pitchbend(x_),octave_,tonic_);
-		float a1=active_;
-		float a2=scaleY(y_,1.0f);
-		float a3=pressure(z_,1.0f);
-		float a4=ribbon_;
-		float a5=breath_;
-		float a6= 0.0f;
-		float a7= 0.0f;
-		
+    	float a[8];
+
+		unsigned lStep = gSeq.curStep();
 		for(unsigned int n = 0; n < context->analogFrames; n++) {
-			analogWriteOnce(context, n, 0,a0);
-			analogWriteOnce(context, n, 1,a1);
-			analogWriteOnce(context, n, 2,a2);
-			analogWriteOnce(context, n, 3,a3);
-			analogWriteOnce(context, n, 4,a4);
-			analogWriteOnce(context, n, 5,a5);
-			analogWriteOnce(context, n, 6,a6);
-			analogWriteOnce(context, n, 7,a7);
+			gSeq.tick();
+		}
+		unsigned nStep = gSeq.curStep();
+		Step s = gSeq.step(nStep);
+		a[0] = transpose(note_ + pitchbend(x_),octave_,tonic_);
+		a[1] = scaleY(y_,1.0f);
+		a[2] = pressure(z_,1.0f);
+		a[3] = ribbon_;
+		a[4] = breath_;
+		a[5] = transpose(s.note() + pitchbend(s.x()),octave_,tonic_);
+		a[6] = scaleY(s.y(),1.0f);
+		a[7] = pressure(s.z(),1.0f);
+		
+		if(mode_==4) {
+	 		if(lStep!=nStep) {
+				Step lS = gSeq.step(lStep);
+				setLED( 0, lStep + (lStep>7), lS.active());
+				setLED( 0 , nStep + (nStep>7), 2);
+			}
+		}
+
+		for(unsigned int n = 0; n < context->analogFrames; n++) {
+			for(unsigned i = 0;i<8;i++) {
+				analogWriteOnce(context, n, i,a[i]);
+			}
 		}    	
     }
     
@@ -242,6 +339,7 @@ private:
 	}
 
 	float pressure(float z, float mult ) {
+		// return z;
 		return ( (powf(z, PRESSURE_CURVE) * mult * ( 1.0f-ZERO_OFFSET) ) ) + ZERO_OFFSET;	
 	}
 
@@ -281,7 +379,7 @@ private:
 	static constexpr unsigned MAX_OCTAVE = OUT_VOLT_RANGE;
 	static constexpr float semiMult_ = (1.0f / (OUT_VOLT_RANGE * 12.0f)); // 1.0 = 10v = 10 octaves 
 
-	std::string dev_;
+	// std::string dev_;
 	float rows_;
 	float cols_;
 	float ribbons_;
@@ -301,6 +399,7 @@ private:
     unsigned tonic_ = 0; //C 
     unsigned scaleIdx_ = 0;
     unsigned mode_ = 0;
+    unsigned mainMode_ =0; // 0 == play
 
 	inline float clamp(float v, float mn, float mx) { return (std::max(std::min(v, mx), mn)); }
 
@@ -316,7 +415,28 @@ void eliteProcess(void* pvApi) {
 }
 
 
+void ledProcess(void* pvApi) {
+	EigenApi::Eigenharp *pApi = (EigenApi::Eigenharp*) pvApi;
+	for(unsigned c = 0;c<MAX_COLS;c++) {
+		for(unsigned r = 0;r<MAX_ROWS;r++)
+		if(gLeds[c][r]!=gLedsSent[c][r]) {
+			gApi->setLED(gDev.c_str(), c , r, gLeds[c][r]);
+			gLedsSent[c][r] = gLeds[c][r];
+		}
+	}
+}
+
+
 bool setup(BelaContext *context, void *userData) {
+	for(unsigned c = 0;c<MAX_COLS;c++) {
+		for(unsigned r = 0;r<MAX_ROWS;r++) {
+			gLedsSent[c][r] = 0; 
+			gLeds[c][r] = 0;
+		}
+	}
+
+
+
 	gApi= new EigenApi::Eigenharp("./");
 	gCallback=new BelaCallback();
 	gApi->addCallback(gCallback);
@@ -330,6 +450,9 @@ bool setup(BelaContext *context, void *userData) {
 	if((gProcessTask = Bela_createAuxiliaryTask(&eliteProcess, BELA_AUDIO_PRIORITY - 1, "eliteProcess", gApi)) == 0)
 		return false;
 
+	if((gLEDTask = Bela_createAuxiliaryTask(&ledProcess, BELA_AUDIO_PRIORITY - 1, "ledProcess", gApi)) == 0)
+		return false;
+
 	return true;
 }
 
@@ -339,6 +462,7 @@ long renderFrame = 0;
 void render(BelaContext *context, void *userData)
 {
 	Bela_scheduleAuxiliaryTask(gProcessTask);
+	Bela_scheduleAuxiliaryTask(gLEDTask);
 	
 	renderFrame++;
 	// silence audio buffer
