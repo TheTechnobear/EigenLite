@@ -98,16 +98,13 @@ bool EF_Pico::stop()
     return EF_Harp::stop();
 }
     
+static bool dead = false;
 void EF_Pico::restartKeyboard()
 {
     if(pLoop_!=NULL)
     {
         logmsg("restarting pico keyboard....");
-        //pLoop_->stop();
-        //pLoop_->start();
-	destroy();
-	create();
-	start();
+	    dead = true;
     }
 }
     
@@ -124,6 +121,15 @@ void  EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key,
 
 bool EF_Pico::poll(long long t)
 {
+    if(dead) {
+        destroy();
+        if(create()) {
+            start();
+            dead=false;
+        }
+        return true;
+    }
+
     if (!EF_Harp::poll(t)) return false;
     pLoop_->poll(t);
     // pLoop_->msg_flush();
@@ -156,7 +162,7 @@ bool EF_Pico::loadPicoFirmware()
 	try
 	{
 		pDevice=new pic::usbdevice_t(usbdev.c_str(),0);
-		pDevice->set_power_delegate(0);
+		//pDevice->set_power_delegate(0);
 	}
 	catch(std::exception & e)
 	{
