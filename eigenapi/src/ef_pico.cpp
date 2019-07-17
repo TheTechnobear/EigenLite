@@ -103,8 +103,11 @@ void EF_Pico::restartKeyboard()
     if(pLoop_!=NULL)
     {
         logmsg("restarting pico keyboard....");
-        pLoop_->stop();
-        pLoop_->start();
+        //pLoop_->stop();
+        //pLoop_->start();
+	destroy();
+	create();
+	start();
     }
 }
     

@@ -5,6 +5,7 @@
 #include <eigenapi.h>
 #include <math.h>
 
+#include "defs.h"
 #include "seq.h"
 
 EigenApi::Eigenharp*	gApi=NULL;
@@ -420,7 +421,7 @@ void ledProcess(void* pvApi) {
 	for(unsigned c = 0;c<MAX_COLS;c++) {
 		for(unsigned r = 0;r<MAX_ROWS;r++)
 		if(gLeds[c][r]!=gLedsSent[c][r]) {
-			gApi->setLED(gDev.c_str(), c , r, gLeds[c][r]);
+			pApi->setLED(gDev.c_str(), c , r, gLeds[c][r]);
 			gLedsSent[c][r] = gLeds[c][r];
 		}
 	}
@@ -428,6 +429,19 @@ void ledProcess(void* pvApi) {
 
 
 bool setup(BelaContext *context, void *userData) {
+#ifdef SALT
+	pinMode(context,0,trigIn1,INPUT);
+	pinMode(context,0,trigIn2,INPUT);
+	pinMode(context,0,trigIn3,INPUT);
+	pinMode(context,0,trigIn4,INPUT);
+
+	pinMode(context,0,trigOut1,OUTPUT);
+	pinMode(context,0,trigOut2,OUTPUT);
+	pinMode(context,0,trigOut3,OUTPUT);
+	pinMode(context,0,trigOut4,OUTPUT);
+#endif
+
+
 	for(unsigned c = 0;c<MAX_COLS;c++) {
 		for(unsigned r = 0;r<MAX_ROWS;r++) {
 			gLedsSent[c][r] = 0; 
@@ -441,9 +455,9 @@ bool setup(BelaContext *context, void *userData) {
 	gCallback=new BelaCallback();
 	gApi->addCallback(gCallback);
 
-	gApi->create();
+	if(!gApi->create()) return false;
 
-	gApi->start();
+	if(!gApi->start()) return false;
 	
     // Initialise auxiliary tasks
 
@@ -461,6 +475,76 @@ const int decimation = 5;  // = 550/seconds
 long renderFrame = 0;
 void render(BelaContext *context, void *userData)
 {
+#ifdef SALT
+	drivePwm(context,pwmOut);
+
+	static unsigned lsw,/*ltr1,*/ ltr2,ltr3,ltr4;
+	static unsigned led_mode=0; // 0 = normal
+	static unsigned led_counter=0;
+
+	unsigned sw  = digitalRead(context, 0, switch1);  //next layout
+	// unsigned tr1 = digitalRead(context, 0, trigIn1);  
+	unsigned tr2 = digitalRead(context, 0, trigIn2);  //quantize 
+	unsigned tr3 = digitalRead(context, 0, trigIn3);
+	unsigned tr4 = digitalRead(context, 0, trigIn4);
+
+	setLed(context, ledOut1, 1);
+	setLed(context, ledOut2, 2);
+	setLed(context, ledOut3, 0);
+	setLed(context, ledOut4, 1);
+
+
+
+	if(sw  && !lsw)  { 
+		// gCallback->nextLayout(); 
+		led_counter=2100;
+		led_mode=1;
+	}
+	
+	// if(led_mode==1) {
+	// 	led_counter--;
+	// 	if(led_counter>100 
+	// 		&& led_counter < 2000
+	// 		&& ((led_counter / 500) % 2)
+	// 	) {
+	//		unsigned layout = (gCallback->layoutSignature());
+	// 		setLed(context, ledOut4, layout & 0x3);
+	// 		layout = layout >> 2;
+	// 		setLed(context, ledOut3, layout & 0x3);
+	// 		layout = layout >> 2;
+	// 		setLed(context, ledOut2, layout & 0x3);
+	// 		layout = layout >> 2;
+	// 		setLed(context, ledOut1, layout & 0x3);
+	// 	} else {
+	// 		setLed(context, ledOut1, 0);
+	// 		setLed(context, ledOut2, 0);
+	// 		setLed(context, ledOut3, 0);
+	// 		setLed(context, ledOut4, 0);
+	// 		if(led_counter==0) led_mode=0;
+	// 	}
+	// }
+	// if(tr2  && !ltr2)  { gCallback->nextCustomMode(); }
+	// if(tr3  && !ltr3)  { gCallback->nextPitchMode(); }
+	// if(tr4  && !ltr4)  { gCallback->nextQuantMode(); }
+	// if(led_mode==0) {
+	// 	setLed(context, ledOut2, gCallback->customMode() %3);
+	// 	setLed(context, ledOut3, gCallback->pitchMode() %3);
+	// 	setLed(context, ledOut4, gCallback->quantMode() %3);
+	// }
+
+	lsw =  sw;
+	// ltr1 = tr1;
+	ltr2 = tr2;
+	ltr3=  tr3;
+	ltr4=  tr4;
+#endif
+
+
+
+
+
+
+
 	Bela_scheduleAuxiliaryTask(gProcessTask);
 	Bela_scheduleAuxiliaryTask(gLEDTask);
 	
