@@ -162,6 +162,10 @@ public:
 		// rt_printf("pedal %s , %d %d ", dev, pedal, val);
 	};
 
+	void dead(const char* dev, unsigned reason) override {
+		rt_printf("dead %s , %d ", dev, reason);
+	};
+
 	//=====================end of callback interface	======================
 	void playNote( unsigned key, bool a, unsigned p, int r, int y) {
 		float note = scaleNote(key);

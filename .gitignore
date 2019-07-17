@@ -4,6 +4,8 @@
 profile
 **/build/*
 build
+elite-salt/elite-salt
+elite-bela/elite-bela
 
 **/*.sublime-workspace
 cmake-build*/
