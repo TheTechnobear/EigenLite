@@ -18,6 +18,7 @@ namespace EigenApi
         virtual void breath(const char* dev, unsigned long long t, unsigned val) {};
         virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val) {};
         virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) {};
+        virtual void dead(const char* dev, unsigned reason) {};
     };
     
     class Eigenharp

@@ -207,6 +207,18 @@ void EigenLite::firePedalEvent(const char* dev, unsigned long long t, unsigned p
         cb->pedal(dev, t, pedal, val);
     }
 }
+
+void EigenLite::fireDeadEvent(const char* dev,unsigned reason)
+{
+    std::vector<EigenApi::Callback*>::iterator iter;
+    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    {
+        EigenApi::Callback *cb=*iter;
+        cb->dead(dev,reason);
+    }
+}
+
+
     
 void EigenLite::setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour)
 {

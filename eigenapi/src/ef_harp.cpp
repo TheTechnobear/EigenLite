@@ -160,6 +160,13 @@ void EF_Harp::firePedalEvent(unsigned long long t, unsigned pedal, unsigned val)
     }
 }
 
+
+void EF_Harp::fireDeadEvent(unsigned reason)
+{
+    efd_.fireDeadEvent(pDevice_->name(),reason);
+}
+
+
 void EF_Harp::pokeFirmware(pic::usbdevice_t* pDevice,int address,int byteCount,void* data)
 {
 	pDevice->control_out(USB_TYPE_VENDOR,FIRMWARE_LOAD,address,0, data,byteCount,CONTROL_TIMEOUT);

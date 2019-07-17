@@ -34,6 +34,7 @@ namespace EigenApi
         virtual void fireBreathEvent(const char* dev, unsigned long long t, unsigned val);
         virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val);
         virtual void firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val);
+        virtual void fireDeadEvent(const char* dev, unsigned reason);
 
     private:
         const char* fwDir_;
@@ -62,6 +63,7 @@ namespace EigenApi
         virtual void fireBreathEvent(unsigned long long t, unsigned val);
         virtual void fireStripEvent(unsigned long long t, unsigned strip, unsigned val);
         virtual void firePedalEvent(unsigned long long t, unsigned pedal, unsigned val);
+        virtual void fireDeadEvent(unsigned reason);
         
         virtual void restartKeyboard() = 0;
         virtual void setLED(unsigned course, unsigned int keynum,unsigned int colour) = 0;

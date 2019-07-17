@@ -212,6 +212,7 @@ bool EF_Pico::isAvailable()
 //PicoDelegate
 void EF_Pico::Delegate::kbd_dead(unsigned reason)
 {
+    parent_.fireDeadEvent(reason);
     if(!parent_.stopping()) parent_.restartKeyboard();
 }
     

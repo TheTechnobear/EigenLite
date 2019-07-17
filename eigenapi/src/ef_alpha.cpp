@@ -38,6 +38,7 @@ void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, uns
 
 void EF_Alpha::kbd_dead(unsigned reason)
 {
+    parent_.fireDeadEvent(reason);
 	if(!parent_.stopping()) parent_.restartKeyboard();
 }
 

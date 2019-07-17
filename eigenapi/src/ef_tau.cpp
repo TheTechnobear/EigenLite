@@ -40,6 +40,7 @@ void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigne
 
 void EF_Tau::kbd_dead(unsigned reason)
 {
+    parent_.fireDeadEvent(reason);
     if (!parent_.stopping()) parent_.restartKeyboard();
 }
 
