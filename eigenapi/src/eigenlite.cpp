@@ -102,7 +102,14 @@ bool EigenLite::create()
 
 bool EigenLite::destroy() {
     discoverProcessRun=false;
-    discoverThread_.join();
+    if(discoverThread_.joinable()) {
+        try {
+            discoverThread_.join();
+        } catch(std::system_error& ) {
+            logmsg("warn error whilst joining to discover thread");
+        }
+
+    }
     for(auto device : devices_) {
         device->destroy();
     }
