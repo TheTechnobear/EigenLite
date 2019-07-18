@@ -73,6 +73,7 @@ void* process(void* arg) {
     while(keepRunning) {
         pE->process();
     }
+    return nullptr;
 }
 
 void makeThreadRealtime(std::thread& thread) {
