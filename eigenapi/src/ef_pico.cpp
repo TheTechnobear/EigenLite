@@ -162,7 +162,7 @@ bool EF_Pico::loadPicoFirmware()
 	try
 	{
 		pDevice=new pic::usbdevice_t(usbdev.c_str(),0);
-		//pDevice->set_power_delegate(0);
+		pDevice->set_power_delegate(0);
 	}
 	catch(std::exception & e)
 	{

@@ -22,8 +22,9 @@ namespace EigenApi
         virtual bool destroy();
         virtual bool start();
         virtual bool stop();
-        virtual bool poll(long uSleep,long minPollTime);
+        virtual bool poll();
 
+        void setPollTime(unsigned pollTime);
         void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
 		// logging
@@ -37,8 +38,8 @@ namespace EigenApi
         virtual void fireDeadEvent(const char* dev, unsigned reason);
 
     private:
+        unsigned pollTime_;
         const char* fwDir_;
-        long long lastPollTime;
         std::vector<Callback*> callbacks_;
         std::vector<EF_Harp*> devices_;
     };

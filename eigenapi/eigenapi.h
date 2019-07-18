@@ -26,21 +26,19 @@ namespace EigenApi
     public:
         Eigenharp(const char* fwDir);
         virtual ~Eigenharp();
-        bool create();
-        bool destroy();
 
         bool start();
+        bool process();
         bool stop();
 
-        // min time betwen polling in uS (1000=1ms)
-        bool poll(long uSleep,long minPollTime=100);
-        
         // note: callback ownership is retained by caller
         void addCallback(Callback* api);
         void removeCallback(Callback* api);
         void clearCallbacks();
         
         void setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour);
+
+        void setPollTime(unsigned pollTime);
 
     private:
         void *impl;

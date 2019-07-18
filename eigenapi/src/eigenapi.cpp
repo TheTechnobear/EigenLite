@@ -18,29 +18,26 @@ namespace EigenApi
         delete static_cast<EigenLite*>(impl);
     }
     
-    bool Eigenharp::create()
-    {
-        return static_cast<EigenLite*>(impl)->create();
-    }
-    
-    bool Eigenharp::destroy()
-    {
-        return static_cast<EigenLite*>(impl)->destroy();
-    }
-    
+
     bool Eigenharp::start()
     {
-        return static_cast<EigenLite*>(impl)->start();
+        if(static_cast<EigenLite*>(impl)->create()) {
+            return static_cast<EigenLite *>(impl)->start();
+        }
+        return false;
     }
     
     bool Eigenharp::stop()
     {
-        return static_cast<EigenLite*>(impl)->stop();
+        if(static_cast<EigenLite*>(impl)->stop()) {
+            static_cast<EigenLite *>(impl)->destroy();
+        }
+        return false;
     }
     
-    bool Eigenharp::poll(long uSleep,long minPollTime)
+    bool Eigenharp::process()
     {
-        return static_cast<EigenLite*>(impl)->poll(uSleep,minPollTime);
+        return static_cast<EigenLite*>(impl)->poll();
     }
     
     void Eigenharp::addCallback(Callback* api)
@@ -57,7 +54,13 @@ namespace EigenApi
     {
         static_cast<EigenLite*>(impl)->clearCallbacks();
     }
-    
+
+    void Eigenharp::setPollTime(unsigned pollTime)
+    {
+        static_cast<EigenLite*>(impl)->setPollTime(pollTime);
+    }
+
+
     void Eigenharp::setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour)
     {
         static_cast<EigenLite*>(impl)->setLED(dev,course, key, colour);

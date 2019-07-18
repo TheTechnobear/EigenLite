@@ -23,7 +23,7 @@ void EigenLite::logmsg(const char* msg)
 
 // public interface
 
-EigenLite::EigenLite(const char* fwDir) : fwDir_(fwDir),lastPollTime(0)
+EigenLite::EigenLite(const char* fwDir) : fwDir_(fwDir),pollTime_(1000)
 {
 }
 
@@ -133,28 +133,20 @@ bool EigenLite::stop()
     return true;
 }
 
-bool EigenLite::poll(long uSleepTime,long minPollTime)
+bool EigenLite::poll()
 {
-    long long t=pic_microtime();
-    long long diff = t-lastPollTime;
-    if(uSleepTime>0) {
-        if(diff < uSleepTime && diff > 0) {
-            pic_microsleep(diff);
-        }
-    }
-    if(diff>minPollTime)
+    bool ret=true;
+    std::vector<EF_Harp*>::iterator iter;
+    for(iter=devices_.begin();iter!=devices_.end();iter++)
     {
-        lastPollTime = t;
-    	bool ret=true;
-		std::vector<EF_Harp*>::iterator iter;
-		for(iter=devices_.begin();iter!=devices_.end();iter++)
-		{    
-			EF_Harp *pDevice = *iter;
-			ret &= pDevice->poll(uSleepTime);
-		}	
-        return ret;
+        EF_Harp *pDevice = *iter;
+        ret &= pDevice->poll(pollTime_);
     }
-    return false;
+    return ret;
+}
+
+void EigenLite::setPollTime(unsigned pollTime) {
+    pollTime_ = pollTime;
 }
 
     
