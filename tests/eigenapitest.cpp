@@ -99,7 +99,7 @@ int main(int ac, char **av)
     }
 
     std::thread t=std::thread(process, &myD);
-    makeThreadRealtime(t);
+//    makeThreadRealtime(t);
     t.join();
 
     myD.stop();

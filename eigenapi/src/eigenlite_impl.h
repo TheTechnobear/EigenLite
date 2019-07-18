@@ -5,6 +5,9 @@
 #include <lib_alpha2/alpha2_active.h>
 #include <lib_pico/pico_active.h>
 #include <memory>
+#include <thread>
+#include <set>
+
 
 namespace EigenApi
 {
@@ -20,8 +23,6 @@ namespace EigenApi
         void clearCallbacks();
         virtual bool create();
         virtual bool destroy();
-        virtual bool start();
-        virtual bool stop();
         virtual bool poll();
 
         void setPollTime(unsigned pollTime);
@@ -37,11 +38,22 @@ namespace EigenApi
         virtual void firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val);
         virtual void fireDeadEvent(const char* dev, unsigned reason);
 
+
+        void checkUsbDev();
     private:
+        void deviceDead(const char* dev,unsigned reason);
+
+        unsigned long long lastPollTime_;
         unsigned pollTime_;
         const char* fwDir_;
         std::vector<Callback*> callbacks_;
         std::vector<EF_Harp*> devices_;
+        std::thread discoverThread_;
+        std::string baseUSBDev_;
+        std::string picoUSBDev_;
+        std::set<std::string> deadDevices_;
+        volatile bool usbDevChange_=false;
+
     };
 
     class EF_Harp
@@ -129,6 +141,7 @@ private:
         void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override;
         
 		static bool isAvailable();
+        static std::string availableDevice();
 
     private:
         std::string findDevice() override;
@@ -173,6 +186,7 @@ private:
         void setLED(unsigned course, unsigned int keynum,unsigned int colour) override;
 
         static bool isAvailable();
+        static std::string availableDevice();
 
         unsigned short* curMap() { return curmap_;}
         unsigned short* skpMap() { return skpmap_;}

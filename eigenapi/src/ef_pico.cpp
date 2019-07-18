@@ -68,9 +68,8 @@ bool EF_Pico::create()
 bool EF_Pico::destroy()
 {
     logmsg("destroy pico....");
-    EF_Harp::stop();
+    EF_Pico::stop();
     {
-//        pLoop_->stop();
         delete pLoop_;
         pLoop_=NULL;
     }
@@ -98,13 +97,11 @@ bool EF_Pico::stop()
     return EF_Harp::stop();
 }
     
-static bool dead = false;
 void EF_Pico::restartKeyboard()
 {
     if(pLoop_!=NULL)
     {
         logmsg("restarting pico keyboard....");
-	    dead = true;
     }
 }
     
@@ -121,15 +118,6 @@ void  EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key,
 
 bool EF_Pico::poll(long long t)
 {
-    if(dead) {
-        destroy();
-        if(create()) {
-            start();
-            dead=false;
-        }
-        return true;
-    }
-
     if (!EF_Harp::poll(t)) return false;
     pLoop_->poll(t);
     // pLoop_->msg_flush();
@@ -162,7 +150,7 @@ bool EF_Pico::loadPicoFirmware()
 	try
 	{
 		pDevice=new pic::usbdevice_t(usbdev.c_str(),0);
-		pDevice->set_power_delegate(0);
+//		pDevice->set_power_delegate(0);
 	}
 	catch(std::exception & e)
 	{
@@ -210,14 +198,20 @@ std::string EF_Pico::findDevice()
 
 bool EF_Pico::isAvailable()
 {
-    std::string usbdev;
-	usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PICO_PRE_LOAD,false).c_str();
-	if(usbdev.size()>0) return true;
-    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PRODUCT_ID_PICO,false).c_str();
-	if(usbdev.size()>0) return true;
-	return false;
+    return EF_Pico::availableDevice().size() > 0;
 }
-    
+
+
+std::string EF_Pico::availableDevice()
+{
+    std::string usbdev;
+    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PICO_PRE_LOAD,false).c_str();
+    if(usbdev.size()>0) return usbdev;
+    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PRODUCT_ID_PICO,false).c_str();
+    if(usbdev.size()>0) return usbdev;
+    return "";
+}
+
 //PicoDelegate
 void EF_Pico::Delegate::kbd_dead(unsigned reason)
 {

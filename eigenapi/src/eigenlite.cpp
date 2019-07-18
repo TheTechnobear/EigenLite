@@ -3,7 +3,7 @@
 
 #include <picross/pic_config.h>
 
-#define VERSION_STRING "eigenlite v0.4 Alpha/Tau/Pico, experimental - Author: TheTechnobear"
+#define VERSION_STRING "eigenlite v0.5 Alpha/Tau/Pico, experimental - Author: TheTechnobear"
 
 #include <picross/pic_time.h>
 #include <picross/pic_log.h>
@@ -23,7 +23,7 @@ void EigenLite::logmsg(const char* msg)
 
 // public interface
 
-EigenLite::EigenLite(const char* fwDir) : fwDir_(fwDir),pollTime_(1000)
+EigenLite::EigenLite(const char* fwDir) : fwDir_(fwDir),pollTime_(100)
 {
 }
 
@@ -35,10 +35,9 @@ EigenLite::~EigenLite()
 void EigenLite::addCallback(EigenApi::Callback* api)
 {
     // do not allow callback to be added twice
-    std::vector<Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    for(auto cb: callbacks_)
     {
-        if(*iter==api)
+        if(cb==api)
         {
             return;
         }
@@ -68,81 +67,125 @@ void EigenLite::clearCallbacks()
     }
 }
 
+volatile bool discoverProcessRun = true;
 
+void* discoverProcess(void* pthis) {
+    auto pThis= static_cast<EigenLite*>(pthis);
+    std::string usbdev;
+    while(discoverProcessRun) {
+        pThis->checkUsbDev();
+        pic_microsleep(1000);
+    }
+    return nullptr;
+}
+
+void EigenLite::checkUsbDev() {
+    if(!usbDevChange_) {
+        baseUSBDev_ = EF_BaseStation::availableDevice();
+        picoUSBDev_ = EF_Pico::availableDevice();
+        usbDevChange_ = baseUSBDev_.size() > 0 || picoUSBDev_.size() > 0;
+    }
+}
 
 bool EigenLite::create()
 {
     logmsg(VERSION_STRING);
-    logmsg("create EigenLite");
+    logmsg("start EigenLite");
     pic_init_time();
+    discoverProcessRun = true;
+    discoverThread_ = std::thread(discoverProcess,this);
     pic_set_foreground(true);
-    if(EF_BaseStation::isAvailable()) 
-    {
-		EF_Harp *pDevice = new EF_BaseStation(*this, fwDir_);
-        pDevice->create();
-		devices_.push_back(pDevice);
+    lastPollTime_ = 0;
+    usbDevChange_=false;
+    return true;
+}
+
+bool EigenLite::destroy() {
+    discoverProcessRun=false;
+    discoverThread_.join();
+    for(auto device : devices_) {
+        device->destroy();
     }
-    if(EF_Pico::isAvailable()) 
-    {
-		EF_Harp *pDevice = new EF_Pico(*this, fwDir_);
-        pDevice->create();
-		devices_.push_back(pDevice);
-    }
-    return devices_.size() > 0;
-}
-
-bool EigenLite::destroy()
-{
-    logmsg("destroy EigenLite....");
-    //? stop();
-    bool ret = true;
-    std::vector<EF_Harp*>::iterator iter;
-	for(iter=devices_.begin();iter!=devices_.end();iter++)
-	{    
-		EF_Harp *pDevice = *iter;
-		ret &= pDevice->destroy();
-	}	
-	devices_.clear();
-    logmsg("destroyed EigenLite");
+    devices_.clear();
     return true;
 }
 
-bool EigenLite::start()
-{
-    bool ret = true;
-    std::vector<EF_Harp*>::iterator iter;
-	for(iter=devices_.begin();iter!=devices_.end();iter++)
-	{    
-		EF_Harp *pDevice = *iter;
-		ret &= pDevice->start();
-	}	
-    return true;
+void EigenLite::deviceDead(const char* dev,unsigned reason) {
+    deadDevices_.insert(dev);
 }
 
-bool EigenLite::stop()
-{
-    bool ret = true;
-    std::vector<EF_Harp*>::iterator iter;
-	for(iter=devices_.begin();iter!=devices_.end();iter++)
-	{    
-		EF_Harp* pDevice = *iter;
-		ret &= pDevice->stop();
-	}	
-
-    clearCallbacks();
-    return true;
-}
 
 bool EigenLite::poll()
 {
-    bool ret=true;
-    std::vector<EF_Harp*>::iterator iter;
-    for(iter=devices_.begin();iter!=devices_.end();iter++)
-    {
-        EF_Harp *pDevice = *iter;
-        ret &= pDevice->poll(pollTime_);
+    if(usbDevChange_) {
+        bool newPico = picoUSBDev_.size()>0;
+        bool newBase = baseUSBDev_.size()>0;;
+
+        for(auto dev: devices_) {
+            if(picoUSBDev_==dev->usbDevice()->name()) {
+                newPico = false;
+            }
+            if(baseUSBDev_==dev->usbDevice()->name()) {
+                newBase = false;
+            }
+        }
+
+        EF_Harp *pDevice = nullptr;
+        if(newPico) {
+            char logbuf[100]; sprintf(logbuf,"new pico %s", picoUSBDev_.c_str()); logmsg(logbuf);
+
+            pDevice = new EF_Pico(*this, fwDir_);
+            if(pDevice->create()) {
+                devices_.push_back(pDevice);
+                pDevice->start();
+            }
+        }
+        if(newBase) {
+            char logbuf[100]; sprintf(logbuf,"new base %s", baseUSBDev_.c_str()); logmsg(logbuf);
+
+            pDevice = new EF_BaseStation(*this, fwDir_);
+            if(pDevice->create()) {
+                devices_.push_back(pDevice);
+                pDevice->start();
+            }
+        }
+
+        usbDevChange_ = false;
+        return true;
     }
-    return ret;
+
+    while(deadDevices_.size()> 0) {
+        std::string usbname =  * deadDevices_.begin();
+
+        std::vector<EF_Harp*>::iterator iter;
+        bool found=false;
+        for(iter=devices_.begin();!found && iter!=devices_.end();iter++) {
+            EF_Harp *pDevice = *iter;
+            if(pDevice->name()==usbname) {
+                char logbuf[100]; sprintf(logbuf,"destroy device %s", usbname.c_str()); logmsg(logbuf);
+                pDevice->destroy();
+                found=true;
+                devices_.erase(iter);
+            }
+        }
+        deadDevices_.erase(usbname);
+    }
+
+    long long t=pic_microtime();
+    long long diff = t-lastPollTime_;
+
+    if(diff>pollTime_)
+    {
+        lastPollTime_ = t;
+        bool ret=true;
+        for(auto pDevice: devices_)
+        {
+            ret &= pDevice->poll(0);
+        }
+        return ret;
+    }
+    return false;
+
 }
 
 void EigenLite::setPollTime(unsigned pollTime) {
@@ -153,59 +196,48 @@ void EigenLite::setPollTime(unsigned pollTime) {
 void EigenLite::fireDeviceEvent(const char* dev, 
                                  Callback::DeviceType dt, int rows, int cols, int ribbons, int pedals)
 {
-    std::vector<EigenApi::Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    for(auto cb: callbacks_)
     {
-		EigenApi::Callback *cb=*iter;
 		cb->device(dev, dt, rows, cols, ribbons, pedals);
 	}
 }
 void EigenLite::fireKeyEvent(const char* dev,unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
 {
-    std::vector<EigenApi::Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    for(auto cb: callbacks_)
     {
-        EigenApi::Callback *cb=*iter;
         cb->key(dev, t, course, key, a, p, r, y);
     }
 }
     
 void EigenLite::fireBreathEvent(const char* dev, unsigned long long t, unsigned val)
 {
-    std::vector<EigenApi::Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    for(auto cb: callbacks_)
     {
-        EigenApi::Callback *cb=*iter;
         cb->breath(dev, t, val);
     }
 }
     
 void EigenLite::fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val)
 {
-    std::vector<EigenApi::Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    for(auto cb: callbacks_)
     {
-        EigenApi::Callback *cb=*iter;
         cb->strip(dev, t, strip, val);
     }
 }
     
 void EigenLite::firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val)
 {
-    std::vector<EigenApi::Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    for(auto cb: callbacks_)
     {
-        EigenApi::Callback *cb=*iter;
         cb->pedal(dev, t, pedal, val);
     }
 }
 
 void EigenLite::fireDeadEvent(const char* dev,unsigned reason)
 {
-    std::vector<EigenApi::Callback*>::iterator iter;
-    for(iter=callbacks_.begin();iter!=callbacks_.end();iter++)
+    deviceDead(dev,reason);
+    for(auto cb: callbacks_)
     {
-        EigenApi::Callback *cb=*iter;
         cb->dead(dev,reason);
     }
 }
@@ -214,10 +246,8 @@ void EigenLite::fireDeadEvent(const char* dev,unsigned reason)
     
 void EigenLite::setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour)
 {
-    std::vector<EF_Harp*>::iterator iter;
-    for(iter=devices_.begin();iter!=devices_.end();iter++)
+    for(auto pDevice: devices_)
     {
-        EF_Harp* pDevice = *iter;
         if(dev == NULL || dev == pDevice->name() || strcmp(dev,pDevice->name()) == 0) {
             pDevice->setLED(course, key,colour);
         }

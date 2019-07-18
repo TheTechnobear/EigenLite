@@ -21,18 +21,12 @@ namespace EigenApi
 
     bool Eigenharp::start()
     {
-        if(static_cast<EigenLite*>(impl)->create()) {
-            return static_cast<EigenLite *>(impl)->start();
-        }
-        return false;
+        return static_cast<EigenLite*>(impl)->create();
     }
     
     bool Eigenharp::stop()
     {
-        if(static_cast<EigenLite*>(impl)->stop()) {
-            static_cast<EigenLite *>(impl)->destroy();
-        }
-        return false;
+        return static_cast<EigenLite*>(impl)->destroy();
     }
     
     bool Eigenharp::process()

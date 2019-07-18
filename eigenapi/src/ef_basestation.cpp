@@ -97,10 +97,9 @@ bool EF_BaseStation::create()
 bool EF_BaseStation::destroy()
 {
     logmsg("destroy basestation....");
-    EF_Harp::stop();
+    EF_BaseStation::stop();
     if(pLoop_)
     {
-//        pLoop_->stop();
         delete pLoop_;
         pLoop_=NULL;
     }
@@ -230,19 +229,22 @@ std::string EF_BaseStation::findDevice()
 
 bool EF_BaseStation::isAvailable()
 {
-    std::string usbdev;
-	usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BASESTATION_PRE_LOAD,false).c_str();
-	if(usbdev.size()>0) return true;
-    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
-	if(usbdev.size()>0) return true;
-	usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PSU_PRE_LOAD,false).c_str();
-	if(usbdev.size()>0) return true;
-    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
-	if(usbdev.size()>0) return true;
-	return false;
+    return EF_BaseStation::availableDevice().size() > 0;
 }
-    
-   
+
+std::string EF_BaseStation::availableDevice()
+{
+    std::string usbdev;
+    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BASESTATION_PRE_LOAD,false).c_str();
+    if(usbdev.size()>0) return usbdev;
+    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
+    if(usbdev.size()>0) return usbdev;
+    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PSU_PRE_LOAD,false).c_str();
+    if(usbdev.size()>0) return usbdev;
+    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
+    if(usbdev.size()>0) return usbdev;
+    return "";
+}
     
 } // namespace EigenApi
 
