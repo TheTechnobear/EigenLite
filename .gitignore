@@ -5,6 +5,7 @@ profile
 **/build/*
 build
 elite-salt/elite-salt
+elite-salt/loop-eh
 elite-bela/elite-bela
 
 **/*.sublime-workspace
