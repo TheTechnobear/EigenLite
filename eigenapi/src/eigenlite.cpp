@@ -146,6 +146,7 @@ bool EigenLite::poll()
                 devices_.push_back(pDevice);
                 pDevice->start();
             }
+            return true;
         }
         if(newBase) {
             char logbuf[100]; sprintf(logbuf,"new base %s", baseUSBDev_.c_str()); logmsg(logbuf);
@@ -155,10 +156,10 @@ bool EigenLite::poll()
                 devices_.push_back(pDevice);
                 pDevice->start();
             }
+            return true;
         }
 
         usbDevChange_ = false;
-        return true;
     }
 
     while(deadDevices_.size()> 0) {
