@@ -416,7 +416,7 @@ private:
 
 void eliteProcess(void* pvApi) {
 	EigenApi::Eigenharp *pApi = (EigenApi::Eigenharp*) pvApi;
-	pApi->poll(0);
+	pApi->process();
 }
 
 
@@ -456,10 +456,9 @@ bool setup(BelaContext *context, void *userData) {
 
 
 	gApi= new EigenApi::Eigenharp("./");
+	gApi->setPollTime(100);
 	gCallback=new BelaCallback();
 	gApi->addCallback(gCallback);
-
-	if(!gApi->create()) return false;
 
 	if(!gApi->start()) return false;
 	
@@ -574,6 +573,5 @@ void cleanup(BelaContext *context, void *userData)
 	delete gCallback;
 	
 	gApi->stop();
-	gApi->destroy();
 	delete gApi;
 }

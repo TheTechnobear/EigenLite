@@ -766,10 +766,12 @@ pic::usbdevice_t::impl_t::impl_t(const char *name, unsigned iface, pic::usbdevic
     
     if(dhandle_== 0ULL) return;
     
-//	libusb_set_detach_kernel_driver(dhandle_,1);
+	//libusb_detach_kernel_driver(dhandle_, iface);
 	status = libusb_claim_interface(dhandle_, iface);
 	if (status != LIBUSB_SUCCESS) {
-		pic::logmsg() << "pic::usbdevice_t::impl_t  claim_interface failed: %s\n", libusb_error_name(status);
+		pic::logmsg() << "pic::usbdevice_t::impl_t  claim_interface failed: " <<  iface << " : " << libusb_error_name(status);
+        libusb_close(dhandle_);
+        dhandle_== 0ULL;
 		return;
 	}
 	opened_ = true;    

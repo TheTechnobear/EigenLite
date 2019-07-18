@@ -74,7 +74,7 @@ void* discoverProcess(void* pthis) {
     std::string usbdev;
     while(discoverProcessRun) {
         pThis->checkUsbDev();
-        pic_microsleep(1000);
+        pic_microsleep(10000000);
     }
     return nullptr;
 }
@@ -143,10 +143,10 @@ bool EigenLite::poll()
 
             pDevice = new EF_Pico(*this, fwDir_);
             if(pDevice->create()) {
+                char logbuf[100]; sprintf(logbuf,"created pico %s", pDevice->usbDevice()->name()); logmsg(logbuf);
                 devices_.push_back(pDevice);
                 pDevice->start();
             }
-            return true;
         }
         if(newBase) {
             char logbuf[100]; sprintf(logbuf,"new base %s", baseUSBDev_.c_str()); logmsg(logbuf);
@@ -156,10 +156,10 @@ bool EigenLite::poll()
                 devices_.push_back(pDevice);
                 pDevice->start();
             }
-            return true;
         }
 
         usbDevChange_ = false;
+        if(newBase || newPico) return true;
     }
 
     while(deadDevices_.size()> 0) {
