@@ -15,7 +15,7 @@ namespace EigenApi
 	
     class EigenLite {
     public:
-        EigenLite(const char* fwDir);
+        EigenLite(const std::string& fwdir);
         virtual ~EigenLite();
 
         void addCallback(Callback* api);
@@ -45,7 +45,7 @@ namespace EigenApi
 
         unsigned long long lastPollTime_;
         unsigned pollTime_;
-        const char* fwDir_;
+        std::string fwDir_;
         std::vector<Callback*> callbacks_;
         std::vector<EF_Harp*> devices_;
         std::thread discoverThread_;
@@ -60,7 +60,7 @@ namespace EigenApi
     {
     public:
         
-        EF_Harp(EigenLite& efd, const char* fwDir);
+        EF_Harp(EigenLite& efd, const std::string& fwDir);
         virtual ~EF_Harp();
         
         const char* name();
@@ -126,7 +126,7 @@ private:
     class EF_Pico : public EF_Harp
     {
     public:
-        EF_Pico(EigenLite& efd, const char* fwDir);
+        EF_Pico(EigenLite& efd, const std::string& fwDir);
         virtual ~EF_Pico();
         
         bool create() override;
@@ -172,7 +172,7 @@ private:
     class EF_BaseStation : public EF_Harp
     {
     public:
-        EF_BaseStation(EigenLite& efd, const char* fwDir);
+        EF_BaseStation(EigenLite& efd, const std::string& fwdir);
         virtual ~EF_BaseStation();
 
         bool create() override;

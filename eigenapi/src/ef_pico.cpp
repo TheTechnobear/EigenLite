@@ -33,7 +33,7 @@ namespace EigenApi
 
 // public interface
 
-EF_Pico::EF_Pico(EigenLite& efd, const char* fwDir) : EF_Harp(efd, fwDir), pLoop_(NULL), delegate_(*this)
+EF_Pico::EF_Pico(EigenLite& efd, const std::string& fwDir) : EF_Harp(efd, fwDir), pLoop_(NULL), delegate_(*this)
 {
 }
 

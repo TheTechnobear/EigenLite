@@ -38,7 +38,7 @@
 namespace EigenApi
 {
 
-EF_Harp::EF_Harp(EigenLite& efd, const char* fw) 
+EF_Harp::EF_Harp(EigenLite& efd, const std::string& fw)
 	: pDevice_(NULL),fwDir_(fw),efd_(efd), stopping_(false)
 {
 	;

@@ -23,7 +23,7 @@ void EigenLite::logmsg(const char* msg)
 
 // public interface
 
-EigenLite::EigenLite(const char* fwDir) : fwDir_(fwDir),pollTime_(100)
+EigenLite::EigenLite(const std::string&  fwDir) : fwDir_(fwDir),pollTime_(100)
 {
 }
 
