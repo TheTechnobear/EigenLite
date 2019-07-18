@@ -77,14 +77,6 @@ bool EF_BaseStation::create()
         logmsg("create basestation loop");
         pLoop_ = new alpha2::active_t(usbDevice(), delegate_.get(),false);
         logmsg("created basestation loop");
-
-
-        if(isAlpha_) {
-            efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::ALPHA, 24, 5, 2, 4);
-        } else {
-            efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::TAU, 20, 4, 1, 4);
-        }
-
     } catch (pic::error& e) {
         // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
         // logmsg(e.what());
@@ -116,6 +108,12 @@ bool EF_BaseStation::start()
     pLoop_->start();
     pLoop_->debounce_time(DEFAULT_DEBOUNCE);
     logmsg("started basestation loop");
+
+    if(isAlpha_) {
+        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::ALPHA, 24, 5, 2, 4);
+    } else {
+        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::TAU, 20, 4, 1, 4);
+    }
     return true;
 }
 

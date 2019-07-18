@@ -72,7 +72,16 @@ public:
 				rt_printf("currently this is designed for the pico, some changes may be needed for TAU or ALPHA");
 				break;
 		}
+
+		// put device into a default state
+		mode_ = 0;
+    	mainMode_ =0; // 0 == play
 		displayScale();
+		for(unsigned c = 0;c<MAX_COLS;c++) {
+			for(unsigned r = 0;r<MAX_ROWS;r++) {
+				gLedsSent[c][r] = 0; 
+			}
+		}
 	}
 
 	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
@@ -541,12 +550,6 @@ void render(BelaContext *context, void *userData)
 	ltr3=  tr3;
 	ltr4=  tr4;
 #endif
-
-
-
-
-
-
 
 	Bela_scheduleAuxiliaryTask(gProcessTask);
 	Bela_scheduleAuxiliaryTask(gLEDTask);

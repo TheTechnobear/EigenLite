@@ -54,7 +54,6 @@ bool EF_Pico::create()
         pLoop_ = new pico::active_t(usbDevice()->name(), &delegate_);
         pLoop_->load_calibration_from_device();
         logmsg("created pico loop");
-        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 9, 2, 1, 0);
 
     } catch (pic::error& e) {
         // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
@@ -85,6 +84,7 @@ bool EF_Pico::start()
     if(pLoop_==NULL) return false;
     pLoop_->start();
     logmsg("started loop");
+    efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 9, 2, 1, 0);
     return true;
 }
 
