@@ -32,7 +32,7 @@
 #define CPUCS_ADDR 0xe600
 #define CONTROL_TIMEOUT 10000
 
-#define FIRMWARE_DIR "../eigenharp/firmware/"
+#define FIRMWARE_DIR "./"
 
 
 namespace EigenApi
@@ -334,13 +334,15 @@ bool EF_Harp::loadFirmware(pic::usbdevice_t* pDevice,std::string ihxFile)
     int fd = pic::open(fwfile, IHX_OPENFLAGS);
     if(fd < 0)
     {
+        char buf[100];
+        sprintf(buf,"unable to open IHX firmware: %s,\n now try default location...`\n",fwfile.c_str());
+        logmsg(buf);
         fwfile=FIRMWARE_DIR;
         fwfile.append(ihxFile);
         fd = pic::open(fwfile, IHX_OPENFLAGS);
         if(fd < 0)
         {
-            char buf[100];
-            sprintf(buf,"unable to open IHX firmware: %s",fwfile.c_str());
+            sprintf(buf,"default ihx, unable to open IHX firmware: %s\n",fwfile.c_str());
             logmsg(buf);
             return false;
         }
