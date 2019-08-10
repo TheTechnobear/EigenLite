@@ -17,30 +17,32 @@ AuxiliaryTask gLEDTask;
 
 Sequencer gSeq;
 
-static constexpr unsigned gMaxCols=2;
-static constexpr unsigned gMaxRows=18;
+static unsigned gMaxCols=2;
+static unsigned gMaxRows=18;
 
 static unsigned *gLeds=NULL;
 static unsigned *gLedsSent=NULL;
 
+inline unsigned led(unsigned col,unsigned row ) { return col*gMaxRows + row;}
+
 void setLED(unsigned col, unsigned row, unsigned value) {
 	if(gLeds==NULL) return;
 	if(col<gMaxCols && row < gMaxRows) {
-		gLeds[col*gMaxRows + row]=value;
+		gLeds[led(col,row)]=value;
 	}
 }
 
 
 std::string gDev;
 
-enum DeviceType {
-	NONE,
-	PICO,
-	TAU,
-	ALPHA
+enum DevType {
+	dtNONE,
+	dtPICO,
+	dtTAU,
+	dtALPHA
 };
 
-DeviceType gDevType = NONE
+DevType gDevType = dtNONE;
 
 // really simple scale implmentation
 static constexpr unsigned MAX_SCALE = 7;
@@ -74,59 +76,59 @@ public:
 
 		switch (dt) {
 			case EigenApi::Callback::PICO:
-				gDevType = PICO;
+				gDevType = dtPICO;
 				gMaxRows = 18;
 				gMaxCols = 2;
 				break;
 			case EigenApi::Callback::TAU:
-				gDevType = TAU;
+				gDevType = dtTAU;
 				gMaxRows = 20;
 				gMaxCols = 4;
 				rt_printf("TAU is currently untested, watch this space ;) ");
 				break;
 			case EigenApi::Callback::ALPHA:
-				gDevType = ALPHA;
+				gDevType = dtALPHA;
 				gMaxRows = 24;
 				gMaxCols = 5;
 				break;
 		}
-		if(gLeds) delete gLeds;
-		if(gLedsSent) delete gLedsSent;
-		gLeds = new unsigned[gMaxCols* gMaxRows];
-		gLedsSent = new unsigned[gMaxCols* gMaxRows];
+		// if(gLeds) delete gLeds;
+		// if(gLedsSent) delete gLedsSent;
+		// gLeds = new unsigned[gMaxCols* gMaxRows];
+		// gLedsSent = new unsigned[gMaxCols* gMaxRows];
 
 
 
-		for(unsigned c = 0;c<gMaxCols;c++) {
-			for(unsigned r = 0;r<gMaxRows;r++) {
-				gLedsSent[c][r] = 0; 
-				gLeds[c][r] = 0;
-			}
-		}
+		// for(unsigned c = 0;c<gMaxCols;c++) {
+		// 	for(unsigned r = 0;r<gMaxRows;r++) {
+		// 		gLedsSent[led(c,r)] = 0; 
+		// 		gLeds[led(c,r)] = 0;
+		// 	}
+		// }
 
 		// put device into a default state
 		mode_ = 0;
     	mainMode_ =0; // 0 == play
-		displayScale();
-		for(unsigned c = 0;c<gMaxCols;c++) {
-			for(unsigned r = 0;r<gMaxRows;r++) {
-				gLedsSent[c][r] = 0; 
-			}
-		}
+		// displayScale();
+		// for(unsigned c = 0;c<gMaxCols;c++) {
+		// 	for(unsigned r = 0;r<gMaxRows;r++) {
+		// 		gLedsSent[led(c,r)] = 0; 
+		// 	}
+		// }
 	}
 
 	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
 		switch(gDevType) {
-			case NONE: {
+			case dtPICO: {
 				pico_key(dev,t,course,key,a,p,r,y);
 				break;
 			}
-			case ALPHA: 
-			case TAU: {
+			case dtALPHA: 
+			case dtTAU: {
 				alpha_key(dev,t,course,key,a,p,r,y);
 				break;
 			}
-			case NONE: {
+			case dtNONE: {
 				break;
 			}
 		}
@@ -215,7 +217,6 @@ public:
 		unsigned col = key / gMaxRows;
 		unsigned row = key - (col * gMaxRows);
 		float note = (row * rowMult)  + (col * colMult);
-		float mx = bipolar(r);
 		playNote(key,note, a,p,r,y);
 	}
 
@@ -344,16 +345,16 @@ public:
 	
 	void displayScale() {
 		switch(gDevType) {
-			case NONE: {
-				pico_displayScale()
+			case dtPICO: {
+				pico_displayScale();
 				break;
 			}
-			case ALPHA: 
-			case TAU: {
-				alpha_displayScale()
+			case dtALPHA: 
+			case dtTAU: {
+				// alpha_displayScale();
 				break;
 			}
-			case NONE: {
+			case dtNONE: {
 				break;
 			}
 		}
@@ -361,15 +362,15 @@ public:
 
 	void alpha_displayScale() {
 		static constexpr unsigned greenLeds [] = {48, 52, 56,60, 64, 68 , 26, 74, 34, 82, 42, 90};
-		static constexpr unsigned orangeLeds [];
+		// static constexpr unsigned orangeLeds [];
 		static constexpr unsigned redLeds [] = {30, 78, 38, 86, 46, 94};
 
 		for(int i=0;i< (sizeof(greenLeds)/sizeof(unsigned)); i++) {
 			setLED(0, i, 1); 
 		}
-		for(int i=0;i< (sizeof(orangeLeds)/sizeof(unsigned)); i++) {
-			setLED(0, i, 3); 
-		}
+		// for(int i=0;i< (sizeof(orangeLeds)/sizeof(unsigned)); i++) {
+		// 	setLED(0, i, 3); 
+		// }
 		for(int i=0;i< (sizeof(redLeds)/sizeof(unsigned)); i++) {
 			setLED(0, i, 2); 
 		}
@@ -408,7 +409,7 @@ public:
     void render(BelaContext *context) {
     	float a[8];
 
-    	if(gDevType==PICO) {
+    	if(gDevType==dtPICO) {
 			unsigned lStep = gSeq.curStep();
 			for(unsigned int n = 0; n < context->analogFrames; n++) {
 				gSeq.tick();
@@ -541,9 +542,9 @@ void ledProcess(void* pvApi) {
 	EigenApi::Eigenharp *pApi = (EigenApi::Eigenharp*) pvApi;
 	for(unsigned c = 0;c<gMaxCols;c++) {
 		for(unsigned r = 0;r<gMaxRows;r++)
-		if(gLeds[c][r]!=gLedsSent[c][r]) {
-			pApi->setLED(gDev.c_str(), c , r, gLeds[c][r]);
-			gLedsSent[c][r] = gLeds[c][r];
+		if(gLeds[led(c,r)]!=gLedsSent[led(c,r)]) {
+			pApi->setLED(gDev.c_str(), c , r, gLeds[led(c,r)]);
+			gLedsSent[led(c,r)] = gLeds[led(c,r)];
 		}
 	}
 }
