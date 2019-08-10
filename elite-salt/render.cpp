@@ -17,22 +17,30 @@ AuxiliaryTask gLEDTask;
 
 Sequencer gSeq;
 
+static constexpr unsigned gMaxCols=2;
+static constexpr unsigned gMaxRows=18;
 
-// only good for pico!
-static constexpr unsigned MAX_COLS=2;
-static constexpr unsigned MAX_ROWS=18;
-
-static unsigned gLeds[MAX_COLS][MAX_ROWS];
-static unsigned gLedsSent[MAX_COLS][MAX_ROWS];
+static unsigned *gLeds=NULL;
+static unsigned *gLedsSent=NULL;
 
 void setLED(unsigned col, unsigned row, unsigned value) {
-	if(col<MAX_COLS && row < MAX_ROWS) {
-		gLeds[col][row]=value;
+	if(gLeds==NULL) return;
+	if(col<gMaxCols && row < gMaxRows) {
+		gLeds[col*gMaxRows + row]=value;
 	}
 }
 
+
 std::string gDev;
 
+enum DeviceType {
+	NONE,
+	PICO,
+	TAU,
+	ALPHA
+};
+
+DeviceType gDevType = NONE
 
 // really simple scale implmentation
 static constexpr unsigned MAX_SCALE = 7;
@@ -66,25 +74,153 @@ public:
 
 		switch (dt) {
 			case EigenApi::Callback::PICO:
+				gDevType = PICO;
+				gMaxRows = 18;
+				gMaxCols = 2;
 				break;
 			case EigenApi::Callback::TAU:
-			case EigenApi::Callback::ALPHA:
-				rt_printf("currently this is designed for the pico, some changes may be needed for TAU or ALPHA");
+				gDevType = TAU;
+				gMaxRows = 20;
+				gMaxCols = 4;
+				rt_printf("TAU is currently untested, watch this space ;) ");
 				break;
+			case EigenApi::Callback::ALPHA:
+				gDevType = ALPHA;
+				gMaxRows = 24;
+				gMaxCols = 5;
+				break;
+		}
+		if(gLeds) delete gLeds;
+		if(gLedsSent) delete gLedsSent;
+		gLeds = new unsigned[gMaxCols* gMaxRows];
+		gLedsSent = new unsigned[gMaxCols* gMaxRows];
+
+
+
+		for(unsigned c = 0;c<gMaxCols;c++) {
+			for(unsigned r = 0;r<gMaxRows;r++) {
+				gLedsSent[c][r] = 0; 
+				gLeds[c][r] = 0;
+			}
 		}
 
 		// put device into a default state
 		mode_ = 0;
     	mainMode_ =0; // 0 == play
 		displayScale();
-		for(unsigned c = 0;c<MAX_COLS;c++) {
-			for(unsigned r = 0;r<MAX_ROWS;r++) {
+		for(unsigned c = 0;c<gMaxCols;c++) {
+			for(unsigned r = 0;r<gMaxRows;r++) {
 				gLedsSent[c][r] = 0; 
 			}
 		}
 	}
 
 	void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
+		switch(gDevType) {
+			case NONE: {
+				pico_key(dev,t,course,key,a,p,r,y);
+				break;
+			}
+			case ALPHA: 
+			case TAU: {
+				alpha_key(dev,t,course,key,a,p,r,y);
+				break;
+			}
+			case NONE: {
+				break;
+			}
+		}
+	}
+
+	
+	void breath(const char* dev, unsigned long long t, unsigned val) override {
+		// rt_printf("breath %s , %d ", dev, val);
+		breath_ = unipolar(val);
+	}
+
+	void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val) override {
+		// rt_printf("strip %s , %d %d ", dev, strip, val);
+		ribbon_ = unipolar(val);
+	}
+
+	void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) override {
+		// rt_printf("pedal %s , %d %d ", dev, pedal, val);
+	};
+
+	void dead(const char* dev, unsigned reason) override {
+		rt_printf("dead %s , %d ", dev, reason);
+	};
+
+	//=====================end of callback interface	======================
+	void playNote( unsigned key, float note, bool a, unsigned p, int r, int y) {
+		float mx = bipolar(r);
+		float my = bipolar(y);
+		float mz = unipolar(p);
+
+		if(active_) {
+			// currently have an active key
+			if(touchId_==key) {
+				// its this key, so update
+				active_=a;  // might be off!
+				touchId_=key;
+				note_=note;
+				x_=mx;
+				y_=my;
+				z_=mz;
+			}
+
+		} else {
+			// no active key, so take this one
+			if(a) {
+     			// rt_printf("playNote  %f: %f %f %f\n",note,mx,my,mz);
+				active_ = true;
+				touchId_ = key;
+				note_ = note;
+				x_ = mx;
+				y_ = my;
+				z_ = mz;
+			}
+		}
+	}
+
+	void sequenceNote( unsigned key, bool a, unsigned p, int r, int y) {
+		unsigned st = key - (key>7);
+		if(st>gSeq.endStep()) return;
+		
+		Step cs = gSeq.step(st);
+		bool active = !cs.active();
+		float note = cs.note();
+		float sx = 0.0f;
+		float sy = 0.0f;
+		float sz = float(active);
+		if(active) {
+			note = note_;
+			// for now, not using x, y
+			// and z is constant, 1 or 0
+		} else {
+			// leave alone
+			// note = cs.note();
+			;
+		}
+		Step s(active, note, sx, sy, sz);
+		gSeq.step(st ,s);
+		displaySequence();
+	}
+	
+	static constexpr float noteOffset = 12.0f;
+	static constexpr float rowMult = 3.0f;
+	static constexpr float colMult = -1.0f;
+
+	void alpha_key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {
+		unsigned col = key / gMaxRows;
+		unsigned row = key - (col * gMaxRows);
+		float note = (row * rowMult)  + (col * colMult);
+		float mx = bipolar(r);
+		playNote(key,note, a,p,r,y);
+	}
+
+
+	void pico_key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {
 		//rt_printf("key %s , %d : %d,  %d  , %d %d %d \n", dev, course, key, a, p , r , y );
 		// static unsigned long long lastT = 0;
 		// if(t<lastT) {
@@ -101,7 +237,8 @@ public:
 				case 0: {
 					if(mainMode_==0) {
 						// playing
-						playNote(key,a,p,r,y);
+						float note = scaleNote(key);
+						playNote(key,note,a,p,r,y);
 					} else if (mainMode_ ==1) {
 						
 					}
@@ -156,82 +293,6 @@ public:
 			}//switch
 		}// main key
 	}
-	
-	void breath(const char* dev, unsigned long long t, unsigned val) override {
-		// rt_printf("breath %s , %d ", dev, val);
-		breath_ = unipolar(val);
-	}
-
-	void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val) override {
-		// rt_printf("strip %s , %d %d ", dev, strip, val);
-		ribbon_ = unipolar(val);
-	}
-
-	void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) override {
-		// rt_printf("pedal %s , %d %d ", dev, pedal, val);
-	};
-
-	void dead(const char* dev, unsigned reason) override {
-		rt_printf("dead %s , %d ", dev, reason);
-	};
-
-	//=====================end of callback interface	======================
-	void playNote( unsigned key, bool a, unsigned p, int r, int y) {
-		float note = scaleNote(key);
-		float mx = bipolar(r);
-		float my = bipolar(y);
-		float mz = unipolar(p);
-
-		if(active_) {
-			// currently have an active key
-			if(touchId_==key) {
-				// its this key, so update
-				active_=a;  // might be off!
-				touchId_=key;
-				note_=note;
-				x_=mx;
-				y_=my;
-				z_=mz;
-			}
-
-		} else {
-			// no active key, so take this one
-			if(a) {
-     			// rt_printf("playNote  %f: %f %f %f\n",note,mx,my,mz);
-				active_ = true;
-				touchId_ = key;
-				note_ = note;
-				x_ = mx;
-				y_ = my;
-				z_ = mz;
-			}
-		}
-	}
-
-	void sequenceNote( unsigned key, bool a, unsigned p, int r, int y) {
-		unsigned st = key - (key>7);
-		if(st>gSeq.endStep()) return;
-		
-		Step cs = gSeq.step(st);
-		bool active = !cs.active();
-		float note = cs.note();
-		float sx = 0.0;
-		float sy = 0.0;
-		float sz = float(active);
-		if(active) {
-			note = note_;
-			// for now, not using x, y
-			// and z is constant, 1 or 0
-		} else {
-			// leave alone
-			// note = cs.note();
-			;
-		}
-		Step s(active, note, sx, sy, sz);
-		gSeq.step(st ,s);
-		displaySequence();
-	}
-	
 
 	void button(unsigned key, bool a) {
 		// rt_printf("button %d %d ", key, a);
@@ -282,6 +343,40 @@ public:
 	}
 	
 	void displayScale() {
+		switch(gDevType) {
+			case NONE: {
+				pico_displayScale()
+				break;
+			}
+			case ALPHA: 
+			case TAU: {
+				alpha_displayScale()
+				break;
+			}
+			case NONE: {
+				break;
+			}
+		}
+	} 
+
+	void alpha_displayScale() {
+		static constexpr unsigned greenLeds [] = {48, 52, 56,60, 64, 68 , 26, 74, 34, 82, 42, 90};
+		static constexpr unsigned orangeLeds [];
+		static constexpr unsigned redLeds [] = {30, 78, 38, 86, 46, 94};
+
+		for(int i=0;i< (sizeof(greenLeds)/sizeof(unsigned)); i++) {
+			setLED(0, i, 1); 
+		}
+		for(int i=0;i< (sizeof(orangeLeds)/sizeof(unsigned)); i++) {
+			setLED(0, i, 3); 
+		}
+		for(int i=0;i< (sizeof(redLeds)/sizeof(unsigned)); i++) {
+			setLED(0, i, 2); 
+		}
+	}
+
+
+	void pico_displayScale() {
 		unsigned scalelen=SCALES[scaleIdx_][0];
 		for(unsigned i=0;i<(rows_*cols_);i++) {
 			// turn off all lights
@@ -313,28 +408,39 @@ public:
     void render(BelaContext *context) {
     	float a[8];
 
-		unsigned lStep = gSeq.curStep();
-		for(unsigned int n = 0; n < context->analogFrames; n++) {
-			gSeq.tick();
-		}
-		unsigned nStep = gSeq.curStep();
-		Step s = gSeq.step(nStep);
-		a[0] = transpose(note_ + pitchbend(x_),octave_,tonic_);
-		a[1] = scaleY(y_,1.0f);
-		a[2] = pressure(z_,1.0f);
-		a[3] = ribbon_;
-		a[4] = breath_;
-		a[5] = transpose(s.note() + pitchbend(s.x()),octave_,tonic_);
-		a[6] = scaleY(s.y(),1.0f);
-		a[7] = pressure(s.z(),1.0f);
-		
-		if(mode_==4) {
-	 		if(lStep!=nStep) {
-				Step lS = gSeq.step(lStep);
-				setLED( 0, lStep + (lStep>7), lS.active());
-				setLED( 0 , nStep + (nStep>7), 2);
+    	if(gDevType==PICO) {
+			unsigned lStep = gSeq.curStep();
+			for(unsigned int n = 0; n < context->analogFrames; n++) {
+				gSeq.tick();
 			}
-		}
+			unsigned nStep = gSeq.curStep();
+			Step s = gSeq.step(nStep);
+			a[0] = transpose(note_ + pitchbend(x_),octave_,tonic_);
+			a[1] = scaleY(y_,1.0f);
+			a[2] = pressure(z_,1.0f);
+			a[3] = ribbon_;
+			a[4] = breath_;
+			a[5] = transpose(s.note() + pitchbend(s.x()),octave_,tonic_);
+			a[6] = scaleY(s.y(),1.0f);
+			a[7] = pressure(s.z(),1.0f);
+			
+			if(mode_==4) {
+		 		if(lStep!=nStep) {
+					Step lS = gSeq.step(lStep);
+					setLED( 0, lStep + (lStep>7), lS.active());
+					setLED( 0 , nStep + (nStep>7), 2);
+				}
+			}
+    	} else {
+			a[0] = transpose(note_ + pitchbend(x_),octave_,tonic_);
+			a[1] = scaleY(y_,1.0f);
+			a[2] = pressure(z_,1.0f);
+			a[3] = ribbon_;
+			a[4] = breath_;
+			a[5] = 0.0f;
+			a[6] = 0.0f;
+			a[7] = 0.0f;
+    	}
 
 		for(unsigned int n = 0; n < context->analogFrames; n++) {
 			for(unsigned i = 0;i<8;i++) {
@@ -430,9 +536,11 @@ void eliteProcess(void* pvApi) {
 
 
 void ledProcess(void* pvApi) {
+	if(gLeds==NULL || gLedsSent==NULL) return;
+
 	EigenApi::Eigenharp *pApi = (EigenApi::Eigenharp*) pvApi;
-	for(unsigned c = 0;c<MAX_COLS;c++) {
-		for(unsigned r = 0;r<MAX_ROWS;r++)
+	for(unsigned c = 0;c<gMaxCols;c++) {
+		for(unsigned r = 0;r<gMaxRows;r++)
 		if(gLeds[c][r]!=gLedsSent[c][r]) {
 			pApi->setLED(gDev.c_str(), c , r, gLeds[c][r]);
 			gLedsSent[c][r] = gLeds[c][r];
@@ -453,14 +561,6 @@ bool setup(BelaContext *context, void *userData) {
 	pinMode(context,0,trigOut3,OUTPUT);
 	pinMode(context,0,trigOut4,OUTPUT);
 #endif
-
-
-	for(unsigned c = 0;c<MAX_COLS;c++) {
-		for(unsigned r = 0;r<MAX_ROWS;r++) {
-			gLedsSent[c][r] = 0; 
-			gLeds[c][r] = 0;
-		}
-	}
 
 
 
@@ -572,6 +672,9 @@ void render(BelaContext *context, void *userData)
 
 void cleanup(BelaContext *context, void *userData)
 {
+	if(gLedsSent) delete gLedsSent;
+	if(gLeds) delete gLeds;
+
 	gApi->clearCallbacks();
 	delete gCallback;
 	
