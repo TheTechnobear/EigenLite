@@ -181,6 +181,14 @@ static void __realtime(pthread_t thread, int pri)
     }
 }
 
+
+#if defined(PI_MACOSX_ARM)
+void pic_set_fpu()
+{
+}
+
+#else
+
 #include <fenv.h>
 #pragma STDC FENV_ACCESS ON
 
@@ -190,6 +198,7 @@ void pic_set_fpu()
     fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
 }
 
+#endif
 
 void pic_set_foreground(bool rt)
 {

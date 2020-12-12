@@ -81,6 +81,10 @@
 #define PI_MACOSX_8664
 #define __PI_ARCH "macosx x86-64"
 #endif
+#ifdef  __ARM_ARCH
+#define PI_MACOSX_ARM
+#define __PI_ARCH "macosx arm"
+#endif
 #endif
 
 #if !defined(PI_ARCH) || (!defined(PI_LITTLEENDIAN) && !defined(PI_BIGENDIAN))
