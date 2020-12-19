@@ -1,6 +1,14 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 project(eigenlite)
+
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+  endif()
+endif()
+
 
 set(PROJECT_NAME MEC)
 set(MEC_VERSION_MAJOR 0)
@@ -9,17 +17,23 @@ set(MEC_VERSION_UPDATE 1)
 set(MEC_VERSION "${MEC_VERSION_MAJOR}.${MEC_VERSION_MINOR}.${MEC_VERSION_UPDATE}")
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
-if(WIN32)
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    set(EXECUTABLE_NAME EigenLite)
+
+    if(NOT CMAKE_OSX_ARCHITECTURES) 
+        set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(EXECUTABLE_NAME eigenlite)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message("windows support limited")
     set(DISABLE_LIBUSB 1)
     set(DISABLE_EIGENHARP 1)
 endif()
 
-if (APPLE)
-    set(EXECUTABLE_NAME EigenLite)
-elseif (UNIX)
-    set(EXECUTABLE_NAME eigenlite)
-endif (APPLE)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -40,8 +54,8 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 if (NOT DEFINED CPU_OPTIMIZATION_FLAGS)
-    if (APPLE)
-    elseif (UNIX)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
             if (BELA)
                 message(STATUS "BELA optimized")
@@ -87,12 +101,13 @@ endif ()
 if (NOT DISABLE_RPATH_OVERRIDE)
   ## setup rpath for linux and macos
   set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-  if (NOT APPLE)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib")
-  else()
+
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     set(CMAKE_INSTALL_NAME_DIR "@rpath")
     set(CMAKE_INSTALL_RPATH "@executable_path/../lib;@loader_path")
     set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
+  else()
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib")
   endif()
 endif()
 
