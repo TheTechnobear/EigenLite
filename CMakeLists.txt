@@ -9,17 +9,23 @@ set(MEC_VERSION_UPDATE 1)
 set(MEC_VERSION "${MEC_VERSION_MAJOR}.${MEC_VERSION_MINOR}.${MEC_VERSION_UPDATE}")
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
-if(WIN32)
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    set(EXECUTABLE_NAME EigenLite)
+
+    if(NOT CMAKE_OSX_ARCHITECTURES) 
+        set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(EXECUTABLE_NAME eigenlite)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message("windows support limited")
     set(DISABLE_LIBUSB 1)
     set(DISABLE_EIGENHARP 1)
 endif()
 
-if (APPLE)
-    set(EXECUTABLE_NAME EigenLite)
-elseif (UNIX)
-    set(EXECUTABLE_NAME eigenlite)
-endif (APPLE)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -40,8 +46,8 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 if (NOT DEFINED CPU_OPTIMIZATION_FLAGS)
-    if (APPLE)
-    elseif (UNIX)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
             if (BELA)
                 message(STATUS "BELA optimized")
