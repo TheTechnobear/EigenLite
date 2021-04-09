@@ -3,7 +3,7 @@
 *.lock
 profile
 **/build/*
-build
+build*
 
 **/*.sublime-workspace
 cmake-build*/

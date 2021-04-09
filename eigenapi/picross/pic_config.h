@@ -81,6 +81,12 @@
 #define PI_MACOSX_8664
 #define __PI_ARCH "macosx x86-64"
 #endif
+#if defined(__aarch64__)
+#error "mac arm unsupported "
+#define PI_MACOSX_ARM
+#define __PI_ARCH "macosx arm-64"
+#endif
+
 #endif
 
 #if !defined(PI_ARCH) || (!defined(PI_LITTLEENDIAN) && !defined(PI_BIGENDIAN))
