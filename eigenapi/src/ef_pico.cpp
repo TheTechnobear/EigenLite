@@ -281,7 +281,7 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s)
 
                 if(std::abs(long(s-s_last_))<200 && s>s_threshold_)
                 {
-                    parent_.fireStripEvent(t,1,s);
+                    parent_.fireStripEvent(t,1,s,s_state_ != 3);
                 }
                 s_state_ = 3;
                 s_count_ = 80;
@@ -291,7 +291,7 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s)
                 if(s<s_threshold_)
                 {
                     //pic::logmsg() << "strip ending";
-                    parent_.fireStripEvent(t,1,2048);
+                    parent_.fireStripEvent(t,1,2048,s_state_ != 3);
                     s_state_ = 0;
                 }
                 else

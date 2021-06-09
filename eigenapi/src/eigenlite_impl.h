@@ -34,7 +34,7 @@ namespace EigenApi
         virtual void fireDeviceEvent(const char* dev, Callback::DeviceType dt, int rows, int cols, int ribbons, int pedals);
 		virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
         virtual void fireBreathEvent(const char* dev, unsigned long long t, unsigned val);
-        virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val);
+        virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a);
         virtual void firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val);
         virtual void fireDeadEvent(const char* dev, unsigned reason);
 
@@ -74,7 +74,7 @@ namespace EigenApi
         
 		virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
         virtual void fireBreathEvent(unsigned long long t, unsigned val);
-        virtual void fireStripEvent(unsigned long long t, unsigned strip, unsigned val);
+        virtual void fireStripEvent(unsigned long long t, unsigned strip, unsigned val, bool a);
         virtual void firePedalEvent(unsigned long long t, unsigned pedal, unsigned val);
         virtual void fireDeadEvent(unsigned reason);
         

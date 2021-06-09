@@ -132,7 +132,7 @@ void EF_Harp::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, 
     
 void EF_Harp::fireBreathEvent(unsigned long long t, unsigned val)
 {
-    unsigned diff = lastBreath_ - val;
+    unsigned diff = std::abs((int)(lastBreath_ - val));
     if(diff > 10)
     {
         lastBreath_ = val;
@@ -140,19 +140,19 @@ void EF_Harp::fireBreathEvent(unsigned long long t, unsigned val)
     }
 }
     
-void EF_Harp::fireStripEvent(unsigned long long t, unsigned strip, unsigned val)
+void EF_Harp::fireStripEvent(unsigned long long t, unsigned strip, unsigned val, bool a)
 {
-    unsigned diff = lastStrip_[strip - 1] - val;
+    unsigned diff = std::abs((int)(lastStrip_[strip - 1] - val));
     if(diff > 10)
     {
         lastStrip_[strip - 1]=val;
-        efd_.fireStripEvent(pDevice_->name(),t, strip, val);
+        efd_.fireStripEvent(pDevice_->name(),t, strip, val, a);
     }
 }
     
 void EF_Harp::firePedalEvent(unsigned long long t, unsigned pedal, unsigned val)
 {
-    unsigned diff = lastPedal_[pedal - 1] - val;
+    unsigned diff = std::abs((int)(lastPedal_[pedal - 1] - val));
     if(diff > 10)
     {
         lastPedal_[pedal - 1]=val;
