@@ -33,7 +33,13 @@ void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, uns
 {
     const int MAIN_KEYBASE = 120;
     unsigned course = key >= MAIN_KEYBASE;
-    parent_.fireKeyEvent(t, course, key - (course * MAIN_KEYBASE), a, p, r, y);
+    
+    if (key == KBD_STRIP1)
+        parent_.fireStripEvent(t, 1, 2048, 0);
+    else if (key == KBD_STRIP2)
+        parent_.fireStripEvent(t, 2, 2048, 0);
+    else
+        parent_.fireKeyEvent(t, course, key - (course * MAIN_KEYBASE), a, p, r, y);
 }
 
 void EF_Alpha::kbd_dead(unsigned reason)
@@ -70,11 +76,11 @@ void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, in
             break;
         }
         case KBD_STRIP1 : {
-            parent_.fireStripEvent(t, 1, p);
+            parent_.fireStripEvent(t, 1, p, a);
             break;
         }
         case KBD_STRIP2 : {
-            parent_.fireStripEvent(t, 2, p);
+            parent_.fireStripEvent(t, 2, p, a);
             break;
         }
        // case KBD_DESENSE : break;

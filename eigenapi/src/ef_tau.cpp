@@ -32,10 +32,14 @@ static const unsigned int TAU_COURSEKEYS = 92;
 
 void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y)
 {
-    const int MAIN_KEYBASE = TAU_KBD_KEYS; //CHECK
-    unsigned course = key >= MAIN_KEYBASE;
-    if (key > TAU_KBD_KEYS) key = key - TAU_KEYS_OFFSET; // mode keys
-    parent_.fireKeyEvent(t, course, key , a, p, r, y);
+    if (key == TAU_KBD_STRIP1)
+        parent_.fireStripEvent(t, 1, 2048, 0);
+    else {
+        const int MAIN_KEYBASE = TAU_KBD_KEYS; //CHECK
+        unsigned course = key >= MAIN_KEYBASE;
+        if (key > TAU_KBD_KEYS) key = key - TAU_KEYS_OFFSET; // mode keys
+        parent_.fireKeyEvent(t, course, key , a, p, r, y);
+    }
 }
 
 void EF_Tau::kbd_dead(unsigned reason)
@@ -80,7 +84,7 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
         break;
     }
     case TAU_KBD_STRIP1 : {
-        parent_.fireStripEvent(t, 1, p);
+        parent_.fireStripEvent(t, 1, p, a);
         break;
     }
     // case TAU_KBD_DESENSE : break;

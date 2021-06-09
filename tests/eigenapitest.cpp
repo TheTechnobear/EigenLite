@@ -41,9 +41,9 @@ public:
         std::cout  << "breath " << dev << " @ " << t << " - "  << val << std::endl;
     }
     
-    virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val)
+    virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a)
     {
-        std::cout  << "strip " << dev << " @ " << t << " - " << strip << " = " << val << std::endl;
+        std::cout  << "strip " << dev << " @ " << t << " - " << strip << " = " << val << " " << a << std::endl;
     }
     
     virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val)

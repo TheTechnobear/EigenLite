@@ -225,11 +225,11 @@ void EigenLite::fireBreathEvent(const char* dev, unsigned long long t, unsigned 
     }
 }
     
-void EigenLite::fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val)
+void EigenLite::fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a)
 {
     for(auto cb: callbacks_)
     {
-        cb->strip(dev, t, strip, val);
+        cb->strip(dev, t, strip, val, a);
     }
 }
     
