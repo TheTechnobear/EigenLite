@@ -182,7 +182,7 @@ static void __realtime(pthread_t thread, int pri)
 }
 
 #include <fenv.h>
-#pragma STDC FENV_ACCESS ON
+//#pragma STDC FENV_ACCESS ON
 
 void pic_set_fpu()
 {
