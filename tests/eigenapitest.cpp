@@ -16,6 +16,12 @@ public:
     virtual void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals)
     {
         std::cout << "device " << dev << " (" << dt << ") " << rows << " x " << cols << " strips " << ribbons << " pedals " << pedals << std::endl;
+        switch(dt) {
+            case PICO : maxLeds_ = 16; break;
+            case TAU : maxLeds_ = 84; break;
+            case ALPHA: maxLeds_ = 120; break;
+            default: maxLeds_ = 0;
+        }
     }
     
     virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
@@ -31,21 +37,15 @@ public:
         if(!a) {
             led_ = ! led_;
 
-            for(int i=0;i<84;i++) {
+
+
+            for(int i=0;i<maxLeds_;i++) {
                 if(led_)
                     eh_.setLED(dev, 0, i,i % 3);
                 else
                     eh_.setLED(dev, 0, i, 0);
             }
         }
-
-        
-//         bool led = course > 0;
-//         if (led_ != led) {
-//             led_ = led;
-//             eh_.setLED(dev,course, key,led_);
-// //            std::cout  << min_[0] << " to " << max_[0] << ", " << min_[1] << " to " << max_[1] << ", " << min_[2] << " to " << max_[2] << std::endl;
-//         }
     }
     virtual void breath(const char* dev, unsigned long long t, unsigned val)
     {
@@ -64,6 +64,7 @@ public:
     
     EigenApi::Eigenharp& eh_;
     bool led_=false;
+    int  maxLeds_=0;
     int max_[3], min_[3];
     
 };
