@@ -34,16 +34,21 @@ public:
 //        if(r <min_[1]) min_[1]=r;
 //        if(y <min_[2]) min_[2]=y;
 
-        if(!a) {
-            led_ = ! led_;
+        if(course) {
+            // mode key
+            eh_.setLED(dev, course, key, a);
+        } else {
+            if(!a) {
+                led_ = ! led_;
 
 
 
-            for(int i=0;i<maxLeds_;i++) {
-                if(led_)
-                    eh_.setLED(dev, 0, i,i % 3);
-                else
-                    eh_.setLED(dev, 0, i, 0);
+                for(int i=0;i<maxLeds_;i++) {
+                    if(led_)
+                        eh_.setLED(dev, 0, i,i % 3);
+                    else
+                        eh_.setLED(dev, 0, i, 0);
+                }
             }
         }
     }

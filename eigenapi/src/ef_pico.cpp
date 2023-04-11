@@ -221,7 +221,7 @@ void EF_Pico::Delegate::kbd_dead(unsigned reason)
     
 void EF_Pico::Delegate::kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y)
 {
-	parent_.fireKeyEvent(t,0,key,a,p,r,y);
+	parent_.fireKeyEvent(t,0,key,a,p,r * -1,y * -1);
 }
 
 void EF_Pico::Delegate::kbd_raw(bool resync,const pico::active_t::rawkbd_t &)
