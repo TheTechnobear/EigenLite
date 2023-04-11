@@ -64,8 +64,8 @@ void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, in
 
     if(key < KBD_KEYS) {
         // pic::logmsg() << "kbd_key fire" << key << " p " << p << " r " << r << " y " << y;
-        int rr = ( r - 2048) * 2;
-        int ry = ( y - 2048 ) * 2;
+        int rr = ( r - 2048) * 2 * -1 ;
+        int ry = ( y - 2048 ) * 2 * -1 ;
         fireAlphaKeyEvent(t,key,a,p,rr,ry);
         return;
     }

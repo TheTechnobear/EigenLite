@@ -63,8 +63,8 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
 
     if (key < TAU_KBD_KEYS || key >= (TAU_KBD_KEYS + TAU_KEYS_OFFSET)) {
     // pic::logmsg() << "kbd_key fire" << key << " p " << p << " r " << r << " y " << y;
-        int rr = ( r - 2048) * 2;
-        int ry = ( y - 2048 ) * 2;
+        int rr = ( r - 2048) * 2 * -1 ;
+        int ry = ( y - 2048 ) * 2 * -1 ;
         if (key >= (TAU_KBD_KEYS + 5)) {
             // mode key
             p *= 4095;
