@@ -209,6 +209,15 @@ void EigenLite::fireDeviceEvent(const char* dev,
 		cb->device(dev, dt, rows, cols, ribbons, pedals);
 	}
 }
+
+void EigenLite::fireDisconnectEvent(const char* dev, Callback::DeviceType dt)
+{
+    for(auto cb: callbacks_)
+    {
+        cb->disconnect(dev, dt);
+    }
+}
+
 void EigenLite::fireKeyEvent(const char* dev,unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
 {
     for(auto cb: callbacks_)

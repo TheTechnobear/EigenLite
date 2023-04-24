@@ -73,6 +73,7 @@ bool EF_Pico::destroy()
         pLoop_=NULL;
     }
     logmsg("destroyed pico");
+    efd_.fireDisconnectEvent(usbDevice()->name(), Callback::DeviceType::PICO);
     return EF_Harp::destroy();
 }
 

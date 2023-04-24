@@ -32,6 +32,7 @@ namespace EigenApi
         static void logmsg(const char* msg);
         
         virtual void fireDeviceEvent(const char* dev, Callback::DeviceType dt, int rows, int cols, int ribbons, int pedals);
+        virtual void fireDisconnectEvent(const char* dev, Callback::DeviceType dt);
 		virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
         virtual void fireBreathEvent(const char* dev, unsigned long long t, unsigned val);
         virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a);

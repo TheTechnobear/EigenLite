@@ -96,6 +96,7 @@ bool EF_BaseStation::destroy()
         pLoop_=NULL;
     }
     logmsg("destroyed basestation");
+    efd_.fireDisconnectEvent(usbDevice()->name(), isAlpha_ ? Callback::DeviceType::ALPHA : Callback::DeviceType::TAU);
     return EF_Harp::destroy();
 }
 

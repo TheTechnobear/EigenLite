@@ -23,7 +23,12 @@ public:
             default: maxLeds_ = 0;
         }
     }
-    
+
+    virtual void disconnect(const char* dev, DeviceType dt)
+    {
+        std::cout << "disconnect " << dev << " (" << dt << ") " << std::endl;
+    }
+
     virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
     {
         std::cout  << "key " << dev << " @ " << t << " - " << course << ":" << key << ' ' << a << ' ' << p << ' ' << r << ' ' << y << std::endl;

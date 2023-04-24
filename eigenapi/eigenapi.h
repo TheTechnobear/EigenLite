@@ -13,7 +13,8 @@ namespace EigenApi
     	virtual ~Callback() {};
     	
         virtual void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals) {};
-        	
+        virtual void disconnect(const char* dev, DeviceType dt) {};
+
         virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {};
         virtual void breath(const char* dev, unsigned long long t, unsigned val) {};
         virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a) {};
