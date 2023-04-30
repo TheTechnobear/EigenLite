@@ -4,17 +4,7 @@
 
 namespace EigenApi
 {
-    Eigenharp::Eigenharp(const char* fwDir)
-    {
-        EigenApi::FWR_Posix fwReader(fwDir);
-        bool resourcesOK = fwReader.confirmResources();
-        if (resourcesOK)
-            impl=new EigenLite(fwReader);
-        else
-            throw std::runtime_error("Could not find the ihx firmware files at: \"" + fwReader.getPath() + "\"");
-    }
-
-    Eigenharp::Eigenharp(IFW_Reader<> &fwReader)
+    Eigenharp::Eigenharp(IFW_Reader &fwReader)
     {
         bool resourcesOK = fwReader.confirmResources();
         if (resourcesOK)

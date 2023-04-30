@@ -199,7 +199,7 @@ namespace EigenApi {
         return (char) hexToInt(buf, 2);
     }
 
-    bool EF_Harp::processIHXLine(pic::usbdevice_t *pDevice, int fd) {
+    bool EF_Harp::processIHXLine(pic::usbdevice_t *pDevice, void* fd) {
         bool isEof = false;
         std::string output;
         char startCh; // :
@@ -267,7 +267,7 @@ namespace EigenApi {
 
         if (efd_.fwReader.read(fd, &eol, 1) < 1) throw IHXException("unable process eol");
         if (eol == 0x0d) {
-            if (read(fd, &eol, 1) < 1) throw IHXException("unable process eol 2");
+            if (efd_.fwReader.read(fd, &eol, 1) < 1) throw IHXException("unable process eol 2");
         }
         if (eol != 0x0a) {
             char buf[100];
@@ -282,7 +282,7 @@ namespace EigenApi {
     }
 
     bool EF_Harp::loadFirmware(pic::usbdevice_t *pDevice, std::string ihxFile) {
-        auto fd = efd_.fwReader.getFD();
+        void* fd;
         bool opened = efd_.fwReader.open(ihxFile, IHX_OPENFLAGS, &fd);
         if (!opened) {
             char buf[100];

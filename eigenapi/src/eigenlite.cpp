@@ -12,7 +12,7 @@ namespace EigenApi {
     }
 
     // public interface
-    EigenLite::EigenLite(IFW_Reader<> &fwReader) : fwReader(fwReader), pollTime_(100) {
+    EigenLite::EigenLite(IFW_Reader &fwReader) : fwReader(fwReader), pollTime_(100) {
     }
 
     EigenLite::~EigenLite() {

@@ -15,7 +15,7 @@ namespace EigenApi
 	
     class EigenLite {
     public:
-        EigenLite(IFW_Reader<> &fwReader);
+        EigenLite(IFW_Reader &fwReader);
         virtual ~EigenLite();
 
         void addCallback(Callback* api);
@@ -41,7 +41,7 @@ namespace EigenApi
 
 
         void checkUsbDev();
-        IFW_Reader<> &fwReader;
+        IFW_Reader &fwReader;
 
     private:
         void deviceDead(const char* dev,unsigned reason);
@@ -102,7 +102,7 @@ private:
         // for IHX processing
         static unsigned hexToInt(char* buf, int len);
         static char hexToChar(char* buf);
-        bool processIHXLine(pic::usbdevice_t* pDevice,int fd);
+        bool processIHXLine(pic::usbdevice_t* pDevice,void* fd);
         
 
         class IHXException
@@ -237,20 +237,5 @@ private:
     private:
         void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
         EF_BaseStation& parent_;
-    };
-
-    class FWR_Posix : public EigenApi::IFW_Reader<std::intptr_t> {
-    public:
-        FWR_Posix(const std::string path);
-        bool open(const std::string filename, int oFlags, std::intptr_t *fd);
-        ssize_t read(std::intptr_t pos, void *data, size_t byteCount);
-        void close(std::intptr_t fd);
-        void setPath(const std::string path);
-        std::string getPath();
-        bool confirmResources();
-        std::intptr_t getFD();
-
-    private:
-        std::string path = "./";
     };
 }

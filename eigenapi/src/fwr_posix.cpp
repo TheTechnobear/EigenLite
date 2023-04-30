@@ -7,20 +7,21 @@ namespace EigenApi {
         this->path = fwPath;
     }
 
-    bool FWR_Posix::open(const std::string filename, int oFlags, std::intptr_t *fd)
+    bool FWR_Posix::open(const std::string filename, int oFlags, void* *fd)
     {
-        *fd = ::open((path + filename).c_str(), oFlags);
-        return *fd > -1;
+        int fileDesc = ::open((path + filename).c_str(), oFlags);
+        *fd = (void*)fileDesc;
+        return fileDesc > -1;
     }
 
-    ssize_t FWR_Posix::read(std::intptr_t pos, void *data, size_t byteCount)
+    ssize_t FWR_Posix::read(void* fd, void *data, size_t byteCount)
     {
-        return ::read(pos, data, byteCount);
+        return ::read((std::intptr_t)fd, data, byteCount);
     }
 
-    void FWR_Posix::close(intptr_t fd)
+    void FWR_Posix::close(void* fd)
     {
-        ::close(fd);
+        ::close((std::intptr_t)fd);
     }
 
     void FWR_Posix::setPath(const std::string path)
@@ -42,11 +43,5 @@ namespace EigenApi {
         int psu = ::open((path + PSU_FIRMWARE).c_str(), O_RDONLY);
         ::close(psu);
         return pico > -1 && base > -1 && psu > -1;
-    }
-
-    std::intptr_t FWR_Posix::getFD()
-    {
-        std::intptr_t fd;
-        return fd;
     }
 }

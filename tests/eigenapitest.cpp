@@ -115,7 +115,8 @@ int main(int ac, char **av)
 
     try
     {
-        EigenApi::Eigenharp myD("../../../resources/");
+        EigenApi::FWR_Posix fwr("../../../resources/");
+        EigenApi::Eigenharp myD(fwr);
         myD.setPollTime(100);
         myD.addCallback(new PrinterCallback(myD));
         if(!myD.start())
