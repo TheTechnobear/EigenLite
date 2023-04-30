@@ -21,12 +21,8 @@
 // these are all hardcode in eigend, rather than in alpha2_usb :(
 #define PRODUCT_ID_BSP BCTKBD_USBPRODUCT
 #define PRODUCT_ID_PSU 0x0105
-
 #define BASESTATION_PRE_LOAD 0x0002
-#define BASESTATION_FIRMWARE "bs_mm_fw_0103.ihx"
-
 #define PSU_PRE_LOAD 0x0003
-#define PSU_FIRMWARE "psu_mm_fw_0102.ihx"
 
 namespace EigenApi
 {
@@ -35,8 +31,8 @@ namespace EigenApi
 
 // public interface
 
-EF_BaseStation::EF_BaseStation(EigenLite& efd, const std::string& fwDir) :
-    EF_Harp(efd,fwDir), pLoop_(NULL),isAlpha_(false)
+EF_BaseStation::EF_BaseStation(EigenLite& efd) :
+    EF_Harp(efd), pLoop_(NULL),isAlpha_(false)
 {
 }
 
@@ -187,9 +183,7 @@ bool EF_BaseStation::loadBaseStation()
 		return false;
 	}
 
-    std::string fwfile = firmwareDir();
-    fwfile.append(ihxFile);
-    return loadFirmware(pDevice,fwfile);
+    return loadFirmware(pDevice,ihxFile);
 }
 
 std::string EF_BaseStation::findDevice()

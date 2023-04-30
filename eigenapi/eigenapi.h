@@ -1,4 +1,11 @@
 #pragma once
+#include <string>
+#include <limits>
+
+// Required ihx firmware files
+#define PICO_FIRMWARE "pico.ihx"
+#define BASESTATION_FIRMWARE "bs_mm_fw_0103.ihx"
+#define PSU_FIRMWARE "psu_mm_fw_0102.ihx"
 
 namespace EigenApi
 {
@@ -21,11 +28,25 @@ namespace EigenApi
         virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) {};
         virtual void dead(const char* dev, unsigned reason) {};
     };
-    
+
+    // Firmware reader Interface for providing other implementations than the default Posix
+    template <typename FD = std::intptr_t> class IFW_Reader
+    {
+    public:
+        virtual bool open(std::string filename, int oFlags, FD *fd) = 0;
+        virtual ssize_t read(FD fd, void *data, size_t byteCount) = 0;
+        virtual void close(FD fd) = 0;
+        virtual void setPath(const std::string path) = 0;
+        virtual std::string getPath() = 0;
+        virtual bool confirmResources() = 0;
+        virtual FD getFD() = 0;
+    };
+
     class Eigenharp
     {
     public:
-        Eigenharp(const char* fwDir);
+        explicit Eigenharp(const char* fwDir);
+        explicit Eigenharp(IFW_Reader<> &fwReader);
         virtual ~Eigenharp();
 
         bool start();

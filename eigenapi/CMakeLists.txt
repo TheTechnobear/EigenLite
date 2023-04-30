@@ -60,13 +60,13 @@ elseif(WIN32)
         picross/src/pic_usb_win32.cpp 
         picross/src/pic_winloop.cpp 
         picross/src/pic_tool_win32.cpp
-    )
+            src/fwr_posix.cpp src/fwr_posix.cpp src/fwr_posix.cpp src/fwr_posix.cpp)
 endif(APPLE)
 
 
 include_directories ( . ./picross  ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder )
 
-add_library(eigenapi SHARED ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
+add_library(eigenapi SHARED ${EIGENHARP_SRC} ${EIGENHARP_HDRS} src/fwr_posix.cpp)
 
 target_link_libraries (eigenapi picodecoder)
 

@@ -1,23 +1,32 @@
 #include <eigenapi.h>
 #include "eigenlite_impl.h"
-
-
 #include <picross/pic_log.h>
 
 namespace EigenApi
 {
-    
-    // api just forwards to the EigenLite objects
     Eigenharp::Eigenharp(const char* fwDir)
     {
-        impl=new EigenLite(fwDir);
+        EigenApi::FWR_Posix fwReader(fwDir);
+        bool resourcesOK = fwReader.confirmResources();
+        if (resourcesOK)
+            impl=new EigenLite(fwReader);
+        else
+            throw std::runtime_error("Could not find the ihx firmware files at: \"" + fwReader.getPath() + "\"");
     }
-    
+
+    Eigenharp::Eigenharp(IFW_Reader<> &fwReader)
+    {
+        bool resourcesOK = fwReader.confirmResources();
+        if (resourcesOK)
+            impl=new EigenLite(fwReader);
+        else
+            throw std::runtime_error("Could not find the ihx firmware");
+    }
+
     Eigenharp::~Eigenharp()
     {
         delete static_cast<EigenLite*>(impl);
     }
-    
 
     bool Eigenharp::start()
     {
@@ -54,7 +63,6 @@ namespace EigenApi
         static_cast<EigenLite*>(impl)->setPollTime(pollTime);
     }
 
-
     void Eigenharp::setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour)
     {
         static_cast<EigenLite*>(impl)->setLED(dev,course, key, colour);
@@ -83,7 +91,4 @@ namespace EigenApi
     {
         if(Logger::_logmsg!=NULL) Logger::_logmsg(msg);
     }
-
-    
-    
 } // namespace eigenapi

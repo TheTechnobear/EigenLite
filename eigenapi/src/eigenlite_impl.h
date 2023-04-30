@@ -7,7 +7,7 @@
 #include <memory>
 #include <thread>
 #include <set>
-
+#include <sys/fcntl.h>
 
 namespace EigenApi
 {
@@ -15,7 +15,7 @@ namespace EigenApi
 	
     class EigenLite {
     public:
-        EigenLite(const std::string& fwdir);
+        EigenLite(IFW_Reader<> &fwReader);
         virtual ~EigenLite();
 
         void addCallback(Callback* api);
@@ -41,12 +41,13 @@ namespace EigenApi
 
 
         void checkUsbDev();
+        IFW_Reader<> &fwReader;
+
     private:
         void deviceDead(const char* dev,unsigned reason);
 
         unsigned long long lastPollTime_;
         unsigned pollTime_;
-        std::string fwDir_;
         std::vector<Callback*> callbacks_;
         std::vector<EF_Harp*> devices_;
         std::thread discoverThread_;
@@ -61,7 +62,7 @@ namespace EigenApi
     {
     public:
         
-        EF_Harp(EigenLite& efd, const std::string& fwDir);
+        EF_Harp(EigenLite& efd);
         virtual ~EF_Harp();
         
         const char* name();
@@ -84,9 +85,7 @@ namespace EigenApi
 
         pic::usbdevice_t* usbDevice() { return pDevice_;}
 
-        std::string firmwareDir() { return fwDir_;}
-
-        static bool loadFirmware(pic::usbdevice_t* pDevice,std::string ihxFile);
+        bool loadFirmware(pic::usbdevice_t* pDevice,std::string ihxFile);
         static void logmsg(const char* msg);
 
         EigenLite& efd_;
@@ -103,7 +102,7 @@ private:
         // for IHX processing
         static unsigned hexToInt(char* buf, int len);
         static char hexToChar(char* buf);
-        static bool processIHXLine(pic::usbdevice_t* pDevice,int fd,int line);
+        bool processIHXLine(pic::usbdevice_t* pDevice,int fd);
         
 
         class IHXException
@@ -116,7 +115,6 @@ private:
         };
         
         pic::usbdevice_t* pDevice_;
-        std::string fwDir_;
         unsigned lastBreath_;
         unsigned lastStrip_[2];
         unsigned lastPedal_[4];
@@ -127,7 +125,7 @@ private:
     class EF_Pico : public EF_Harp
     {
     public:
-        EF_Pico(EigenLite& efd, const std::string& fwDir);
+        EF_Pico(EigenLite& efd);
         virtual ~EF_Pico();
         
         bool create() override;
@@ -173,7 +171,7 @@ private:
     class EF_BaseStation : public EF_Harp
     {
     public:
-        EF_BaseStation(EigenLite& efd, const std::string& fwdir);
+        EF_BaseStation(EigenLite& efd);
         virtual ~EF_BaseStation();
 
         bool create() override;
@@ -239,5 +237,20 @@ private:
     private:
         void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
         EF_BaseStation& parent_;
+    };
+
+    class FWR_Posix : public EigenApi::IFW_Reader<std::intptr_t> {
+    public:
+        FWR_Posix(const std::string path);
+        bool open(const std::string filename, int oFlags, std::intptr_t *fd);
+        ssize_t read(std::intptr_t pos, void *data, size_t byteCount);
+        void close(std::intptr_t fd);
+        void setPath(const std::string path);
+        std::string getPath();
+        bool confirmResources();
+        std::intptr_t getFD();
+
+    private:
+        std::string path = "./";
     };
 }

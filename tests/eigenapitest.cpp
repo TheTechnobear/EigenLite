@@ -112,19 +112,27 @@ void makeThreadRealtime(std::thread& thread) {
 int main(int ac, char **av)
 {
     signal(SIGINT, intHandler);
-    EigenApi::Eigenharp myD("./");
-    myD.setPollTime(100);
-    myD.addCallback(new PrinterCallback(myD));
-    if(!myD.start())
+
+    try
     {
-		std::cout  << "unable to start EigenLite";
-		return -1;
+        EigenApi::Eigenharp myD("../../../resources/");
+        myD.setPollTime(100);
+        myD.addCallback(new PrinterCallback(myD));
+        if(!myD.start())
+        {
+            std::cout  << "unable to start EigenLite";
+            return -1;
+        }
+
+        std::thread t=std::thread(process, &myD);
+        t.join();
+
+        myD.stop();
+        return 0;
     }
-
-    std::thread t=std::thread(process, &myD);
-//    makeThreadRealtime(t);
-    t.join();
-
-    myD.stop();
-    return 0;
+    catch (const std::runtime_error e)
+    {
+        std::cout << e.what() << std::endl;
+        return -1;
+    }
 }
