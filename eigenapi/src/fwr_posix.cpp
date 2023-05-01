@@ -9,7 +9,7 @@ namespace EigenApi {
 
     bool FWR_Posix::open(const std::string filename, int oFlags, void* *fd)
     {
-        int fileDesc = ::open((path + filename).c_str(), oFlags);
+        std::intptr_t fileDesc = ::open((path + filename).c_str(), oFlags);
         *fd = (void*)fileDesc;
         return fileDesc > -1;
     }

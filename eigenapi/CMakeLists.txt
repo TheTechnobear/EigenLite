@@ -41,6 +41,7 @@ set(EIGENHARP_SRC
     src/ef_tau.cpp
     src/ef_pico.cpp
     src/eigenapi.cpp
+    src/fwr_posix.cpp
 )
 if(APPLE) 
 set(EIGENHARP_SRC ${EIGENHARP_SRC} 
@@ -59,14 +60,13 @@ elseif(WIN32)
         picross/src/pic_thread_win32.cpp
         picross/src/pic_usb_win32.cpp 
         picross/src/pic_winloop.cpp 
-        picross/src/pic_tool_win32.cpp
-            src/fwr_posix.cpp src/fwr_posix.cpp src/fwr_posix.cpp src/fwr_posix.cpp)
+        picross/src/pic_tool_win32.cpp)
 endif(APPLE)
 
 
 include_directories ( . ./picross  ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder )
 
-add_library(eigenapi SHARED ${EIGENHARP_SRC} ${EIGENHARP_HDRS} src/fwr_posix.cpp)
+add_library( eigenapi STATIC ${EIGENHARP_SRC} src/eigenapi.cpp )
 
 target_link_libraries (eigenapi picodecoder)
 
