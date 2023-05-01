@@ -6,11 +6,7 @@ namespace EigenApi
 {
     Eigenharp::Eigenharp(IFW_Reader &fwReader)
     {
-        bool resourcesOK = fwReader.confirmResources();
-        if (resourcesOK)
-            impl=new EigenLite(fwReader);
-        else
-            throw std::runtime_error("Could not find the ihx firmware");
+        impl=new EigenLite(fwReader);
     }
 
     Eigenharp::~Eigenharp()

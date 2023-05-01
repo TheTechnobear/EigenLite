@@ -113,27 +113,31 @@ int main(int ac, char **av)
 {
     signal(SIGINT, intHandler);
 
-    try
-    {
-        EigenApi::FWR_Posix fwr("../../../resources/");
-        EigenApi::Eigenharp myD(fwr);
-        myD.setPollTime(100);
-        myD.addCallback(new PrinterCallback(myD));
-        if(!myD.start())
-        {
-            std::cout  << "unable to start EigenLite";
-            return -1;
-        }
-
-        std::thread t=std::thread(process, &myD);
-        t.join();
-
-        myD.stop();
-        return 0;
+    EigenApi::FWR_Posix fwr("../../../resources/");
+    std::cout << "Looking for the ihx files at: \"" << fwr.getPath() << "\"..." << std::endl;
+    bool ihxFilesFound = fwr.confirmResources();
+    if (!ihxFilesFound) {
+        fwr.setPath("./");
+        std::cout << "Looking for the ihx files at: \"" << fwr.getPath() << "\"..." << std::endl;
+        ihxFilesFound = fwr.confirmResources();
     }
-    catch (const std::runtime_error e)
-    {
-        std::cout << e.what() << std::endl;
+    if (!ihxFilesFound) {
+        std::cout << "Could not find the ihx firmware files." << std::endl;
         return -1;
     }
+
+    EigenApi::Eigenharp myD(fwr);
+    myD.setPollTime(100);
+    myD.addCallback(new PrinterCallback(myD));
+    if(!myD.start())
+    {
+        std::cout  << "unable to start EigenLite";
+        return -1;
+    }
+
+    std::thread t=std::thread(process, &myD);
+    t.join();
+
+    myD.stop();
+    return 0;
 }

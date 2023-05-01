@@ -36,8 +36,6 @@ namespace EigenApi
         virtual bool open(std::string filename, int oFlags, void* *fd) = 0;
         virtual ssize_t read(void* fd, void *data, size_t byteCount) = 0;
         virtual void close(void* fd) = 0;
-        virtual void setPath(const std::string path) = 0;
-        virtual std::string getPath() = 0;
         virtual bool confirmResources() = 0;
     };
 
@@ -46,12 +44,12 @@ namespace EigenApi
     {
     public:
         FWR_Posix(const std::string path);
-        bool open(const std::string filename, int oFlags, void* *fd);
-        ssize_t read(void* fd, void *data, size_t byteCount);
-        void close(void* fd);
+        bool open(const std::string filename, int oFlags, void* *fd) override;
+        ssize_t read(void* fd, void *data, size_t byteCount) override;
+        void close(void* fd) override;
+        bool confirmResources() override;
         void setPath(const std::string path);
         std::string getPath();
-        bool confirmResources();
 
     private:
         std::string path = "./";
