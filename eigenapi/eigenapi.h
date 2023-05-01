@@ -17,7 +17,7 @@ namespace EigenApi
     		TAU,
     		ALPHA
     	};
-    	virtual ~Callback() {};
+    	virtual ~Callback() = default;
     	
         virtual void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals) {};
         virtual void disconnect(const char* dev, DeviceType dt) {};
@@ -33,6 +33,7 @@ namespace EigenApi
     class IFW_Reader
     {
     public:
+        virtual ~IFW_Reader() = default;
         virtual bool open(std::string filename, int oFlags, void* *fd) = 0;
         virtual ssize_t read(void* fd, void *data, size_t byteCount) = 0;
         virtual void close(void* fd) = 0;
@@ -43,12 +44,12 @@ namespace EigenApi
     class FWR_Posix : public EigenApi::IFW_Reader
     {
     public:
-        FWR_Posix(const std::string path);
-        bool open(const std::string filename, int oFlags, void* *fd) override;
+        explicit FWR_Posix(std::string path);
+        bool open(std::string filename, int oFlags, void* *fd) override;
         ssize_t read(void* fd, void *data, size_t byteCount) override;
         void close(void* fd) override;
         bool confirmResources() override;
-        void setPath(const std::string path);
+        void setPath(std::string path);
         std::string getPath();
 
     private:
@@ -59,7 +60,7 @@ namespace EigenApi
     class Eigenharp
     {
     public:
-        Eigenharp(IFW_Reader &fwReader);
+        explicit Eigenharp(IFW_Reader &fwReader);
         virtual ~Eigenharp();
 
         bool start();
