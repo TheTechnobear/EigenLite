@@ -1,4 +1,4 @@
-project (eigenapi)
+project (eigenapi_ec)
 
 if(APPLE)
     #temporary, so I can see 'real' errors
@@ -65,25 +65,25 @@ endif(APPLE)
 
 
 include_directories ( . ./picross  ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder )
+add_library( eigenapi_ec STATIC ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
+#add_library(eigenapi_ec SHARED ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
 
-add_library( eigenapi STATIC ${EIGENHARP_SRC} src/eigenapi.cpp )
+target_link_libraries (eigenapi_ec picodecoder)
 
-target_link_libraries (eigenapi picodecoder)
-
-target_include_directories(eigenapi PUBLIC
+target_include_directories(eigenapi_ec PUBLIC
         .
         )
 
 
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-  target_link_libraries(eigenapi atomic)
+  target_link_libraries(eigenapi_ec atomic)
 endif()
 
 if(APPLE)
-    target_link_libraries(eigenapi "-framework Cocoa  -framework IOKit -framework CoreAudio")
+    target_link_libraries(eigenapi_ec "-framework Cocoa  -framework IOKit -framework CoreAudio")
 elseif(UNIX) 
-    target_link_libraries(eigenapi  "libusb" "pthread")
+    target_link_libraries(eigenapi_ec  "libusb" "pthread")
 endif(APPLE)
 
 
