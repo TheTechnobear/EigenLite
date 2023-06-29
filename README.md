@@ -1,11 +1,4 @@
-# EigenLite
-A lightweight interface for the Eigenharp.
-
-# Usage
-This is a developer API, 
-if you are looking for an application look at my project called MEC
-or for Bela look at my BelaPatches project
-
-
-# Status
-Under development
+# EigenLite EC
+This is a fork of TheTechnobear´s [EigenLite](https://github.com/TheTechnobear/EigenLite) 
+with some adaptions intended specifically for [ECMapper](https://github.com/KaiDrange/ECMapper).
+If you intend to use EigenLite for any project the original repository is the one to use.

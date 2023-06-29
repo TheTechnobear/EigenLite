@@ -18,7 +18,6 @@
 // these are all hardcode in eigend, rather than in pico_ubs :(
 
 #define PICO_PRE_LOAD 0x0001
-#define PICO_FIRMWARE "pico.ihx"
 
 #define PRODUCT_ID_PICO BCTPICO_USBPRODUCT
 
@@ -28,220 +27,186 @@
 
 #define PICO_MAINKEYS 18
 
-namespace EigenApi
-{
+namespace EigenApi {
 
 // public interface
-
-EF_Pico::EF_Pico(EigenLite& efd, const std::string& fwDir) : EF_Harp(efd, fwDir), pLoop_(NULL), delegate_(*this)
-{
-}
-
-EF_Pico::~EF_Pico()
-{
-}
-
-bool EF_Pico::create()
-{
-    logmsg("create eigenharp pico");
-    if (!EF_Harp::create()) return false;
-    
-    try {
-        logmsg("close device to allow active_t to open");
-        usbDevice()->detach();
-        usbDevice()->close();
-        logmsg("create pico loop");
-        pLoop_ = new pico::active_t(usbDevice()->name(), &delegate_);
-        pLoop_->load_calibration_from_device();
-        logmsg("created pico loop");
-
-    } catch (pic::error& e) {
-        // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
-        // logmsg(e.what());
-        return false;
+    EF_Pico::EF_Pico(EigenLite &efd) : EF_Harp(efd), pLoop_(NULL), delegate_(*this) {
     }
 
-    return true;
-}
-
-bool EF_Pico::destroy()
-{
-    logmsg("destroy pico....");
-    EF_Pico::stop();
-    {
-        delete pLoop_;
-        pLoop_=NULL;
+    EF_Pico::~EF_Pico() {
     }
-    logmsg("destroyed pico");
-    return EF_Harp::destroy();
-}
+
+    bool EF_Pico::create() {
+        logmsg("create eigenharp pico");
+        if (!EF_Harp::create()) return false;
+
+        try {
+            logmsg("close device to allow active_t to open");
+            usbDevice()->detach();
+            usbDevice()->close();
+            logmsg("create pico loop");
+            pLoop_ = new pico::active_t(usbDevice()->name(), &delegate_);
+            pLoop_->load_calibration_from_device();
+            logmsg("created pico loop");
+
+        } catch (pic::error &e) {
+            // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
+            // logmsg(e.what());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool EF_Pico::destroy() {
+        logmsg("destroy pico....");
+        EF_Pico::stop();
+        {
+            delete pLoop_;
+            pLoop_ = NULL;
+        }
+        logmsg("destroyed pico");
+        efd_.fireDisconnectEvent(usbDevice()->name(), Callback::DeviceType::PICO);
+        return EF_Harp::destroy();
+    }
 
 
-bool EF_Pico::start()
-{
-    if (!EF_Harp::start()) return false;
+    bool EF_Pico::start() {
+        if (!EF_Harp::start()) return false;
 
-    if(pLoop_==NULL) return false;
-    pLoop_->start();
-    logmsg("started loop");
-    efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 9, 2, 1, 0);
-    return true;
-}
+        if (pLoop_ == NULL) return false;
+        pLoop_->start();
+        logmsg("started loop");
+        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 9, 2, 1, 0);
+        return true;
+    }
 
-bool EF_Pico::stop()
-{
-    if(pLoop_==NULL) return false;
+    bool EF_Pico::stop() {
+        if (pLoop_ == NULL) return false;
 //    pLoop_->stop(); //?? 
 //    logmsg("stopped loop");
-    
-    return EF_Harp::stop();
-}
-    
-void EF_Pico::restartKeyboard()
-{
-    if(pLoop_!=NULL)
-    {
-        logmsg("restarting pico keyboard....");
-    }
-}
-    
-void  EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
-{
-    if (course > 0) {
-        if (lastMode_[key] == p) return;
-        lastMode_[key] = p;
-    }
-    
-    EF_Harp::fireKeyEvent(t, course, key, a, p, r, y);
-}
-    
 
-bool EF_Pico::poll(long long t)
-{
-    if (!EF_Harp::poll(t)) return false;
-    pLoop_->poll(t);
-    // pLoop_->msg_flush();
-    return true;
-}
-
-void EF_Pico::setLED(unsigned course, unsigned int key,unsigned int colour)
-{
-    if(pLoop_==NULL) return;
-    unsigned keynum = course * PICO_MAINKEYS + key;
-    pLoop_->set_led(keynum, colour);
-}
-
-bool EF_Pico::loadPicoFirmware()
-{
-    std::string ihxFile;
-    
-	std::string usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PICO_PRE_LOAD,false).c_str();
-	if(usbdev.size()==0)
-	{
-        pic::logmsg() << "no pico connected/powered on?";
-        return false;
-	}
-    else
-    {
-        ihxFile = PICO_FIRMWARE;
+        return EF_Harp::stop();
     }
 
-    pic::usbdevice_t* pDevice;
-	try
-	{
-		pDevice=new pic::usbdevice_t(usbdev.c_str(),0);
+    void EF_Pico::restartKeyboard() {
+        if (pLoop_ != NULL) {
+            logmsg("restarting pico keyboard....");
+        }
+    }
+
+    void EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {
+        if (course > 0) {
+            if (lastMode_[key] == p) return;
+            lastMode_[key] = p;
+        }
+
+        EF_Harp::fireKeyEvent(t, course, key, a, p, r, y);
+    }
+
+
+    bool EF_Pico::poll(long long t) {
+        if (!EF_Harp::poll(t)) return false;
+        pLoop_->poll(t);
+        // pLoop_->msg_flush();
+        return true;
+    }
+
+    void EF_Pico::setLED(unsigned course, unsigned int key, unsigned int colour) {
+        if (pLoop_ == NULL) return;
+        unsigned keynum = course * PICO_MAINKEYS + key;
+        pLoop_->set_led(keynum, colour);
+    }
+
+    bool EF_Pico::loadPicoFirmware() {
+        std::string ihxFile;
+
+        std::string usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PICO_PRE_LOAD, false).c_str();
+        if (usbdev.size() == 0) {
+            pic::logmsg() << "no pico connected/powered on?";
+            return false;
+        } else {
+            ihxFile = PICO_FIRMWARE;
+        }
+
+        pic::usbdevice_t *pDevice;
+        try {
+            pDevice = new pic::usbdevice_t(usbdev.c_str(), 0);
 //		pDevice->set_power_delegate(0);
-	}
-	catch(std::exception & e)
-	{
-		char buf[100];
-		sprintf(buf,"unable to open device: %s ", e.what());
-    	logmsg(buf);
-		return false;
-	}
-    std::string fwfile = firmwareDir();
-    fwfile.append(ihxFile);
-    return loadFirmware(pDevice,fwfile);
-}
+        }
+        catch (std::exception &e) {
+            char buf[1024];
+            sprintf(buf, "unable to open device: %s ", e.what());
+            logmsg(buf);
+            return false;
+        }
+        return loadFirmware(pDevice, ihxFile);
+    }
 
-std::string EF_Pico::findDevice()
-{
-    std::string usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PRODUCT_ID_PICO,false).c_str();
-    
-	if(usbdev.size()==0)
-	{
-		logmsg("pico loading firmware...");
-		if(loadPicoFirmware())
-		{
-			logmsg("pico firmware loaded");
-            
-			for (int i=0;i<10 && usbdev.size()==0 ;i++)
-			{
-				logmsg("attempting to find pico...");
-                
-                // can take a few seconds for pico to reregister itself
-                usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PRODUCT_ID_PICO,false).c_str();
-                    
-				pic_microsleep(1000000);
-			}
-            char buf[100];
-            sprintf(buf,"pico loaded dev: %s ", usbdev.c_str());
-			logmsg(buf);
-		}
-		else
-		{
-			logmsg("error loading pico");
-		}
-	}
-	return usbdev;
-}
+    std::string EF_Pico::findDevice() {
+        std::string usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PRODUCT_ID_PICO, false).c_str();
 
-bool EF_Pico::isAvailable()
-{
-    return EF_Pico::availableDevice().size() > 0;
-}
+        if (usbdev.size() == 0) {
+            logmsg("pico loading firmware...");
+            if (loadPicoFirmware()) {
+                logmsg("pico firmware loaded");
+
+                for (int i = 0; i < 10 && usbdev.size() == 0; i++) {
+                    logmsg("attempting to find pico...");
+
+                    // can take a few seconds for pico to reregister itself
+                    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PRODUCT_ID_PICO, false).c_str();
+
+                    pic_microsleep(1000000);
+                }
+                char buf[100];
+                sprintf(buf, "pico loaded dev: %s ", usbdev.c_str());
+                logmsg(buf);
+            } else {
+                logmsg("error loading pico");
+            }
+        }
+        return usbdev;
+    }
+
+    bool EF_Pico::isAvailable() {
+        return EF_Pico::availableDevice().size() > 0;
+    }
 
 
-std::string EF_Pico::availableDevice()
-{
-    std::string usbdev;
-    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PICO_PRE_LOAD,false).c_str();
-    if(usbdev.size()>0) return usbdev;
-    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR,PRODUCT_ID_PICO,false).c_str();
-    if(usbdev.size()>0) return usbdev;
-    return "";
-}
+    std::string EF_Pico::availableDevice() {
+        std::string usbdev;
+        usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PICO_PRE_LOAD, false).c_str();
+        if (usbdev.size() > 0) return usbdev;
+        usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PRODUCT_ID_PICO, false).c_str();
+        if (usbdev.size() > 0) return usbdev;
+        return "";
+    }
 
 //PicoDelegate
-void EF_Pico::Delegate::kbd_dead(unsigned reason)
-{
-    parent_.fireDeadEvent(reason);
-    if(!parent_.stopping()) parent_.restartKeyboard();
-}
-    
-void EF_Pico::Delegate::kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y)
-{
-	parent_.fireKeyEvent(t,0,key,a,p,r,y);
-}
+    void EF_Pico::Delegate::kbd_dead(unsigned reason) {
+        parent_.fireDeadEvent(reason);
+        if (!parent_.stopping()) parent_.restartKeyboard();
+    }
 
-void EF_Pico::Delegate::kbd_raw(bool resync,const pico::active_t::rawkbd_t &)
-{
-}
+    void EF_Pico::Delegate::kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y) {
+        parent_.fireKeyEvent(t, 0, key, a, p, r, y);
+    }
 
-    
-void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s)
-{
-        if(--s_count_ != 0)
-        {
+    void EF_Pico::Delegate::kbd_raw(bool resync, const pico::active_t::rawkbd_t &) {
+    }
+
+
+    void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
+        if (--s_count_ != 0) {
             return;
         }
 
         s_count_ = 20;
 
-        switch(s_state_)
-        {
+        switch (s_state_) {
             case 0:
-                if(s<s_threshold_)
+                if (s < s_threshold_)
                     break;
 
                 //pic::logmsg() << "strip starting: " << s;
@@ -250,12 +215,9 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s)
                 break;
 
             case 1:
-                if(s<s_threshold_)
-                {
+                if (s < s_threshold_) {
                     s_state_ = 0;
-                }
-                else
-                {
+                } else {
                     //pic::logmsg() << "strip origin: " << s;
                     s_state_ = 2;
                     // origin_ = s;
@@ -279,41 +241,35 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s)
                 //     break;
                 // }
 
-                if(std::abs(long(s-s_last_))<200 && s>s_threshold_)
-                {
-                    parent_.fireStripEvent(t,1,s,s_state_ != 3);
+                if (std::abs(long(s - s_last_)) < 200 && s > s_threshold_) {
+                    parent_.fireStripEvent(t, 1, s, s_state_ != 3);
                 }
                 s_state_ = 3;
                 s_count_ = 80;
                 break;
 
             case 3:
-                if(s<s_threshold_)
-                {
+                if (s < s_threshold_) {
                     //pic::logmsg() << "strip ending";
-                    parent_.fireStripEvent(t,1,2048,s_state_ != 3);
+                    parent_.fireStripEvent(t, 1, 2048, s_state_ != 3);
                     s_state_ = 0;
-                }
-                else
-                {
+                } else {
                     s_state_ = 2;
                 }
                 break;
         }
 
         s_last_ = s;
-}
+    }
 
-    
-void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned b)
-{
-    parent_.fireBreathEvent(t,b);
-}
 
-void EF_Pico::Delegate::kbd_mode(unsigned long long t, unsigned key, unsigned m)
-{
-    parent_.fireKeyEvent(t,1,key - PICO_MAINKEYS,m > 0,m,0,0);
-}
-    
+    void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned b) {
+        parent_.fireBreathEvent(t, b);
+    }
+
+    void EF_Pico::Delegate::kbd_mode(unsigned long long t, unsigned key, unsigned m) {
+        parent_.fireKeyEvent(t, 1, key - PICO_MAINKEYS, m > 0, m, 0, 0);
+    }
+
 } // namespace EigenApi
 

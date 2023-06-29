@@ -23,7 +23,12 @@ public:
             default: maxLeds_ = 0;
         }
     }
-    
+
+    virtual void disconnect(const char* dev, DeviceType dt)
+    {
+        std::cout << "disconnect " << dev << " (" << dt << ") " << std::endl;
+    }
+
     virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
     {
         std::cout  << "key " << dev << " @ " << t << " - " << course << ":" << key << ' ' << a << ' ' << p << ' ' << r << ' ' << y << std::endl;
@@ -107,17 +112,30 @@ void makeThreadRealtime(std::thread& thread) {
 int main(int ac, char **av)
 {
     signal(SIGINT, intHandler);
-    EigenApi::Eigenharp myD("./");
+
+    EigenApi::FWR_Posix fwr("../../../resources/");
+    std::cout << "Looking for the ihx files at: \"" << fwr.getPath() << "\"..." << std::endl;
+    bool ihxFilesFound = fwr.confirmResources();
+    if (!ihxFilesFound) {
+        fwr.setPath("./");
+        std::cout << "Looking for the ihx files at: \"" << fwr.getPath() << "\"..." << std::endl;
+        ihxFilesFound = fwr.confirmResources();
+    }
+    if (!ihxFilesFound) {
+        std::cout << "Could not find the ihx firmware files." << std::endl;
+        return -1;
+    }
+
+    EigenApi::Eigenharp myD(fwr);
     myD.setPollTime(100);
     myD.addCallback(new PrinterCallback(myD));
     if(!myD.start())
     {
-		std::cout  << "unable to start EigenLite";
-		return -1;
+        std::cout  << "unable to start EigenLite";
+        return -1;
     }
 
     std::thread t=std::thread(process, &myD);
-//    makeThreadRealtime(t);
     t.join();
 
     myD.stop();
