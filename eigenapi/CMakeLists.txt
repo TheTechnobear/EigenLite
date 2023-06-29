@@ -1,21 +1,26 @@
 project (eigenapi)
 
-if(APPLE)
+
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     #temporary, so I can see 'real' errors
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
-elseif(UNIX) 
-endif(APPLE) 
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+endif()
 
-if(APPLE)
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     #add_definitions(-D ML_USE_SSE)
     add_definitions(-D __MACOSX_CORE__)
-elseif(UNIX)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
         add_definitions(-D ML_USE_NEON)
     else()
         add_definitions(-D ML_USE_SSE)
     endif ()
-endif(APPLE)
+endif()
 
 file (GLOB_RECURSE EIGENHARP_HDRS "*/*.h" )
 
@@ -43,14 +48,15 @@ set(EIGENHARP_SRC
     src/eigenapi.cpp
     src/fwr_posix.cpp
 )
-if(APPLE) 
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
 set(EIGENHARP_SRC ${EIGENHARP_SRC} 
     picross/src/pic_thread_posix.cpp 
     picross/src/pic_cfrunloop.cpp 
     picross/src/pic_usb_macosx.cpp 
     picross/src/pic_tool_macosx.cpp
     picross/src/pic_power_macosx.mm)
-elseif(UNIX) 
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(EIGENHARP_SRC ${EIGENHARP_SRC} 
         picross/src/pic_thread_posix.cpp 
         picross/src/pic_usb_linux.cpp 
@@ -61,7 +67,7 @@ elseif(WIN32)
         picross/src/pic_usb_win32.cpp 
         picross/src/pic_winloop.cpp 
         picross/src/pic_tool_win32.cpp)
-endif(APPLE)
+endif()
 
 
 include_directories ( . ./picross  ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder )
@@ -80,11 +86,11 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   target_link_libraries(eigenapi atomic)
 endif()
 
-if(APPLE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     target_link_libraries(eigenapi "-framework Cocoa  -framework IOKit -framework CoreAudio")
-elseif(UNIX) 
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(eigenapi  "libusb" "pthread")
-endif(APPLE)
+endif()
 
 
 add_subdirectory(tests)
