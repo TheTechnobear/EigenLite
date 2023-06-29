@@ -135,7 +135,7 @@ namespace EigenApi {
 //		pDevice->set_power_delegate(0);
         }
         catch (std::exception &e) {
-            char buf[100];
+            char buf[1024];
             sprintf(buf, "unable to open device: %s ", e.what());
             logmsg(buf);
             return false;

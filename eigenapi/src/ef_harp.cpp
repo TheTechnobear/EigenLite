@@ -303,7 +303,7 @@ namespace EigenApi {
             runFirmware(pDevice);
         }
         catch (IHXException &e) {
-            char buf[100];
+            char buf[1024];
             sprintf(buf, "error processing IHX firmware: %s, %i ", e.reason().c_str(), line);
             logmsg(buf);
             return false;
