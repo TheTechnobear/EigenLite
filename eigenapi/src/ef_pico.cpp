@@ -241,7 +241,7 @@ namespace EigenApi {
                 //     break;
                 // }
 
-                if (std::abs(long(s - s_last_)) < 200 && s > s_threshold_) {
+                if (std::abs(long(s) - s_last_) < 200 && s > s_threshold_) {
                     parent_.fireStripEvent(t, 1, s, s_state_ != 3);
                 }
                 s_state_ = 3;
