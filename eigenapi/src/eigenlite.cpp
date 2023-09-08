@@ -4,7 +4,7 @@
 #include <picross/pic_log.h>
 #include <string.h>
 
-#define VERSION_STRING "eigenlite v0.5 Alpha/Tau/Pico, experimental - Author: TheTechnobear"
+#define VERSION_STRING "eigenlite v0.6 Alpha/Tau/Pico, experimental - Author: TheTechnobear"
 
 namespace EigenApi {
     void EigenLite::logmsg(const char *msg) {
