@@ -1,7 +1,3 @@
-set(BUILDAPI_TEST 1)
-if(BUILDAPI_TEST)
-
-
 set(PICODECODER_DIR "${CMAKE_SOURCE_DIR}/resources/picodecoder")
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     set(PICODECODER_DIR "${PICODECODER_DIR}/macOs/${CMAKE_HOST_SYSTEM_PROCESSOR}")
@@ -37,4 +33,3 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(eigenapitest  "libusb" "dl" "pthread")
 endif()
 
-endif(BUILDAPI_TEST)

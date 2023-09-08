@@ -82,10 +82,6 @@ endif()
 include_directories ( . ./picross  ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder )
 
 add_library( eigenapi STATIC ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
-# if(USE_DYNAMIC)
-#     target_link_libraries (eigenapi picodecoder)
-# else(USE_DYNAMIC)
-# endif(USE_DYNAMIC)
 
 target_include_directories(eigenapi PUBLIC
         .
