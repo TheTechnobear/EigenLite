@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5.0)
+
+# USE_DUMMY_PICO - if you do not want to use prebuilt binaries (advanced use only), implies dynamic!
+# USE_DYNAMIC - use shared libraries for pico decoder
+
 
 project(eigenlite)
-
 
 if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
   if (NOT CMAKE_BUILD_TYPE)
@@ -118,6 +121,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/bin)
 if(NOT DISABLE_LIBUSB)
 add_subdirectory(external/libusb libusb)
 endif()
+
+
 
 add_subdirectory(eigenapi)
 add_subdirectory(tests)

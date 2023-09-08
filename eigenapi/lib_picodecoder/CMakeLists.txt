@@ -6,10 +6,6 @@ add_library(picodecoder_static STATIC pico_decoder.c)
 
 set_target_properties(picodecoder_static  PROPERTIES PUBLIC_HEADER pico_decoder.h)
 
-INSTALL(TARGETS picodecoder_static 
-        LIBRARY DESTINATION lib
-        PUBLIC_HEADER DESTINATION inc
-)
 
 ###################################################### 
 

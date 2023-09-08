@@ -109,11 +109,15 @@ void makeThreadRealtime(std::thread& thread) {
 
 }
 
+#define USE_EMBEDDED_FWR 1
 int main(int ac, char **av)
 {
     signal(SIGINT, intHandler);
 
-    EigenApi::FWR_Posix fwr("../../../resources/");
+#if USE_EMBEDDED_FWR
+    EigenApi::FWR_Embedded fwr;
+#else
+    // EigenApi::FWR_Posix fwr("./resources/firmware/ihx/");
     std::cout << "Looking for the ihx files at: \"" << fwr.getPath() << "\"..." << std::endl;
     bool ihxFilesFound = fwr.confirmResources();
     if (!ihxFilesFound) {
@@ -125,6 +129,7 @@ int main(int ac, char **av)
         std::cout << "Could not find the ihx firmware files." << std::endl;
         return -1;
     }
+#endif
 
     EigenApi::Eigenharp myD(fwr);
     myD.setPollTime(100);

@@ -117,13 +117,13 @@ namespace EigenApi {
             EF_Harp *pDevice = nullptr;
             if (newPico) {
                 char logbuf[100];
-                sprintf(logbuf, "new pico %s", picoUSBDev_.c_str());
+                snprintf(logbuf, 100, "new pico %s", picoUSBDev_.c_str());
                 logmsg(logbuf);
 
                 pDevice = new EF_Pico(*this);
                 if (pDevice->create()) {
                     char logbuf[100];
-                    sprintf(logbuf, "created pico %s", pDevice->usbDevice()->name());
+                    snprintf(logbuf, 100, "created pico %s", pDevice->usbDevice()->name());
                     logmsg(logbuf);
                     devices_.push_back(pDevice);
                     pDevice->start();
@@ -131,7 +131,7 @@ namespace EigenApi {
             }
             if (newBase) {
                 char logbuf[100];
-                sprintf(logbuf, "new base %s", baseUSBDev_.c_str());
+                snprintf(logbuf, 100, "new base %s", baseUSBDev_.c_str());
                 logmsg(logbuf);
 
                 pDevice = new EF_BaseStation(*this);
@@ -154,7 +154,7 @@ namespace EigenApi {
                 EF_Harp *pDevice = *iter;
                 if (pDevice->name() == usbname) {
                     char logbuf[100];
-                    sprintf(logbuf, "destroy device %s", usbname.c_str());
+                    snprintf(logbuf, 100, "destroy device %s", usbname.c_str());
                     logmsg(logbuf);
                     pDevice->destroy();
                     found = true;

@@ -175,7 +175,7 @@ namespace EigenApi {
 
             default: {
                 char buf[100];
-                sprintf(buf, "invalid record type:  %x", recType);
+                snprintf(buf, 100,"invalid record type:  %x", recType);
                 throw IHXException(buf);
             }
         }
@@ -220,7 +220,7 @@ namespace EigenApi {
         if (efd_.fwReader.read(fd, &startCh, 1) < 1) throw IHXException("unable process to start code (:)");
         if (startCh != ':') {
             char buf[100];
-            sprintf(buf, "invalid start code (:) got  %x", startCh);
+            snprintf(buf, 100, "invalid start code (:) got  %x", startCh);
             throw IHXException(buf);
         }
         if (efd_.fwReader.read(fd, &hexByteCount, 2) < 2) throw IHXException("unable process to byteCount");
@@ -261,7 +261,7 @@ namespace EigenApi {
         unsigned char checkdigit = !isEof ? (~checksum) + 1 : 0xFF;
         if (expectedChecksum != checkdigit) {
             char buf[100];
-            sprintf(buf, "invalid checksum expected:%x, got %x, sum was %x", expectedChecksum, checkdigit, checksum);
+            snprintf(buf,100, "invalid checksum expected:%x, got %x, sum was %x", expectedChecksum, checkdigit, checksum);
             throw IHXException(buf);
         }
 
@@ -271,7 +271,7 @@ namespace EigenApi {
         }
         if (eol != 0x0a) {
             char buf[100];
-            sprintf(buf, "invalid eol (0x0a) got:%x", eol);
+            snprintf(buf, 100,"invalid eol (0x0a) got:%x", eol);
             throw IHXException(buf);
         }
         sendFirmware(pDevice, recType, address, byteCount, data);
@@ -286,7 +286,7 @@ namespace EigenApi {
         bool opened = efd_.fwReader.open(ihxFile, IHX_OPENFLAGS, &fd);
         if (!opened) {
             char buf[100];
-            sprintf(buf, "default ihx, unable to open IHX firmware: %s\n", ihxFile.c_str());
+            snprintf(buf, 100, "default ihx, unable to open IHX firmware: %s\n", ihxFile.c_str());
             logmsg(buf);
             return false;
         }
@@ -304,7 +304,7 @@ namespace EigenApi {
         }
         catch (IHXException &e) {
             char buf[1024];
-            sprintf(buf, "error processing IHX firmware: %s, %i ", e.reason().c_str(), line);
+            snprintf(buf, 1024, "error processing IHX firmware: %s, %i ", e.reason().c_str(), line);
             logmsg(buf);
             return false;
         }

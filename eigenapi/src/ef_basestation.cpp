@@ -178,7 +178,7 @@ bool EF_BaseStation::loadBaseStation()
 	catch(std::exception & e)
 	{
 		char buf[1024];
-		sprintf(buf,"unable to open device: %s ", e.what());
+		snprintf(buf,1024,"unable to open device: %s ", e.what());
     	logmsg(buf);
 		return false;
 	}
@@ -209,7 +209,7 @@ std::string EF_BaseStation::findDevice()
 				pic_microsleep(1000000);
 			}
             char buf[1024];
-            sprintf(buf,"basestation loaded dev: %s ", usbdev.c_str());
+            snprintf(buf,1024, "basestation loaded dev: %s ", usbdev.c_str());
 			logmsg(buf);
 		}
 		else

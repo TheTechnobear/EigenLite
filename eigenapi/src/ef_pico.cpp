@@ -136,7 +136,7 @@ namespace EigenApi {
         }
         catch (std::exception &e) {
             char buf[1024];
-            sprintf(buf, "unable to open device: %s ", e.what());
+            snprintf(buf, 1024, "unable to open device: %s ", e.what());
             logmsg(buf);
             return false;
         }
@@ -160,7 +160,7 @@ namespace EigenApi {
                     pic_microsleep(1000000);
                 }
                 char buf[100];
-                sprintf(buf, "pico loaded dev: %s ", usbdev.c_str());
+                snprintf(buf, 100,"pico loaded dev: %s ", usbdev.c_str());
                 logmsg(buf);
             } else {
                 logmsg("error loading pico");

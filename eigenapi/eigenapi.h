@@ -56,6 +56,19 @@ namespace EigenApi
         std::string path = "./";
     };
 
+    class FWR_Embedded : public EigenApi::IFW_Reader
+    {
+    public:
+        explicit FWR_Embedded();
+        bool open(std::string deviceihx, int oFlags, void* *fd) override;
+        ssize_t read(void* fd, void *data, size_t byteCount) override;
+        void close(void* fd) override;
+        bool confirmResources() override;
+    private:
+        long position_=0;
+        unsigned maxLen_=0;
+    };
+
 
     class Eigenharp
     {

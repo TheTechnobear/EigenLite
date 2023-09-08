@@ -1,7 +1,7 @@
 project (eigenapi)
 
-
-
+# USE_DUMMY_PICO - if you do not want to use prebuilt binaries (advanced use only), implies dynamic!
+# USE_DYNAMIC - use shared libraries for pico decoder
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     #temporary, so I can see 'real' errors
@@ -49,6 +49,15 @@ set(EIGENHARP_SRC
     src/fwr_posix.cpp
 )
 
+set(EMB_FW_SRC_DIR "${CMAKE_SOURCE_DIR}/resources/firmware/cpp")
+
+set(EIGENHARP_SRC ${EIGENHARP_SRC} 
+    src/fwr_embedded.cpp
+    ${EMB_FW_SRC_DIR}/bs_mm_fw_0103.cpp	
+    ${EMB_FW_SRC_DIR}/pico.cpp		
+    ${EMB_FW_SRC_DIR}/psu_mm_fw_0102.cpp	
+)
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
 set(EIGENHARP_SRC ${EIGENHARP_SRC} 
     picross/src/pic_thread_posix.cpp 
@@ -71,10 +80,12 @@ endif()
 
 
 include_directories ( . ./picross  ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder )
-add_library( eigenapi STATIC ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
-#add_library(eigenapi SHARED ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
 
-target_link_libraries (eigenapi picodecoder)
+add_library( eigenapi STATIC ${EIGENHARP_SRC} ${EIGENHARP_HDRS} )
+# if(USE_DYNAMIC)
+#     target_link_libraries (eigenapi picodecoder)
+# else(USE_DYNAMIC)
+# endif(USE_DYNAMIC)
 
 target_include_directories(eigenapi PUBLIC
         .
@@ -92,7 +103,28 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(eigenapi  "libusb" "pthread")
 endif()
 
+# Binary version of picodecoder
+set(PICODECODER_DIR "${CMAKE_SOURCE_DIR}/resources/picodecoder")
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    set(PICODECODER_DIR "${PICODECODER_DIR}/macOs/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(PICODECODER_DIR "${PICODECODER_DIR}/linux/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(PICODECODER_DIR "${PICODECODER_DIR}/windows/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+else()
+    set(PICODECODER_DIR "${PICODECODER_DIR}/unknown/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+endif()
+
+if(USE_DUMMY_PICO)
+    message("using dummy picodecoder")
+    add_subdirectory(lib_picodecoder)
+else(USE_DUMMY_PICO)
+    message("using PICODECODER_DIR : ${PICODECODER_DIR}")
+    ADD_LIBRARY(picodecoder_static STATIC IMPORTED)
+    SET_TARGET_PROPERTIES(picodecoder_static PROPERTIES IMPORTED_LOCATION "${PICODECODER_DIR}/libpicodecoder_static.a")
+endif()
 
 add_subdirectory(tests)
-add_subdirectory(lib_picodecoder)
+
+
 
