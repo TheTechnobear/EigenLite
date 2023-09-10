@@ -217,24 +217,24 @@ namespace EigenApi {
         unsigned char expectedChecksum = 0;
         unsigned char checksum = 0;
 
-        if (efd_.fwReader.read(fd, &startCh, 1) < 1) throw IHXException("unable process to start code (:)");
+        if (efd_.fwReader()->read(fd, &startCh, 1) < 1) throw IHXException("unable process to start code (:)");
         if (startCh != ':') {
             char buf[100];
             snprintf(buf, 100, "invalid start code (:) got  %x", startCh);
             throw IHXException(buf);
         }
-        if (efd_.fwReader.read(fd, &hexByteCount, 2) < 2) throw IHXException("unable process to byteCount");
+        if (efd_.fwReader()->read(fd, &hexByteCount, 2) < 2) throw IHXException("unable process to byteCount");
         byteCount = hexToInt(hexByteCount, 2);
         checksum += byteCount;
 
-        if (efd_.fwReader.read(fd, &hexAddress, 4) < 4) throw IHXException("unable process to address");
+        if (efd_.fwReader()->read(fd, &hexAddress, 4) < 4) throw IHXException("unable process to address");
         unsigned high = hexToInt(hexAddress, 2);
         unsigned low = hexToInt(hexAddress + 2, 2);
         checksum += high;
         checksum += low;
         address = high * 0x100 + low;
 
-        if (efd_.fwReader.read(fd, &hexRecType, 2) < 2) throw IHXException("unable process to recType");
+        if (efd_.fwReader()->read(fd, &hexRecType, 2) < 2) throw IHXException("unable process to recType");
         recType = hexToInt(hexRecType, 2);
         if (recType == 1) {
             isEof = true;
@@ -246,7 +246,7 @@ namespace EigenApi {
         if (byteCount > 0) {
             hexData = new char[byteCount * 2];
             data = new char[byteCount];
-            if (efd_.fwReader.read(fd, hexData, byteCount * 2) < int(byteCount * 2))
+            if (efd_.fwReader()->read(fd, hexData, byteCount * 2) < int(byteCount * 2))
                 throw IHXException("unable process to data");
             for (unsigned i = 0; i < byteCount; i++) {
                 data[i] = hexToChar(hexData + (i * 2));
@@ -256,7 +256,7 @@ namespace EigenApi {
             delete hexData;
         }
 
-        if (efd_.fwReader.read(fd, &hexChecksum, 2) < 2) throw IHXException("unable process to checksum");
+        if (efd_.fwReader()->read(fd, &hexChecksum, 2) < 2) throw IHXException("unable process to checksum");
         expectedChecksum = hexToChar(hexChecksum);
         unsigned char checkdigit = !isEof ? (~checksum) + 1 : 0xFF;
         if (expectedChecksum != checkdigit) {
@@ -265,9 +265,9 @@ namespace EigenApi {
             throw IHXException(buf);
         }
 
-        if (efd_.fwReader.read(fd, &eol, 1) < 1) throw IHXException("unable process eol");
+        if (efd_.fwReader()->read(fd, &eol, 1) < 1) throw IHXException("unable process eol");
         if (eol == 0x0d) {
-            if (efd_.fwReader.read(fd, &eol, 1) < 1) throw IHXException("unable process eol 2");
+            if (efd_.fwReader()->read(fd, &eol, 1) < 1) throw IHXException("unable process eol 2");
         }
         if (eol != 0x0a) {
             char buf[100];
@@ -283,7 +283,7 @@ namespace EigenApi {
 
     bool EF_Harp::loadFirmware(pic::usbdevice_t *pDevice, std::string ihxFile) {
         void* fd;
-        bool opened = efd_.fwReader.open(ihxFile, IHX_OPENFLAGS, &fd);
+        bool opened = efd_.fwReader()->open(ihxFile.c_str(), IHX_OPENFLAGS, &fd);
         if (!opened) {
             char buf[100];
             snprintf(buf, 100, "default ihx, unable to open IHX firmware: %s\n", ihxFile.c_str());
@@ -299,7 +299,7 @@ namespace EigenApi {
             while (processIHXLine(pDevice, fd)) {
                 line++;
             }
-            efd_.fwReader.close(fd);
+            efd_.fwReader()->close(fd);
             runFirmware(pDevice);
         }
         catch (IHXException &e) {

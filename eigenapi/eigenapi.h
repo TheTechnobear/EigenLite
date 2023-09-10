@@ -1,7 +1,4 @@
 #pragma once
-#include <string>
-#include <limits>
-
 // Required ihx firmware files
 #define PICO_FIRMWARE "pico.ihx"
 #define BASESTATION_FIRMWARE "bs_mm_fw_0103.ihx"
@@ -18,9 +15,14 @@ namespace EigenApi
     		ALPHA
     	};
     	virtual ~Callback() = default;
-    	
-        virtual void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals) {};
-        virtual void disconnect(const char* dev, DeviceType dt) {};
+
+        // information 
+        virtual void newDevice(DeviceType dt, const char* name) {}
+
+        // device events 
+        // note: dev = usb id, name is a 'friendly' enumeration of usb devices 
+        virtual void connected(const char* dev, DeviceType dt, const char* name) {};
+        virtual void disconnected(const char* dev) {};
 
         virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {};
         virtual void breath(const char* dev, unsigned long long t, unsigned val) {};
@@ -34,8 +36,8 @@ namespace EigenApi
     {
     public:
         virtual ~IFW_Reader() = default;
-        virtual bool open(std::string filename, int oFlags, void* *fd) = 0;
-        virtual ssize_t read(void* fd, void *data, size_t byteCount) = 0;
+        virtual bool open(const char* filename, int oFlags, void* *fd) = 0;
+        virtual long read(void* fd, void *data, long byteCount) = 0;
         virtual void close(void* fd) = 0;
         virtual bool confirmResources() = 0;
     };
@@ -44,48 +46,54 @@ namespace EigenApi
     class FWR_Posix : public EigenApi::IFW_Reader
     {
     public:
-        explicit FWR_Posix(std::string path);
-        bool open(std::string filename, int oFlags, void* *fd) override;
-        ssize_t read(void* fd, void *data, size_t byteCount) override;
+        explicit FWR_Posix(const char* path);
+
+        bool open(const char* filename, int oFlags, void* *fd) override;
+        long read(void* fd, void *data, long byteCount) override;
         void close(void* fd) override;
         bool confirmResources() override;
-        void setPath(std::string path);
-        std::string getPath();
 
     private:
-        std::string path = "./";
+        const char* path_;
     };
 
     class FWR_Embedded : public EigenApi::IFW_Reader
     {
     public:
         explicit FWR_Embedded();
-        bool open(std::string deviceihx, int oFlags, void* *fd) override;
-        ssize_t read(void* fd, void *data, size_t byteCount) override;
+
+        bool open(const char* deviceihx, int oFlags, void* *fd) override;
+        long read(void* fd, void *data, long byteCount) override;
         void close(void* fd) override;
         bool confirmResources() override;
+
     private:
         long position_=0;
         unsigned maxLen_=0;
     };
 
 
+    // important note: 
+    // any pointers passed in, are owned by caller
+    // they are assumed valid until explicitly removed, or api is destroyed
     class Eigenharp
     {
     public:
-        explicit Eigenharp(IFW_Reader &fwReader);
+        explicit Eigenharp(); // use an embedded reader
+        explicit Eigenharp(IFW_Reader *fwReader);
         virtual ~Eigenharp();
+
+        const char* versionString();
 
         bool start();
         bool process();
         bool stop();
 
-        // note: callback ownership is retained by caller
         void addCallback(Callback* api);
         void removeCallback(Callback* api);
         void clearCallbacks();
         
-        void setLED(const char* dev, unsigned course, unsigned int key,unsigned int colour);
+        void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
         void setPollTime(unsigned pollTime);
 

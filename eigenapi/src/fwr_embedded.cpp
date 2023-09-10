@@ -14,8 +14,9 @@ namespace EigenApi {
     FWR_Embedded::FWR_Embedded()    {
     }
 
-    bool FWR_Embedded::open(const std::string filename, int oFlags, void* *fd)
+    bool FWR_Embedded::open(const char* devicefile, int oFlags, void* *fd)
     {
+        std::string filename = devicefile;
         position_=0;
         if(filename == PICO_FIRMWARE) {
             *fd = static_cast<void*>(&___ihx_pico_ihx);
@@ -37,7 +38,7 @@ namespace EigenApi {
         return true;
     }
 
-    ssize_t FWR_Embedded::read(void* fd, void *data, size_t byteCount)
+    long FWR_Embedded::read(void* fd, void *data, long byteCount)
     {
         size_t maxRead = maxLen_ - position_;
         size_t readCount = byteCount < maxRead ? byteCount : maxRead;

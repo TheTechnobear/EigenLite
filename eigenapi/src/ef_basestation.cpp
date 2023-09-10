@@ -92,7 +92,7 @@ bool EF_BaseStation::destroy()
         pLoop_=NULL;
     }
     logmsg("destroyed basestation");
-    efd_.fireDisconnectEvent(usbDevice()->name(), isAlpha_ ? Callback::DeviceType::ALPHA : Callback::DeviceType::TAU);
+    efd_.fireDisconnectEvent(usbDevice()->name());
     return EF_Harp::destroy();
 }
 
@@ -106,11 +106,10 @@ bool EF_BaseStation::start()
     pLoop_->debounce_time(DEFAULT_DEBOUNCE);
     logmsg("started basestation loop");
 
-    if(isAlpha_) {
-        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::ALPHA, 24, 5, 2, 4);
-    } else {
-        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::TAU, 20, 4, 1, 4);
-    }
+    
+    //todo - need device name
+    efd_.fireConnectEvent(usbDevice()->name(), isAlpha_ ? Callback::DeviceType::ALPHA : Callback::DeviceType::TAU , "AlphaTau_NNN");
+
     return true;
 }
 

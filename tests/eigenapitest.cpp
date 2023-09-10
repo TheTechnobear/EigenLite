@@ -13,9 +13,9 @@ public:
         for(int i;i<3;i++) { max_[i]=0; min_[i]=4096;}
     }
     
-    virtual void device(const char* dev, DeviceType dt, int rows, int cols, int ribbons, int pedals)
+    virtual void connected(const char* dev, DeviceType dt, const char* name)
     {
-        std::cout << "device " << dev << " (" << dt << ") " << rows << " x " << cols << " strips " << ribbons << " pedals " << pedals << std::endl;
+        std::cout << "dev id " << dev << " (" << dt << ") - " << name << std::endl;
         switch(dt) {
             case PICO : maxLeds_ = 16; break;
             case TAU : maxLeds_ = 84; break;
@@ -24,9 +24,9 @@ public:
         }
     }
 
-    virtual void disconnect(const char* dev, DeviceType dt)
+    virtual void disconnect(const char* dev)
     {
-        std::cout << "disconnect " << dev << " (" << dt << ") " << std::endl;
+        std::cout << "dev id " << dev << std::endl;
     }
 
     virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y)
@@ -131,7 +131,7 @@ int main(int ac, char **av)
     }
 #endif
 
-    EigenApi::Eigenharp myD(fwr);
+    EigenApi::Eigenharp myD(&fwr);
     myD.setPollTime(100);
     myD.addCallback(new PrinterCallback(myD));
     if(!myD.start())

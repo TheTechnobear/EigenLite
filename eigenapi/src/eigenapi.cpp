@@ -4,7 +4,12 @@
 
 namespace EigenApi
 {
-    Eigenharp::Eigenharp(IFW_Reader &fwReader)
+    Eigenharp::Eigenharp()
+    {
+        impl=new EigenLite();
+    }
+ 
+    Eigenharp::Eigenharp(IFW_Reader *fwReader)
     {
         impl=new EigenLite(fwReader);
     }
@@ -53,7 +58,7 @@ namespace EigenApi
     {
         static_cast<EigenLite*>(impl)->setLED(dev,course, key, colour);
     }
-    
+
     // basic logger, if its not overriden
     class logger : public pic::logger_t
     {

@@ -15,7 +15,8 @@ namespace EigenApi
 	
     class EigenLite {
     public:
-        EigenLite(IFW_Reader &fwReader);
+        explicit EigenLite();
+        explicit EigenLite(IFW_Reader *fwReader);
         virtual ~EigenLite();
 
         void addCallback(Callback* api);
@@ -25,14 +26,18 @@ namespace EigenApi
         virtual bool destroy();
         virtual bool poll();
 
+        const char* versionString();
+
         void setPollTime(unsigned pollTime);
         void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
 		// logging
         static void logmsg(const char* msg);
-        
-        virtual void fireDeviceEvent(const char* dev, Callback::DeviceType dt, int rows, int cols, int ribbons, int pedals);
-        virtual void fireDisconnectEvent(const char* dev, Callback::DeviceType dt);
+        virtual void fireNewDeviceEvent( Callback::DeviceType dt, const char* name);
+
+
+        virtual void fireConnectEvent(const char* dev, Callback::DeviceType dt, const char* name);
+        virtual void fireDisconnectEvent(const char* dev);
 		virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
         virtual void fireBreathEvent(const char* dev, unsigned long long t, unsigned val);
         virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a);
@@ -41,7 +46,8 @@ namespace EigenApi
 
 
         void checkUsbDev();
-        IFW_Reader &fwReader;
+
+        IFW_Reader* fwReader() { return fwReader_;}
 
     private:
         void deviceDead(const char* dev,unsigned reason);
@@ -55,7 +61,8 @@ namespace EigenApi
         std::string picoUSBDev_;
         std::set<std::string> deadDevices_;
         volatile bool usbDevChange_=false;
-
+        IFW_Reader *fwReader_;
+        IFW_Reader *internalReader_;
     };
 
     class EF_Harp

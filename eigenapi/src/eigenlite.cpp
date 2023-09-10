@@ -4,7 +4,9 @@
 #include <picross/pic_log.h>
 #include <string.h>
 
-#define VERSION_STRING "eigenlite v0.6 Alpha/Tau/Pico, experimental - Author: TheTechnobear"
+#define VERSION_STRING "1.0.0"
+
+#define VERSION_DESC "EigenLite v" VERSION_STRING " for Alpha/Tau/Pico - Author: TheTechnobear"
 
 namespace EigenApi {
     void EigenLite::logmsg(const char *msg) {
@@ -12,12 +14,28 @@ namespace EigenApi {
     }
 
     // public interface
-    EigenLite::EigenLite(IFW_Reader &fwReader) : fwReader(fwReader), pollTime_(100) {
+    EigenLite::EigenLite() : EigenLite(nullptr) {
+    }
+
+    EigenLite::EigenLite(IFW_Reader* fwReader) 
+        : fwReader_(fwReader), pollTime_(100) {
+        if(fwReader_==nullptr) {
+            internalReader_ = new FWR_Embedded();
+            fwReader_ = internalReader_;
+        }
     }
 
     EigenLite::~EigenLite() {
         destroy();
+        delete internalReader_;
+        internalReader_ = fwReader_ = nullptr;
     }
+
+
+    const char* EigenLite::versionString() {
+        return VERSION_STRING;
+    }
+
 
     void EigenLite::addCallback(EigenApi::Callback *api) {
         // do not allow callback to be added twice
@@ -67,7 +85,7 @@ namespace EigenApi {
     }
 
     bool EigenLite::create() {
-        logmsg(VERSION_STRING);
+        logmsg(VERSION_DESC);
         logmsg("start EigenLite");
         pic_init_time();
         discoverProcessRun = true;
@@ -183,17 +201,22 @@ namespace EigenApi {
         pollTime_ = pollTime;
     }
 
-
-    void EigenLite::fireDeviceEvent(const char *dev,
-                                    Callback::DeviceType dt, int rows, int cols, int ribbons, int pedals) {
+    void EigenLite::fireNewDeviceEvent(Callback::DeviceType dt, const char* name) {
         for (auto cb: callbacks_) {
-            cb->device(dev, dt, rows, cols, ribbons, pedals);
+            cb->newDevice(dt, name);
         }
     }
 
-    void EigenLite::fireDisconnectEvent(const char *dev, Callback::DeviceType dt) {
+
+    void EigenLite::fireConnectEvent(const char *dev, Callback::DeviceType dt, const char* name) {
         for (auto cb: callbacks_) {
-            cb->disconnect(dev, dt);
+            cb->connected(dev, dt, name);
+        }
+    }
+
+    void EigenLite::fireDisconnectEvent(const char *dev) {
+        for (auto cb: callbacks_) {
+            cb->disconnected(dev);
         }
     }
 

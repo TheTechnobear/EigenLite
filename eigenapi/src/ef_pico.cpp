@@ -66,7 +66,7 @@ namespace EigenApi {
             pLoop_ = NULL;
         }
         logmsg("destroyed pico");
-        efd_.fireDisconnectEvent(usbDevice()->name(), Callback::DeviceType::PICO);
+        efd_.fireDisconnectEvent(usbDevice()->name());
         return EF_Harp::destroy();
     }
 
@@ -77,7 +77,8 @@ namespace EigenApi {
         if (pLoop_ == NULL) return false;
         pLoop_->start();
         logmsg("started loop");
-        efd_.fireDeviceEvent(usbDevice()->name(), Callback::DeviceType::PICO, 9, 2, 1, 0);
+         //todo - need device name
+        efd_.fireConnectEvent(usbDevice()->name(), Callback::DeviceType::PICO, "pico_NNN");
         return true;
     }
 
