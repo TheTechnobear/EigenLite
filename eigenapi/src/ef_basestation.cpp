@@ -1,5 +1,7 @@
 #include <eigenapi.h>
+
 #include "eigenlite_impl.h"
+#include "ef_harp.h"
 
 #include <picross/pic_config.h>
 
@@ -219,10 +221,6 @@ std::string EF_BaseStation::findDevice()
 	return usbdev;
 }
 
-bool EF_BaseStation::isAvailable()
-{
-    return EF_BaseStation::availableDevices().size() > 0;
-}
 
 struct devfinder: virtual pic::tracked_t
 {
@@ -245,16 +243,6 @@ std::vector<std::string> EF_BaseStation::availableDevices()
         pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PSU_PRE_LOAD,pic::f_string_t::method(&f,&devfinder::found));
         pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_PSU,pic::f_string_t::method(&f,&devfinder::found));
         return devList;
-    // std::string usbdev;
-    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BASESTATION_PRE_LOAD,false).c_str();
-    // if(usbdev.size()>0) return usbdev;
-    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
-    // if(usbdev.size()>0) return usbdev;
-    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PSU_PRE_LOAD,false).c_str();
-    // if(usbdev.size()>0) return usbdev;
-    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
-    // if(usbdev.size()>0) return usbdev;
-    // return "";
 }
     
 } // namespace EigenApi

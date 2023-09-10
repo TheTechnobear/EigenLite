@@ -1,5 +1,6 @@
 #include <eigenapi.h>
 #include "eigenlite_impl.h"
+#include "ef_harp.h"
 
 
 #include <picross/pic_config.h>

@@ -1,6 +1,6 @@
 #include <eigenapi.h>
 #include "eigenlite_impl.h"
-
+#include "ef_harp.h"
 
 #include <picross/pic_config.h>
 
@@ -170,9 +170,9 @@ namespace EigenApi {
         return usbdev;
     }
 
-    bool EF_Pico::isAvailable() {
-        return EF_Pico::availableDevices().size() > 0;
-    }
+    // bool EF_Pico::isAvailable() {
+    //     return EF_Pico::availableDevices().size() > 0;
+    // }
 
     struct devfinder: virtual pic::tracked_t
     {

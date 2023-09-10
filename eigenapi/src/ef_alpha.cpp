@@ -1,6 +1,6 @@
 #include <eigenapi.h>
 #include "eigenlite_impl.h"
-
+#include "ef_harp.h"
 
 #include <picross/pic_config.h>
 
@@ -25,9 +25,6 @@
 
 namespace EigenApi
 {
-
-
-
    
 void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y)
 {
