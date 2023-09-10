@@ -96,7 +96,7 @@ namespace EigenApi
         void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
         void setPollTime(unsigned pollTime);
-
+        void setDeviceFilter(bool baseStation, unsigned devEnum);
     private:
         void *impl;
     };

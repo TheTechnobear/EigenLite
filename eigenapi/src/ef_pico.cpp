@@ -171,17 +171,27 @@ namespace EigenApi {
     }
 
     bool EF_Pico::isAvailable() {
-        return EF_Pico::availableDevice().size() > 0;
+        return EF_Pico::availableDevices().size() > 0;
     }
 
+    struct devfinder: virtual pic::tracked_t
+    {
+        devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
+        }
 
-    std::string EF_Pico::availableDevice() {
-        std::string usbdev;
-        usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PICO_PRE_LOAD, false).c_str();
-        if (usbdev.size() > 0) return usbdev;
-        usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PRODUCT_ID_PICO, false).c_str();
-        if (usbdev.size() > 0) return usbdev;
-        return "";
+        void found(const std::string &device) { 
+            devlist_.push_back(device);
+        }
+
+        std::vector<std::string>& devlist_;
+    };
+
+    std::vector<std::string> EF_Pico::availableDevices() {
+        std::vector<std::string> devList;
+        devfinder f(devList);
+        pic::usbenumerator_t::enumerate(BCTPICO_USBVENDOR, PICO_PRE_LOAD,pic::f_string_t::method(&f,&devfinder::found));
+        pic::usbenumerator_t::enumerate(BCTPICO_USBVENDOR, PRODUCT_ID_PICO,pic::f_string_t::method(&f,&devfinder::found));
+        return devList;
     }
 
 //PicoDelegate

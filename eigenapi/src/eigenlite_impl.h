@@ -27,6 +27,7 @@ namespace EigenApi
         virtual bool poll();
 
         const char* versionString();
+        void setDeviceFilter(bool baseStation, unsigned devenum);
 
         void setPollTime(unsigned pollTime);
         void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
@@ -45,7 +46,7 @@ namespace EigenApi
         virtual void fireDeadEvent(const char* dev, unsigned reason);
 
 
-        void checkUsbDev();
+        bool checkUsbDev();
 
         IFW_Reader* fwReader() { return fwReader_;}
 
@@ -57,12 +58,20 @@ namespace EigenApi
         std::vector<Callback*> callbacks_;
         std::vector<EF_Harp*> devices_;
         std::thread discoverThread_;
-        std::string baseUSBDev_;
-        std::string picoUSBDev_;
-        std::set<std::string> deadDevices_;
+
+  
+        std::vector<std::string> availablePicos_;
+        std::vector<std::string> availableBaseStations_;
         volatile bool usbDevChange_=false;
+
+        bool filterBaseStationOrPico_=false;
+        bool filterDeviceEnum_ = 0;
+
+        std::set<std::string> deadDevices_;
         IFW_Reader *fwReader_;
         IFW_Reader *internalReader_;
+
+        std::atomic_flag usbDevCheckSpinLock;
     };
 
     class EF_Harp
@@ -147,7 +156,7 @@ private:
         void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override;
         
 		static bool isAvailable();
-        static std::string availableDevice();
+        static std::vector<std::string> availableDevices();
 
     private:
         std::string findDevice() override;
@@ -192,7 +201,7 @@ private:
         void setLED(unsigned course, unsigned int keynum,unsigned int colour) override;
 
         static bool isAvailable();
-        static std::string availableDevice();
+        static std::vector<std::string> availableDevices();
 
         unsigned short* curMap() { return curmap_;}
         unsigned short* skpMap() { return skpmap_;}

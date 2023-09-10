@@ -68,21 +68,71 @@ namespace EigenApi {
 
     void *discoverProcess(void *pthis) {
         auto pThis = static_cast<EigenLite *>(pthis);
-        std::string usbdev;
         while (discoverProcessRun) {
-            pThis->checkUsbDev();
-            pic_microsleep(10000000);
+            if(pThis->checkUsbDev()) {
+                // 10seconds
+                pic_microsleep(10 * 100000); 
+            } else {
+                // failed as poll() in progress
+                // try again quickly, spinlock
+                // 1 mS
+                pic_microsleep(1000);
+            } 
         }
         return nullptr;
     }
 
-    void EigenLite::checkUsbDev() {
-        if (!usbDevChange_) {
-            baseUSBDev_ = EF_BaseStation::availableDevice();
-            picoUSBDev_ = EF_Pico::availableDevice();
-            usbDevChange_ = baseUSBDev_.size() > 0 || picoUSBDev_.size() > 0;
+
+
+    bool EigenLite::checkUsbDev() {
+        if(usbDevCheckSpinLock.test_and_set()) {
+            if (!usbDevChange_) {
+
+                // any change in basestation setup?
+                auto baseUSBDevList = EF_BaseStation::availableDevices();
+                if(availableBaseStations_.size() == baseUSBDevList.size()) {
+                    int i=0;
+                    for(auto& usbdev : baseUSBDevList) {
+                        if(availableBaseStations_[i] != usbdev) {
+                            usbDevChange_ |= true;
+                            availableBaseStations_ = baseUSBDevList;
+                            break;
+                        }
+                        i++;
+                    }
+                } else {
+                    usbDevChange_ |= true;
+                    availableBaseStations_ = baseUSBDevList;
+                }
+
+                // any change in pico setup?
+                auto picoUSBDevList = EF_Pico::availableDevices();
+                if(availablePicos_.size() == picoUSBDevList.size()) {
+                    int i=0;
+                    for(auto& usbdev : picoUSBDevList) {
+                        if(availablePicos_[i] != usbdev) {
+                            usbDevChange_ |= true;
+                            availablePicos_ = picoUSBDevList;
+                            break;
+                        }
+                        i++;
+                    }
+                } else {
+                    usbDevChange_ |= true;
+                    availablePicos_ = picoUSBDevList;
+                }
+            }
+            usbDevCheckSpinLock.clear();
+            return true;
         }
+        return false;
     }
+
+    void EigenLite::setDeviceFilter(bool baseStation, unsigned devenum) {
+        filterBaseStationOrPico_ = baseStation;
+        filterDeviceEnum_ = devenum;
+    }
+
 
     bool EigenLite::create() {
         logmsg(VERSION_DESC);
@@ -119,49 +169,73 @@ namespace EigenApi {
 
 
     bool EigenLite::poll() {
-        if (usbDevChange_) {
-            bool newPico = picoUSBDev_.size() > 0;
-            bool newBase = baseUSBDev_.size() > 0;;
+        if(usbDevCheckSpinLock.test_and_set()) {
+            if (usbDevChange_) {
 
-            for (auto dev: devices_) {
-                if (picoUSBDev_ == dev->usbDevice()->name()) {
-                    newPico = false;
+                bool newPico = false;
+                bool newBase = false;
+                std::string picoUSBDev, baseUSBDev;
+
+
+                if(filterDeviceEnum_ == 0) {
+                    // attempt to connect to all devices
+                    if(availablePicos_.size()>0) {
+                        newPico = true;
+                        picoUSBDev = availablePicos_[0];
+                    }
+
+                    if(availableBaseStations_.size()>0) {
+                        newBase = true;
+                        baseUSBDev = availableBaseStations_[0];
+                    }
+                } else {
+                    // todo 
                 }
-                if (baseUSBDev_ == dev->usbDevice()->name()) {
-                    newBase = false;
+
+
+                // check not already connected.
+                for (auto dev: devices_) {
+                    if (picoUSBDev == dev->usbDevice()->name()) {
+                        newPico = false;
+                    }
+                    if (baseUSBDev == dev->usbDevice()->name()) {
+                        newBase = false;
+                    }
                 }
-            }
 
-            EF_Harp *pDevice = nullptr;
-            if (newPico) {
-                char logbuf[100];
-                snprintf(logbuf, 100, "new pico %s", picoUSBDev_.c_str());
-                logmsg(logbuf);
-
-                pDevice = new EF_Pico(*this);
-                if (pDevice->create()) {
+                EF_Harp *pDevice = nullptr;
+                if (newPico) {
                     char logbuf[100];
-                    snprintf(logbuf, 100, "created pico %s", pDevice->usbDevice()->name());
+                    snprintf(logbuf, 100, "new pico %s", picoUSBDev.c_str());
                     logmsg(logbuf);
-                    devices_.push_back(pDevice);
-                    pDevice->start();
-                }
-            }
-            if (newBase) {
-                char logbuf[100];
-                snprintf(logbuf, 100, "new base %s", baseUSBDev_.c_str());
-                logmsg(logbuf);
 
-                pDevice = new EF_BaseStation(*this);
-                if (pDevice->create()) {
-                    devices_.push_back(pDevice);
-                    pDevice->start();
+                    pDevice = new EF_Pico(*this);
+                    if (pDevice->create()) {
+                        char logbuf[100];
+                        snprintf(logbuf, 100, "created pico %s", pDevice->usbDevice()->name());
+                        logmsg(logbuf);
+                        devices_.push_back(pDevice);
+                        pDevice->start();
+                    }
                 }
-            }
+                if (newBase) {
+                    char logbuf[100];
+                    snprintf(logbuf, 100, "new base %s", baseUSBDev.c_str());
+                    logmsg(logbuf);
 
-            usbDevChange_ = false;
-            if (newBase || newPico) return true;
-        }
+                    pDevice = new EF_BaseStation(*this);
+                    if (pDevice->create()) {
+                        devices_.push_back(pDevice);
+                        pDevice->start();
+                    }
+                }
+
+                usbDevChange_ = false;
+                usbDevCheckSpinLock.clear();
+
+                if (newBase || newPico) return true;
+            }
+        } // test n' set, else just wait till next time! 
 
         while (deadDevices_.size() > 0) {
             std::string usbname = *deadDevices_.begin();

@@ -59,6 +59,12 @@ namespace EigenApi
         static_cast<EigenLite*>(impl)->setLED(dev,course, key, colour);
     }
 
+
+    void Eigenharp::setDeviceFilter(bool baseStation, unsigned devEnum) {
+        static_cast<EigenLite*>(impl)->setDeviceFilter(baseStation,devEnum);
+    }
+
+
     // basic logger, if its not overriden
     class logger : public pic::logger_t
     {

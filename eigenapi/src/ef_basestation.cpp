@@ -221,21 +221,40 @@ std::string EF_BaseStation::findDevice()
 
 bool EF_BaseStation::isAvailable()
 {
-    return EF_BaseStation::availableDevice().size() > 0;
+    return EF_BaseStation::availableDevices().size() > 0;
 }
 
-std::string EF_BaseStation::availableDevice()
+struct devfinder: virtual pic::tracked_t
 {
-    std::string usbdev;
-    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BASESTATION_PRE_LOAD,false).c_str();
-    if(usbdev.size()>0) return usbdev;
-    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
-    if(usbdev.size()>0) return usbdev;
-    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PSU_PRE_LOAD,false).c_str();
-    if(usbdev.size()>0) return usbdev;
-    usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
-    if(usbdev.size()>0) return usbdev;
-    return "";
+    devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
+    }
+
+    void found(const std::string &device) { 
+        devlist_.push_back(device);
+    }
+
+    std::vector<std::string>& devlist_;
+};
+
+std::vector<std::string> EF_BaseStation::availableDevices()
+{
+        std::vector<std::string> devList;
+        devfinder f(devList);
+        pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, BASESTATION_PRE_LOAD,pic::f_string_t::method(&f,&devfinder::found));
+        pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_BSP,pic::f_string_t::method(&f,&devfinder::found));
+        pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PSU_PRE_LOAD,pic::f_string_t::method(&f,&devfinder::found));
+        pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_PSU,pic::f_string_t::method(&f,&devfinder::found));
+        return devList;
+    // std::string usbdev;
+    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BASESTATION_PRE_LOAD,false).c_str();
+    // if(usbdev.size()>0) return usbdev;
+    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
+    // if(usbdev.size()>0) return usbdev;
+    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PSU_PRE_LOAD,false).c_str();
+    // if(usbdev.size()>0) return usbdev;
+    // usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
+    // if(usbdev.size()>0) return usbdev;
+    // return "";
 }
     
 } // namespace EigenApi
