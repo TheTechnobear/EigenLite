@@ -83,7 +83,7 @@ namespace EigenApi {
         pLoop_->start();
         logmsg("started loop");
          //todo - need device name
-        efd_.fireConnectEvent(usbDevice()->name(), Callback::DeviceType::PICO, "pico_NNN");
+        efd_.fireConnectEvent(usbDevice()->name(), Callback::DeviceType::PICO);
         return true;
     }
 

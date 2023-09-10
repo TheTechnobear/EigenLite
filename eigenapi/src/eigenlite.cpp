@@ -94,7 +94,8 @@ namespace EigenApi {
                 for(auto& usbdev : baseUSBDevList) {
                     if(availableBaseStations_[i] != usbdev) {
                         usbDevChange_ |= true;
-                        availableBaseStations_ = baseUSBDevList;                            break;
+                        availableBaseStations_ = baseUSBDevList;  
+                        break;
                     }
                     i++;
                 }
@@ -126,8 +127,8 @@ namespace EigenApi {
         return false;
     }
 
-    void EigenLite::setDeviceFilter(bool baseStation, unsigned devenum) {
-        filterBaseStationOrPico_ = baseStation;
+    void EigenLite::setDeviceFilter(bool baseOrPico, unsigned devenum) {
+        filterBaseStationOrPico_ = baseOrPico;
         filterDeviceEnum_ = devenum;
     }
 
@@ -169,25 +170,51 @@ namespace EigenApi {
     bool EigenLite::poll() {
         if(!usbDevCheckSpinLock.test_and_set()) {
             if (usbDevChange_) {
+                for(auto& cb : callbacks_) {
+                    cb->beginDeviceInfo();
+                    int i=0;
+                    for(auto& usb : availablePicos_) {
+                        i++;
+                        cb->deviceInfo(true,i,usb.c_str());
+                    }
+
+                    i=0;
+                    for(auto& usb : availableBaseStations_) {
+                        i++;
+                        cb->deviceInfo(false,i,usb.c_str());
+                    }
+                    cb->endDeviceInfo();
+                }
 
                 bool newPico = false;
                 bool newBase = false;
                 std::string picoUSBDev, baseUSBDev;
 
-
                 if(filterDeviceEnum_ == 0) {
                     // attempt to connect to all devices
+                    if(availableBaseStations_.size()>0) {
+                        newBase = true;
+                        baseUSBDev = availableBaseStations_[0];
+                    }
+
                     if(availablePicos_.size()>0) {
                         newPico = true;
                         picoUSBDev = availablePicos_[0];
                     }
 
-                    if(availableBaseStations_.size()>0) {
-                        newBase = true;
-                        baseUSBDev = availableBaseStations_[0];
-                    }
                 } else {
-                    // todo 
+                    // 0 = no filter, so 1-N devices
+                    unsigned devIdx = filterDeviceEnum_ - 1;
+                    // basestation = 0, pico =0
+                    if(filterBaseStationOrPico_==0) {
+                        // basestation 
+                        newBase = devIdx  < availableBaseStations_.size();
+                        if(newBase) baseUSBDev = availableBaseStations_[devIdx];
+                    } else {
+                        // pico
+                         newPico = devIdx  < availablePicos_.size();
+                        if(newPico) picoUSBDev = availablePicos_[devIdx];
+                   }
                 }
 
 
@@ -276,16 +303,29 @@ namespace EigenApi {
         pollTime_ = pollTime;
     }
 
-    void EigenLite::fireNewDeviceEvent(Callback::DeviceType dt, const char* name) {
+
+    void EigenLite::fireBeginDeviceInfo() {
         for (auto cb: callbacks_) {
-            cb->newDevice(dt, name);
+             cb->beginDeviceInfo();
+       }
+    }
+
+    void EigenLite::fireDeviceInfo(bool isPico, unsigned devNum, const char *dev) {
+        for (auto cb: callbacks_) {
+            cb->deviceInfo(isPico,devNum,dev);
+        }
+    }
+
+    void EigenLite::fireEndDeviceInfo() {
+        for (auto cb: callbacks_) {
+             cb->endDeviceInfo();
         }
     }
 
 
-    void EigenLite::fireConnectEvent(const char *dev, Callback::DeviceType dt, const char* name) {
+    void EigenLite::fireConnectEvent(const char *dev, Callback::DeviceType dt) {
         for (auto cb: callbacks_) {
-            cb->connected(dev, dt, name);
+            cb->connected(dev, dt);
         }
     }
 

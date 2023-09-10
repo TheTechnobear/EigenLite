@@ -115,7 +115,7 @@ bool EF_BaseStation::start()
 
     
     //todo - need device name
-    efd_.fireConnectEvent(usbDevice()->name(), isAlpha_ ? Callback::DeviceType::ALPHA : Callback::DeviceType::TAU , "AlphaTau_NNN");
+    efd_.fireConnectEvent(usbDevice()->name(), isAlpha_ ? Callback::DeviceType::ALPHA : Callback::DeviceType::TAU);
 
     return true;
 }

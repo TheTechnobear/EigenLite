@@ -17,11 +17,13 @@ namespace EigenApi
     	virtual ~Callback() = default;
 
         // information 
-        virtual void newDevice(DeviceType dt, const char* name) {}
+        virtual void beginDeviceInfo() {}
+        virtual void deviceInfo(bool isPico, unsigned devEnum, const char* dev) {}
+        virtual void endDeviceInfo() {}
 
         // device events 
         // note: dev = usb id, name is a 'friendly' enumeration of usb devices 
-        virtual void connected(const char* dev, DeviceType dt, const char* name) {};
+        virtual void connected(const char* dev, DeviceType dt) {};
         virtual void disconnected(const char* dev) {};
 
         virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {};
@@ -31,47 +33,7 @@ namespace EigenApi
         virtual void dead(const char* dev, unsigned reason) {};
     };
 
-    // Firmware reader Interface for providing other implementations than the default Posix
-    class IFW_Reader
-    {
-    public:
-        virtual ~IFW_Reader() = default;
-        virtual bool open(const char* filename, int oFlags, void* *fd) = 0;
-        virtual long read(void* fd, void *data, long byteCount) = 0;
-        virtual void close(void* fd) = 0;
-        virtual bool confirmResources() = 0;
-    };
-
-    // Default firmware reader implementation for OSX/Linux
-    class FWR_Posix : public EigenApi::IFW_Reader
-    {
-    public:
-        explicit FWR_Posix(const char* path);
-
-        bool open(const char* filename, int oFlags, void* *fd) override;
-        long read(void* fd, void *data, long byteCount) override;
-        void close(void* fd) override;
-        bool confirmResources() override;
-
-    private:
-        const char* path_;
-    };
-
-    class FWR_Embedded : public EigenApi::IFW_Reader
-    {
-    public:
-        explicit FWR_Embedded();
-
-        bool open(const char* deviceihx, int oFlags, void* *fd) override;
-        long read(void* fd, void *data, long byteCount) override;
-        void close(void* fd) override;
-        bool confirmResources() override;
-
-    private:
-        long position_=0;
-        unsigned maxLen_=0;
-    };
-
+    class IFW_Reader;
 
     // important note: 
     // any pointers passed in, are owned by caller
@@ -96,11 +58,56 @@ namespace EigenApi
         void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
         void setPollTime(unsigned pollTime);
-        void setDeviceFilter(bool baseStation, unsigned devEnum);
+
+        // basestation = 0, pico =1
+        void setDeviceFilter(bool baseOrPico, unsigned devEnum);
     private:
         void *impl;
     };
     
+
+    // Firmware reader 
+    class IFW_Reader
+    {
+    public:
+        virtual ~IFW_Reader() = default;
+        virtual bool open(const char* filename, int oFlags, void* *fd) = 0;
+        virtual long read(void* fd, void *data, long byteCount) = 0;
+        virtual void close(void* fd) = 0;
+        virtual bool confirmResources() = 0;
+    };
+
+    // firmware reader implementation for OSX/Linux files
+    class FWR_Posix : public EigenApi::IFW_Reader
+    {
+    public:
+        explicit FWR_Posix(const char* path);
+
+        bool open(const char* filename, int oFlags, void* *fd) override;
+        long read(void* fd, void *data, long byteCount) override;
+        void close(void* fd) override;
+        bool confirmResources() override;
+
+    private:
+        const char* path_;
+    };
+
+    // use firmware embedeed into EigenLite
+    class FWR_Embedded : public EigenApi::IFW_Reader
+    {
+    public:
+        explicit FWR_Embedded();
+
+        bool open(const char* deviceihx, int oFlags, void* *fd) override;
+        long read(void* fd, void *data, long byteCount) override;
+        void close(void* fd) override;
+        bool confirmResources() override;
+
+    private:
+        long position_=0;
+        unsigned maxLen_=0;
+    };
+
     class Logger
     {
     public:

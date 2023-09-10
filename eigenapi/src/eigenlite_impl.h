@@ -34,10 +34,12 @@ namespace EigenApi
 
 		// logging
         static void logmsg(const char* msg);
-        virtual void fireNewDeviceEvent( Callback::DeviceType dt, const char* name);
+        virtual void fireBeginDeviceInfo();
+        virtual void fireDeviceInfo(bool isPico, unsigned devNum, const char* dev);
+        virtual void fireEndDeviceInfo();
 
 
-        virtual void fireConnectEvent(const char* dev, Callback::DeviceType dt, const char* name);
+        virtual void fireConnectEvent(const char* dev, Callback::DeviceType dt);
         virtual void fireDisconnectEvent(const char* dev);
 		virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
         virtual void fireBreathEvent(const char* dev, unsigned long long t, unsigned val);
