@@ -43,10 +43,15 @@ EF_BaseStation::~EF_BaseStation()
 }
 
 
-bool EF_BaseStation::create()
+bool EF_BaseStation::create(const std::string& usbdev)
 {
     logmsg("create basestation");
-    if (!EF_Harp::create()) return false;
+
+    if(!checkFirmware(usbdev)) {
+        return false;
+    }
+
+    if (!EF_Harp::create(usbdev)) return false;
     
     try {
         memset(curmap_,0,sizeof(curmap_));
@@ -150,26 +155,12 @@ void EF_BaseStation::restartKeyboard()
 }
   
 
-bool EF_BaseStation::loadBaseStation()
+bool EF_BaseStation::loadBaseStation(const std::string& usbdev, unsigned short bsType)
 {
-    std::string ihxFile;
-    
-	std::string usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,BASESTATION_PRE_LOAD,false).c_str();
-	if(usbdev.size()==0)
-	{
-        usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PSU_PRE_LOAD,false).c_str();
-        if (usbdev.size()==0)
-        {
-            pic::logmsg() << "no basestation connected/powered on?";
-            return false;
-        }
+    std::string ihxFile=BASESTATION_FIRMWARE;
+    if(bsType == PSU_PRE_LOAD) {
         ihxFile = PSU_FIRMWARE;
-	}
-    else
-    {
-        ihxFile = BASESTATION_FIRMWARE;
     }
-
     pic::usbdevice_t* pDevice;
 	try
 	{
@@ -187,52 +178,60 @@ bool EF_BaseStation::loadBaseStation()
     return loadFirmware(pDevice,ihxFile);
 }
 
-std::string EF_BaseStation::findDevice()
-{
-    std::string usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
-    if(usbdev.size()==0) usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
+
+bool EF_BaseStation::checkFirmware(const std::string& usbdevice) {
+    devcheck f(usbdevice);
+
+    unsigned short bstype = BASESTATION_PRE_LOAD;
+    pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, bstype ,pic::f_string_t::method(&f,&devcheck::found));
+
+    if(!f.found_) {
+        // check psu
+        bstype = PSU_PRE_LOAD;
+        pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, bstype,pic::f_string_t::method(&f,&devcheck::found));
+    }
+
+    // we need to load firmware 
+    if (f.found_) {
+        logmsg("basestation loading firmware...");
+        if (loadBaseStation(usbdevice, bstype)) {
+            logmsg("basestation firmware loaded");
+
+            f.found_ = false;
     
-	if(usbdev.size()==0)
-	{
-		logmsg("basestation loading...");
-		if(loadBaseStation())
-		{
-			logmsg("basestation loaded");
-            
-			for (int i=0;i<10 && usbdev.size()==0 ;i++)
-			{
-				logmsg("attempting to find basestation...");
-                
+            if (bstype == BASESTATION_PRE_LOAD)
+               pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_BSP,pic::f_string_t::method(&f,&devcheck::found));
+            else
+               pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_PSU,pic::f_string_t::method(&f,&devcheck::found));
+ 
+
+            for (int i = 0; i < 10 && f.found_==false ; i++) {
+                logmsg("attempting to find basestation...");
+                pic_microsleep(1000000);
                 // can take a few seconds for basestation to reregister itself
-				usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_BSP,false).c_str();
-                if(usbdev.size()==0) usbdev = pic::usbenumerator_t::find(BCTKBD_USBVENDOR,PRODUCT_ID_PSU,false).c_str();
-                
-				pic_microsleep(1000000);
-			}
-            char buf[1024];
-            snprintf(buf,1024, "basestation loaded dev: %s ", usbdev.c_str());
-			logmsg(buf);
-		}
-		else
-		{
-			logmsg("error loading basestation");
-		}
-	}
-	return usbdev;
+                if (bstype == BASESTATION_PRE_LOAD)
+                    pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_BSP,pic::f_string_t::method(&f,&devcheck::found));
+                else
+                 pic::usbenumerator_t::enumerate(BCTKBD_USBVENDOR, PRODUCT_ID_PSU,pic::f_string_t::method(&f,&devcheck::found));
+
+            }
+
+            if(f.found_) {
+                char buf[1024];
+                snprintf(buf, 1024,"basestation loaded dev: %s ", usbdevice.c_str());
+                logmsg(buf);
+            } else {
+                logmsg("error: basestation post firmware not found");
+                return false;
+            }
+        } else {
+            logmsg("error loading basestation");
+            return false;
+        }
+    }
+    return true;
 }
 
-
-struct devfinder: virtual pic::tracked_t
-{
-    devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
-    }
-
-    void found(const std::string &device) { 
-        devlist_.push_back(device);
-    }
-
-    std::vector<std::string>& devlist_;
-};
 
 std::vector<std::string> EF_BaseStation::availableDevices()
 {

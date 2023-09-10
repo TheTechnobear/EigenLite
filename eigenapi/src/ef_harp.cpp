@@ -57,10 +57,9 @@ namespace EigenApi {
     }
 
 
-    bool EF_Harp::create() {
+    bool EF_Harp::create(const std::string& usbdev) {
         logmsg("create EF_Harp");
 
-        std::string usbdev = findDevice();
         if (usbdev.size() == 0) {
             logmsg("unable to find device ");
             return false;

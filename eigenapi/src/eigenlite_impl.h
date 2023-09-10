@@ -64,7 +64,7 @@ namespace EigenApi
         volatile bool usbDevChange_=false;
 
         bool filterBaseStationOrPico_=false;
-        bool filterDeviceEnum_ = 0;
+        unsigned filterDeviceEnum_ = 0;
 
         std::set<std::string> deadDevices_;
         IFW_Reader *fwReader_;

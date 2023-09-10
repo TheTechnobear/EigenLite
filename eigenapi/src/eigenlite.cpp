@@ -86,43 +86,40 @@ namespace EigenApi {
 
 
     bool EigenLite::checkUsbDev() {
-        if(usbDevCheckSpinLock.test_and_set()) {
-            if (!usbDevChange_) {
-
-                // any change in basestation setup?
-                auto baseUSBDevList = EF_BaseStation::availableDevices();
-                if(availableBaseStations_.size() == baseUSBDevList.size()) {
-                    int i=0;
-                    for(auto& usbdev : baseUSBDevList) {
-                        if(availableBaseStations_[i] != usbdev) {
-                            usbDevChange_ |= true;
-                            availableBaseStations_ = baseUSBDevList;
-                            break;
-                        }
-                        i++;
+        if(!usbDevCheckSpinLock.test_and_set()) {
+            // any change in basestation setup?
+            auto baseUSBDevList = EF_BaseStation::availableDevices();
+            if(availableBaseStations_.size() == baseUSBDevList.size()) {
+                int i=0;
+                for(auto& usbdev : baseUSBDevList) {
+                    if(availableBaseStations_[i] != usbdev) {
+                        usbDevChange_ |= true;
+                        availableBaseStations_ = baseUSBDevList;                            break;
                     }
-                } else {
-                    usbDevChange_ |= true;
-                    availableBaseStations_ = baseUSBDevList;
+                    i++;
                 }
-
-                // any change in pico setup?
-                auto picoUSBDevList = EF_Pico::availableDevices();
-                if(availablePicos_.size() == picoUSBDevList.size()) {
-                    int i=0;
-                    for(auto& usbdev : picoUSBDevList) {
-                        if(availablePicos_[i] != usbdev) {
-                            usbDevChange_ |= true;
-                            availablePicos_ = picoUSBDevList;
-                            break;
-                        }
-                        i++;
-                    }
-                } else {
-                    usbDevChange_ |= true;
-                    availablePicos_ = picoUSBDevList;
-                }
+            } else {
+                usbDevChange_ |= true;
+                availableBaseStations_ = baseUSBDevList;
             }
+
+            // any change in pico setup?
+            auto picoUSBDevList = EF_Pico::availableDevices();
+            if(availablePicos_.size() == picoUSBDevList.size()) {
+                int i=0;
+                for(auto& usbdev : picoUSBDevList) {
+                    if(availablePicos_[i] != usbdev) {
+                        usbDevChange_ |= true;
+                        availablePicos_ = picoUSBDevList;
+                        break;
+                    }
+                    i++;
+                }
+            } else {
+                usbDevChange_ |= true;
+                availablePicos_ = picoUSBDevList;
+            }
+
             usbDevCheckSpinLock.clear();
             return true;
         }
@@ -170,7 +167,7 @@ namespace EigenApi {
 
 
     bool EigenLite::poll() {
-        if(usbDevCheckSpinLock.test_and_set()) {
+        if(!usbDevCheckSpinLock.test_and_set()) {
             if (usbDevChange_) {
 
                 bool newPico = false;
@@ -211,7 +208,7 @@ namespace EigenApi {
                     logmsg(logbuf);
 
                     pDevice = new EF_Pico(*this);
-                    if (pDevice->create()) {
+                    if (pDevice->create(picoUSBDev)) {
                         char logbuf[100];
                         snprintf(logbuf, 100, "created pico %s", pDevice->usbDevice()->name());
                         logmsg(logbuf);
@@ -225,17 +222,20 @@ namespace EigenApi {
                     logmsg(logbuf);
 
                     pDevice = new EF_BaseStation(*this);
-                    if (pDevice->create()) {
+                    if (pDevice->create(baseUSBDev)) {
                         devices_.push_back(pDevice);
                         pDevice->start();
                     }
                 }
 
                 usbDevChange_ = false;
-                usbDevCheckSpinLock.clear();
 
-                if (newBase || newPico) return true;
+                if (newBase || newPico)  {
+                    usbDevCheckSpinLock.clear();
+                    return true;
+                }
             }
+            usbDevCheckSpinLock.clear();
         } // test n' set, else just wait till next time! 
 
         while (deadDevices_.size() > 0) {

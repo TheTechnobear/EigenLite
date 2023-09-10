@@ -15,6 +15,30 @@
 namespace EigenApi
 {
 
+   struct devcheck: virtual pic::tracked_t
+    {
+        devcheck(const std::string& dev) : dev_(dev) {
+        }
+        void found(const std::string &device) { 
+            found_ |= (dev_==device);
+        }
+        const std::string& dev_;
+        bool found_=false;
+    };
+
+
+    struct devfinder: virtual pic::tracked_t
+    {
+        devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
+        }
+
+        void found(const std::string &device) { 
+            devlist_.push_back(device);
+        }
+
+        std::vector<std::string>& devlist_;
+    };
+
     class EF_Harp
     {
     public:
@@ -23,7 +47,7 @@ namespace EigenApi
         virtual ~EF_Harp();
         
         const char* name();
-        virtual bool create();
+        virtual bool create(const std::string& usbdev);
         virtual bool destroy();
         virtual bool start();
         virtual bool stop();
@@ -47,7 +71,7 @@ namespace EigenApi
 
         EigenLite& efd_;
 protected:
-        virtual std::string findDevice() = 0;
+
 private:        
         // for controlling firmware loading
         static void pokeFirmware(pic::usbdevice_t* pDevice,int address,int byteCount,void* data);
@@ -85,7 +109,7 @@ private:
         EF_Pico(EigenLite& efd);
         virtual ~EF_Pico();
         
-        bool create() override;
+        bool create(const std::string& usbdev) override;
         bool destroy() override;
         bool start() override;
         bool stop() override;
@@ -99,8 +123,8 @@ private:
         static std::vector<std::string> availableDevices();
 
     private:
-        std::string findDevice() override;
-        bool loadPicoFirmware();
+        bool checkFirmware(const std::string& usbdev);
+        bool loadPicoFirmware(const std::string& usbdev);
         pico::active_t *pLoop_;
         unsigned lastMode_[4];
 
@@ -130,7 +154,7 @@ private:
         EF_BaseStation(EigenLite& efd);
         virtual ~EF_BaseStation();
 
-        bool create() override;
+        bool create(const std::string& usbdev) override;
         bool destroy() override;
         bool start() override;
         bool stop() override;
@@ -148,8 +172,8 @@ private:
     protected:
         alpha2::active_t* loop() { return pLoop_;}
     private:
-        std::string findDevice() override;
-        bool loadBaseStation();
+        bool checkFirmware(const std::string& usbdevice);
+        bool loadBaseStation(const std::string& usbdev, unsigned short bstype);
         std::shared_ptr<alpha2::active_t::delegate_t> delegate_; 
         alpha2::active_t *pLoop_;
         unsigned short curmap_[9],skpmap_[9];

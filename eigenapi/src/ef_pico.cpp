@@ -36,9 +36,14 @@ namespace EigenApi {
     EF_Pico::~EF_Pico() {
     }
 
-    bool EF_Pico::create() {
+    bool EF_Pico::create(const std::string& usbdev) {
         logmsg("create eigenharp pico");
-        if (!EF_Harp::create()) return false;
+
+        if(!checkFirmware(usbdev)) {
+            return false;
+        }
+
+        if (!EF_Harp::create(usbdev)) return false;
 
         try {
             logmsg("close device to allow active_t to open");
@@ -119,10 +124,8 @@ namespace EigenApi {
         pLoop_->set_led(keynum, colour);
     }
 
-    bool EF_Pico::loadPicoFirmware() {
+    bool EF_Pico::loadPicoFirmware(const std::string& usbdev) {
         std::string ihxFile;
-
-        std::string usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PICO_PRE_LOAD, false).c_str();
         if (usbdev.size() == 0) {
             pic::logmsg() << "no pico connected/powered on?";
             return false;
@@ -144,47 +147,44 @@ namespace EigenApi {
         return loadFirmware(pDevice, ihxFile);
     }
 
-    std::string EF_Pico::findDevice() {
-        std::string usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PRODUCT_ID_PICO, false).c_str();
 
-        if (usbdev.size() == 0) {
+ 
+
+
+    bool EF_Pico::checkFirmware(const std::string& usbdevice) {
+        devcheck f(usbdevice);
+        pic::usbenumerator_t::enumerate(BCTPICO_USBVENDOR, PICO_PRE_LOAD,pic::f_string_t::method(&f,&devcheck::found));
+
+        // we need to load firmware 
+        if (f.found_) {
             logmsg("pico loading firmware...");
-            if (loadPicoFirmware()) {
+            if (loadPicoFirmware(usbdevice)) {
                 logmsg("pico firmware loaded");
 
-                for (int i = 0; i < 10 && usbdev.size() == 0; i++) {
+                f.found_ = false;
+                pic::usbenumerator_t::enumerate(BCTPICO_USBVENDOR, PRODUCT_ID_PICO,pic::f_string_t::method(&f,&devcheck::found));
+                for (int i = 0; i < 10 && f.found_==false ; i++) {
                     logmsg("attempting to find pico...");
-
-                    // can take a few seconds for pico to reregister itself
-                    usbdev = pic::usbenumerator_t::find(BCTPICO_USBVENDOR, PRODUCT_ID_PICO, false).c_str();
-
                     pic_microsleep(1000000);
+                    // can take a few seconds for pico to reregister itself
+                    pic::usbenumerator_t::enumerate(BCTPICO_USBVENDOR, PRODUCT_ID_PICO,pic::f_string_t::method(&f,&devcheck::found));
                 }
-                char buf[100];
-                snprintf(buf, 100,"pico loaded dev: %s ", usbdev.c_str());
-                logmsg(buf);
+
+                if(f.found_) {
+                    char buf[1024];
+                    snprintf(buf, 1024,"pico loaded dev: %s ", usbdevice.c_str());
+                    logmsg(buf);
+                } else {
+                    logmsg("error: pico post firmware not found");
+                    return false;
+                }
             } else {
                 logmsg("error loading pico");
+                return false;
             }
         }
-        return usbdev;
+        return true;
     }
-
-    // bool EF_Pico::isAvailable() {
-    //     return EF_Pico::availableDevices().size() > 0;
-    // }
-
-    struct devfinder: virtual pic::tracked_t
-    {
-        devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
-        }
-
-        void found(const std::string &device) { 
-            devlist_.push_back(device);
-        }
-
-        std::vector<std::string>& devlist_;
-    };
 
     std::vector<std::string> EF_Pico::availableDevices() {
         std::vector<std::string> devList;
