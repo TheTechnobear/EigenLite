@@ -164,6 +164,9 @@ namespace
             (*device)->USBDeviceClose(device);
             PIC_THROW("can't set default configuration");
         }
+        // wait for device to SetConfiguration 
+        pic_microsleep(1000);
+
 
         request.bInterfaceClass = kIOUSBFindInterfaceDontCare;
         request.bInterfaceSubClass = kIOUSBFindInterfaceDontCare;
