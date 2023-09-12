@@ -39,7 +39,7 @@ void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigne
     else {
         const int MAIN_KEYBASE = TAU_KBD_KEYS; //CHECK
         unsigned course = key >= MAIN_KEYBASE;
-        if (key > TAU_KBD_KEYS) key = key - TAU_KBD_KEYS; // mode keys
+        if (key > TAU_KBD_KEYS) key = key - TAU_KBD_KEYS - 1; // mode keys
         parent_.fireKeyEvent(t, course, key , a, p, r, y);
     }
 }
