@@ -67,7 +67,6 @@ bool EF_BaseStation::create(const std::string& usbdev)
                 delegate_ = std::shared_ptr<alpha2::active_t::delegate_t> (new EF_Alpha(*this));
                 break; 
             case 2:
-                isAlpha_ = false;
                 logmsg("TAU detected");
                 delegate_ = std::shared_ptr<alpha2::active_t::delegate_t> (new EF_Tau(*this));
                 break; 
@@ -79,6 +78,7 @@ bool EF_BaseStation::create(const std::string& usbdev)
         }
         logmsg("create basestation loop");
         pLoop_ = new alpha2::active_t(usbDevice(), delegate_.get(),false);
+        pLoop_->set_tau_mode(!isAlpha_);
         logmsg("created basestation loop");
     } catch (pic::error& e) {
         // error is logged by default, so dont need to repeat, but useful if we want line number etc for debugging
