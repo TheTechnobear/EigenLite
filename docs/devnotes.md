@@ -142,3 +142,17 @@ check   void breath_t::update(unsigned long long t, unsigned b)
  
 
 
+
+### from MetaMorph !!!
+    int breathZeroPoint_ = -1;
+
+
+        if (breathZeroPoint_ < 0) breathZeroPoint_ = val;
+        int iVal = int(val) - breathZeroPoint_;
+        if (iVal > 0) {
+            iVal = (float(iVal) / (4096 - breathZeroPoint_)) * 4096;
+        } else {
+            iVal = (float(iVal) / breathZeroPoint_) * 4096;
+        }
+
+
