@@ -4,117 +4,110 @@
 #define BASESTATION_FIRMWARE "bs_mm_fw_0103.ihx"
 #define PSU_FIRMWARE "psu_mm_fw_0102.ihx"
 
-namespace EigenApi
-{
-    class Callback
-    {
-    public:
-    	enum DeviceType {
-    		PICO,
-    		TAU,
-    		ALPHA
-    	};
-    	virtual ~Callback() = default;
-
-        // information 
-        virtual void beginDeviceInfo() {}
-        virtual void deviceInfo(bool isPico, unsigned devEnum, const char* dev) {}
-        virtual void endDeviceInfo() {}
-
-        // device events 
-        // note: dev = usb id, name is a 'friendly' enumeration of usb devices 
-        virtual void connected(const char* dev, DeviceType dt) {};
-        virtual void disconnected(const char* dev) {};
-
-        virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {};
-        virtual void breath(const char* dev, unsigned long long t, unsigned val) {};
-        virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a) {};
-        virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) {};
-        virtual void dead(const char* dev, unsigned reason) {};
+namespace EigenApi {
+class Callback {
+   public:
+    enum DeviceType {
+        PICO,
+        TAU,
+        ALPHA
     };
+    virtual ~Callback() = default;
 
-    class IFW_Reader;
+    // information
+    virtual void beginDeviceInfo() {}
+    virtual void deviceInfo(bool isPico, unsigned devEnum, const char* dev) {}
+    virtual void endDeviceInfo() {}
 
-    // important note: 
-    // any pointers passed in, are owned by caller
-    // they are assumed valid until explicitly removed, or api is destroyed
-    class Eigenharp
-    {
-    public:
-        explicit Eigenharp(); // use an embedded reader
-        explicit Eigenharp(IFW_Reader *fwReader);
-        virtual ~Eigenharp();
+    // device events
+    // note: dev = usb id, name is a 'friendly' enumeration of usb devices
+    virtual void connected(const char* dev, DeviceType dt){};
+    virtual void disconnected(const char* dev){};
 
-        const char* versionString();
+    virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y){};
+    virtual void breath(const char* dev, unsigned long long t, unsigned val){};
+    virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a){};
+    virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val){};
+    virtual void dead(const char* dev, unsigned reason){};
+};
 
-        bool start();
-        bool process();
-        bool stop();
+class IFW_Reader;
 
-        void addCallback(Callback* api);
-        void removeCallback(Callback* api);
-        void clearCallbacks();
-        
-        void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
+// important note:
+// any pointers passed in, are owned by caller
+// they are assumed valid until explicitly removed, or api is destroyed
+class Eigenharp {
+   public:
+    explicit Eigenharp();  // use an embedded reader
+    explicit Eigenharp(IFW_Reader* fwReader);
+    virtual ~Eigenharp();
 
-        void setPollTime(unsigned pollTime);
+    const char* versionString();
 
-        // basestation = 0, pico =1
-        void setDeviceFilter(bool baseOrPico, unsigned devEnum);
-    private:
-        void *impl;
-    };
-    
+    bool start();
+    bool process();
+    bool stop();
 
-    // Firmware reader 
-    class IFW_Reader
-    {
-    public:
-        virtual ~IFW_Reader() = default;
-        virtual bool open(const char* filename, int oFlags, void* *fd) = 0;
-        virtual long read(void* fd, void *data, long byteCount) = 0;
-        virtual void close(void* fd) = 0;
-        virtual bool confirmResources() = 0;
-    };
+    void addCallback(Callback* api);
+    void removeCallback(Callback* api);
+    void clearCallbacks();
 
-    // firmware reader implementation for OSX/Linux files
-    class FWR_Posix : public EigenApi::IFW_Reader
-    {
-    public:
-        explicit FWR_Posix(const char* path);
+    void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
 
-        bool open(const char* filename, int oFlags, void* *fd) override;
-        long read(void* fd, void *data, long byteCount) override;
-        void close(void* fd) override;
-        bool confirmResources() override;
+    void setPollTime(unsigned pollTime);
 
-    private:
-        const char* path_;
-    };
+    // basestation = 0, pico =1
+    void setDeviceFilter(bool baseOrPico, unsigned devEnum);
 
-    // use firmware embedeed into EigenLite
-    class FWR_Embedded : public EigenApi::IFW_Reader
-    {
-    public:
-        explicit FWR_Embedded();
+   private:
+    void* impl;
+};
 
-        bool open(const char* deviceihx, int oFlags, void* *fd) override;
-        long read(void* fd, void *data, long byteCount) override;
-        void close(void* fd) override;
-        bool confirmResources() override;
+// Firmware reader
+class IFW_Reader {
+   public:
+    virtual ~IFW_Reader() = default;
+    virtual bool open(const char* filename, int oFlags, void** fd) = 0;
+    virtual long read(void* fd, void* data, long byteCount) = 0;
+    virtual void close(void* fd) = 0;
+    virtual bool confirmResources() = 0;
+};
 
-    private:
-        long position_=0;
-        unsigned maxLen_=0;
-    };
+// firmware reader implementation for OSX/Linux files
+class FWR_Posix : public EigenApi::IFW_Reader {
+   public:
+    explicit FWR_Posix(const char* path);
 
-    class Logger
-    {
-    public:
-        static void setLogFunc(void (*pLogFn)(const char*));
-        static void logmsg(const char*);
-    private:
-        static void (*_logmsg)(const char*);
-    };
-}
+    bool open(const char* filename, int oFlags, void** fd) override;
+    long read(void* fd, void* data, long byteCount) override;
+    void close(void* fd) override;
+    bool confirmResources() override;
 
+   private:
+    const char* path_;
+};
+
+// use firmware embedeed into EigenLite
+class FWR_Embedded : public EigenApi::IFW_Reader {
+   public:
+    explicit FWR_Embedded();
+
+    bool open(const char* deviceihx, int oFlags, void** fd) override;
+    long read(void* fd, void* data, long byteCount) override;
+    void close(void* fd) override;
+    bool confirmResources() override;
+
+   private:
+    long position_ = 0;
+    unsigned maxLen_ = 0;
+};
+
+class Logger {
+   public:
+    static void setLogFunc(void (*pLogFn)(const char*));
+    static void logmsg(const char*);
+
+   private:
+    static void (*_logmsg)(const char*);
+};
+}  // namespace EigenApi

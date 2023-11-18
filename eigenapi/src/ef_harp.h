@@ -1,220 +1,210 @@
 #pragma once
 
-#include <vector>
-#include <picross/pic_usb.h>
 #include <lib_alpha2/alpha2_active.h>
 #include <lib_pico/pico_active.h>
-#include <memory>
-#include <thread>
-#include <set>
+#include <picross/pic_usb.h>
 #include <sys/fcntl.h>
 
-#include "eigenlite_impl.h"
+#include <memory>
+#include <set>
+#include <thread>
+#include <vector>
+
 #include "ef_harp.h"
+#include "eigenlite_impl.h"
 
-namespace EigenApi
-{
+namespace EigenApi {
 
-   struct devcheck: virtual pic::tracked_t
-    {
-        devcheck(const std::string& dev) : dev_(dev) {
-        }
-        void found(const std::string &device) { 
-            found_ |= (dev_==device);
-        }
-        const std::string& dev_;
-        bool found_=false;
+struct devcheck : virtual pic::tracked_t {
+    devcheck(const std::string& dev) : dev_(dev) {
+    }
+    void found(const std::string& device) {
+        found_ |= (dev_ == device);
+    }
+    const std::string& dev_;
+    bool found_ = false;
+};
+
+struct devfinder : virtual pic::tracked_t {
+    devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
+    }
+
+    void found(const std::string& device) {
+        devlist_.push_back(device);
+    }
+
+    std::vector<std::string>& devlist_;
+};
+
+class EF_Harp {
+   public:
+    EF_Harp(EigenLite& efd);
+    virtual ~EF_Harp();
+
+    const char* name();
+    virtual bool create(const std::string& usbdev);
+    virtual bool destroy();
+    virtual bool start();
+    virtual bool stop();
+    virtual bool poll(long long t);
+
+    bool stopping() { return stopping_; }
+
+    virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
+    virtual void fireBreathEvent(unsigned long long t, unsigned val);
+    virtual void fireStripEvent(unsigned long long t, unsigned strip, unsigned val, bool a);
+    virtual void firePedalEvent(unsigned long long t, unsigned pedal, unsigned val);
+    virtual void fireDeadEvent(unsigned reason);
+
+    virtual void restartKeyboard() = 0;
+    virtual void setLED(unsigned course, unsigned int keynum, unsigned int colour) = 0;
+
+    pic::usbdevice_t* usbDevice() { return pDevice_; }
+
+    bool loadFirmware(pic::usbdevice_t* pDevice, std::string ihxFile);
+    static void logmsg(const char* msg);
+
+    EigenLite& efd_;
+
+   protected:
+   private:
+    // for controlling firmware loading
+    static void pokeFirmware(pic::usbdevice_t* pDevice, int address, int byteCount, void* data);
+    static void firmwareCpucs(pic::usbdevice_t* pDevice, const char* mode);
+    static void resetFirmware(pic::usbdevice_t* pDevice);
+    static void runFirmware(pic::usbdevice_t* pDevice);
+    static void sendFirmware(pic::usbdevice_t* pDevice, int recType, int address, int byteCount, void* data);
+
+    // for IHX processing
+    static unsigned hexToInt(char* buf, int len);
+    static char hexToChar(char* buf);
+    bool processIHXLine(pic::usbdevice_t* pDevice, void* fd);
+
+    class IHXException {
+       public:
+        IHXException(const std::string& reason) : reason_(reason) {}
+        const std::string& reason() { return reason_; }
+
+       private:
+        std::string reason_;
     };
 
+    pic::usbdevice_t* pDevice_;
+    unsigned lastBreath_;
+    unsigned lastStrip_[2];
+    unsigned lastPedal_[4];
+    bool stopping_;
+};
 
-    struct devfinder: virtual pic::tracked_t
-    {
-        devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
-        }
+class EF_Pico : public EF_Harp {
+   public:
+    EF_Pico(EigenLite& efd);
+    virtual ~EF_Pico();
 
-        void found(const std::string &device) { 
-            devlist_.push_back(device);
-        }
+    bool create(const std::string& usbdev) override;
+    bool destroy() override;
+    bool start() override;
+    bool stop() override;
+    bool poll(long long t) override;
 
-        std::vector<std::string>& devlist_;
-    };
+    void restartKeyboard() override;
 
-    class EF_Harp
-    {
-    public:
-        
-        EF_Harp(EigenLite& efd);
-        virtual ~EF_Harp();
-        
-        const char* name();
-        virtual bool create(const std::string& usbdev);
-        virtual bool destroy();
-        virtual bool start();
-        virtual bool stop();
-        virtual bool poll(long long t);
+    void setLED(unsigned course, unsigned int keynum, unsigned int colour) override;
+    void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override;
 
-        bool stopping() { return stopping_;}
-        
-		virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
-        virtual void fireBreathEvent(unsigned long long t, unsigned val);
-        virtual void fireStripEvent(unsigned long long t, unsigned strip, unsigned val, bool a);
-        virtual void firePedalEvent(unsigned long long t, unsigned pedal, unsigned val);
-        virtual void fireDeadEvent(unsigned reason);
-        
-        virtual void restartKeyboard() = 0;
-        virtual void setLED(unsigned course, unsigned int keynum,unsigned int colour) = 0;
+    static std::vector<std::string> availableDevices();
 
-        pic::usbdevice_t* usbDevice() { return pDevice_;}
+   private:
+    bool checkFirmware(const std::string& usbdev);
+    bool loadPicoFirmware(const std::string& usbdev);
+    pico::active_t* pLoop_;
+    unsigned lastMode_[4];
 
-        bool loadFirmware(pic::usbdevice_t* pDevice,std::string ihxFile);
-        static void logmsg(const char* msg);
-
-        EigenLite& efd_;
-protected:
-
-private:        
-        // for controlling firmware loading
-        static void pokeFirmware(pic::usbdevice_t* pDevice,int address,int byteCount,void* data);
-        static void firmwareCpucs(pic::usbdevice_t* pDevice,const char* mode);
-        static void resetFirmware(pic::usbdevice_t* pDevice);
-        static void runFirmware(pic::usbdevice_t* pDevice);
-        static void sendFirmware(pic::usbdevice_t* pDevice,int recType,int address,int byteCount,void* data);
-        
-        // for IHX processing
-        static unsigned hexToInt(char* buf, int len);
-        static char hexToChar(char* buf);
-        bool processIHXLine(pic::usbdevice_t* pDevice,void* fd);
-        
-
-        class IHXException
-        {
-        public:
-            IHXException(const std::string& reason) : reason_(reason) {}
-            const std::string& reason() { return reason_;}
-        private:
-            std::string reason_;
-        };
-        
-        pic::usbdevice_t* pDevice_;
-        unsigned lastBreath_;
-        unsigned lastStrip_[2];
-        unsigned lastPedal_[4];
-        bool stopping_;
-    };
-    
-    
-    class EF_Pico : public EF_Harp
-    {
-    public:
-        EF_Pico(EigenLite& efd);
-        virtual ~EF_Pico();
-        
-        bool create(const std::string& usbdev) override;
-        bool destroy() override;
-        bool start() override;
-        bool stop() override;
-        bool poll(long long t) override ;
-        
-        void restartKeyboard() override;
-
-        void setLED(unsigned course, unsigned int keynum,unsigned int colour) override;
-        void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override;
-        
-        static std::vector<std::string> availableDevices();
-
-    private:
-        bool checkFirmware(const std::string& usbdev);
-        bool loadPicoFirmware(const std::string& usbdev);
-        pico::active_t *pLoop_;
-        unsigned lastMode_[4];
-
-        
-    class Delegate : public pico::active_t::delegate_t
-        {
-        public:
-        	Delegate(EF_Pico& p) : 
-                parent_(p) ,
-                s_count_(100), s_threshold_(65), s_state_(0),s_last_(0) {;}
-            void kbd_dead(unsigned reason);
-            void kbd_raw(bool resync,const pico::active_t::rawkbd_t &);
-            void kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
-            void kbd_strip(unsigned long long t, unsigned s);
-            void kbd_breath(unsigned long long t, unsigned b);
-            void kbd_mode(unsigned long long t, unsigned key, unsigned m);
-        private:
-            unsigned s_count_,s_threshold_,s_state_, s_last_;
-            EF_Pico& parent_;
-        } delegate_;
-    };
-
-
-    class EF_BaseStation : public EF_Harp
-    {
-    public:
-        EF_BaseStation(EigenLite& efd);
-        virtual ~EF_BaseStation();
-
-        bool create(const std::string& usbdev) override;
-        bool destroy() override;
-        bool start() override;
-        bool stop() override;
-        bool poll(long long t) override ;
-
-        void restartKeyboard() override;
-
-        void setLED(unsigned course, unsigned int keynum,unsigned int colour) override;
-
-        static std::vector<std::string> availableDevices();
-
-        unsigned short* curMap() { return curmap_;}
-        unsigned short* skpMap() { return skpmap_;}
-
-    protected:
-        alpha2::active_t* loop() { return pLoop_;}
-    private:
-        bool checkFirmware(const std::string& usbdevice);
-        bool loadBaseStation(const std::string& usbdev, unsigned short bstype);
-        std::shared_ptr<alpha2::active_t::delegate_t> delegate_; 
-        alpha2::active_t *pLoop_;
-        unsigned short curmap_[9],skpmap_[9];
-        bool isAlpha_;
-    };
-
-    class EF_Alpha : public alpha2::active_t::delegate_t
-    {
-    public:
-        EF_Alpha(EF_BaseStation& p) : parent_(p) {;}
-
-        //alpha2::active_t::delegate_t
+    class Delegate : public pico::active_t::delegate_t {
+       public:
+        Delegate(EF_Pico& p) : parent_(p),
+                               s_count_(100),
+                               s_threshold_(65),
+                               s_state_(0),
+                               s_last_(0) { ; }
         void kbd_dead(unsigned reason);
-        void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
-        void kbd_mic(unsigned char s,unsigned long long t, const float *samples);
-        void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
-        void kbd_keydown(unsigned long long t, const unsigned short *bitmap);
-        void pedal_down(unsigned long long t, unsigned pedal, unsigned p);
-        void midi_data(unsigned long long t, const unsigned char *data, unsigned len);
-            
-    private:
-        void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
-        EF_BaseStation& parent_;
-    };
+        void kbd_raw(bool resync, const pico::active_t::rawkbd_t&);
+        void kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
+        void kbd_strip(unsigned long long t, unsigned s);
+        void kbd_breath(unsigned long long t, unsigned b);
+        void kbd_mode(unsigned long long t, unsigned key, unsigned m);
 
-    class EF_Tau : public alpha2::active_t::delegate_t
-    {
-    public:
-        EF_Tau(EF_BaseStation& p) : parent_(p) {;}
+       private:
+        unsigned s_count_, s_threshold_, s_state_, s_last_;
+        EF_Pico& parent_;
+    } delegate_;
+};
 
-        //alpha2::active_t::delegate_t
-        void kbd_dead(unsigned reason);
-        void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
-        void kbd_mic(unsigned char s,unsigned long long t, const float *samples);
-        void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
-        void kbd_keydown(unsigned long long t, const unsigned short *bitmap);
-        void pedal_down(unsigned long long t, unsigned pedal, unsigned p);
-        void midi_data(unsigned long long t, const unsigned char *data, unsigned len);
-            
-    private:
-        void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
-        EF_BaseStation& parent_;
-    };
-}
+class EF_BaseStation : public EF_Harp {
+   public:
+    EF_BaseStation(EigenLite& efd);
+    virtual ~EF_BaseStation();
+
+    bool create(const std::string& usbdev) override;
+    bool destroy() override;
+    bool start() override;
+    bool stop() override;
+    bool poll(long long t) override;
+
+    void restartKeyboard() override;
+
+    void setLED(unsigned course, unsigned int keynum, unsigned int colour) override;
+
+    static std::vector<std::string> availableDevices();
+
+    unsigned short* curMap() { return curmap_; }
+    unsigned short* skpMap() { return skpmap_; }
+
+   protected:
+    alpha2::active_t* loop() { return pLoop_; }
+
+   private:
+    bool checkFirmware(const std::string& usbdevice);
+    bool loadBaseStation(const std::string& usbdev, unsigned short bstype);
+    std::shared_ptr<alpha2::active_t::delegate_t> delegate_;
+    alpha2::active_t* pLoop_;
+    unsigned short curmap_[9], skpmap_[9];
+    bool isAlpha_;
+};
+
+class EF_Alpha : public alpha2::active_t::delegate_t {
+   public:
+    EF_Alpha(EF_BaseStation& p) : parent_(p) { ; }
+
+    // alpha2::active_t::delegate_t
+    void kbd_dead(unsigned reason);
+    void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
+    void kbd_mic(unsigned char s, unsigned long long t, const float* samples);
+    void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
+    void kbd_keydown(unsigned long long t, const unsigned short* bitmap);
+    void pedal_down(unsigned long long t, unsigned pedal, unsigned p);
+    void midi_data(unsigned long long t, const unsigned char* data, unsigned len);
+
+   private:
+    void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
+    EF_BaseStation& parent_;
+};
+
+class EF_Tau : public alpha2::active_t::delegate_t {
+   public:
+    EF_Tau(EF_BaseStation& p) : parent_(p) { ; }
+
+    // alpha2::active_t::delegate_t
+    void kbd_dead(unsigned reason);
+    void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
+    void kbd_mic(unsigned char s, unsigned long long t, const float* samples);
+    void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
+    void kbd_keydown(unsigned long long t, const unsigned short* bitmap);
+    void pedal_down(unsigned long long t, unsigned pedal, unsigned p);
+    void midi_data(unsigned long long t, const unsigned char* data, unsigned len);
+
+   private:
+    void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
+    EF_BaseStation& parent_;
+};
+}  // namespace EigenApi
