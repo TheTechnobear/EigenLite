@@ -21,14 +21,14 @@
 
 namespace EigenApi {
 
-void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y) {
+void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y) {
     const int MAIN_KEYBASE = 120;
     unsigned course = key >= MAIN_KEYBASE;
 
     if (key == KBD_STRIP1)
-        parent_.fireStripEvent(t, 1, 2048, 0);
+        parent_.fireStripEvent(t, 1, 0.0f, 0);
     else if (key == KBD_STRIP2)
-        parent_.fireStripEvent(t, 2, 2048, 0);
+        parent_.fireStripEvent(t, 2, 0.0f, 0);
     else
         parent_.fireKeyEvent(t, course, key - (course * MAIN_KEYBASE), a, p, r, y);
 }
@@ -52,23 +52,27 @@ void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, in
 
     if (key < KBD_KEYS) {
         // pic::logmsg() << "kbd_key fire" << key << " p " << p << " r " << r << " y " << y;
-        int rr = (r - 2048) * 2 * -1;
-        int ry = (y - 2048) * 2 * -1;
-        fireAlphaKeyEvent(t, key, a, p, rr, ry);
+        float fp = pToFloat(p);
+        float fr = rToFloat(r);
+        float fy = yToFloat(y);
+        fireAlphaKeyEvent(t, key, a, fp, fr, fy);
         return;
     }
 
     switch (key) {
         case KBD_BREATH1: {
-            parent_.fireBreathEvent(t, p);
+            float fp = breathToFloat(p);
+            parent_.fireBreathEvent(t, fp);
             break;
         }
         case KBD_STRIP1: {
-            parent_.fireStripEvent(t, 1, p, a);
+            float fp = stripToFloat(p);
+            parent_.fireStripEvent(t, 1, fp, a);
             break;
         }
         case KBD_STRIP2: {
-            parent_.fireStripEvent(t, 2, p, a);
+            float fp = stripToFloat(p);
+            parent_.fireStripEvent(t, 2, fp, a);
             break;
         }
             // case KBD_DESENSE : break;
@@ -100,7 +104,7 @@ void EF_Alpha::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
 
             // if was on, but no longer on
             if ((parent_.curMap()[w] & mask) && !(newmap[w] & mask)) {
-                fireAlphaKeyEvent(t, keybase + k, 0, 0, 0, 0);
+                fireAlphaKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
             }
         }
 
@@ -115,7 +119,8 @@ void EF_Alpha::midi_data(unsigned long long t, const unsigned char *data, unsign
 }
 
 void EF_Alpha::pedal_down(unsigned long long t, unsigned pedal, unsigned value) {
-    parent_.firePedalEvent(t, pedal, value);
+    float fv = pedalToFloat(value);
+    parent_.firePedalEvent(t, pedal, fv);
 }
 
 }  // namespace EigenApi

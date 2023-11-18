@@ -21,17 +21,18 @@
 
 namespace EigenApi {
 
-static const unsigned int TAU_COLUMNCOUNT = 7;
-static const unsigned int TAU_COLUMNS[TAU_COLUMNCOUNT] = {16, 16, 20, 20, 12, 4, 4};
-static const unsigned int TAU_COURSEKEYS = 92;
+static const unsigned TAU_COLUMNCOUNT = 7;
+static const unsigned TAU_COLUMNS[TAU_COLUMNCOUNT] = {16, 16, 20, 20, 12, 4, 4};
+static const unsigned TAU_COURSEKEYS = 92;
 
-void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y) {
+void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y) {
     if (key == TAU_KBD_STRIP1)
-        parent_.fireStripEvent(t, 1, 2048, 0);
+        parent_.fireStripEvent(t, 1, 0.0f, 0);
     else {
         const int MAIN_KEYBASE = TAU_KBD_KEYS;  // CHECK
         unsigned course = key >= MAIN_KEYBASE;
         if (key > TAU_KBD_KEYS) key = key - TAU_KBD_KEYS - TAU_KEYS_OFFSET;  // mode keys
+
         parent_.fireKeyEvent(t, course, key, a, p, r, y);
     }
 }
@@ -54,15 +55,17 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
     }
 
     if (key < TAU_KBD_KEYS || key >= (TAU_KBD_KEYS + TAU_KEYS_OFFSET)) {
-        // pic::logmsg() << "kbd_key fire" << key << " p " << p << " r " << r << " y " << y;
-        int rr = (r - 2048) * 2 * -1;
-        int ry = (y - 2048) * 2 * -1;
+        // pic::logmsg() << "kbd_key fire " << key << " p " << p << " r " << r << " y " << y;
+        float fp = pToFloat(p);
+        float fr = rToFloat(r);
+        float fy = yToFloat(y);
+
         if (key >= (TAU_KBD_KEYS + TAU_KEYS_OFFSET)) {
-            // mode key
-            p *= 4095;
+            // mode key (p=1, not 4095)
+            fp = float(p);
         }
 
-        fireTauKeyEvent(t, key, a, p, rr, ry);
+        fireTauKeyEvent(t, key, a, fp, fr, fy);
         return;
     }
 
@@ -71,11 +74,13 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
 
     switch (key) {
         case TAU_KBD_BREATH1: {
-            parent_.fireBreathEvent(t, p);
+            float fp = breathToFloat(p);
+            parent_.fireBreathEvent(t, fp);
             break;
         }
         case TAU_KBD_STRIP1: {
-            parent_.fireStripEvent(t, 1, p, a);
+            float fp = stripToFloat(p);
+            parent_.fireStripEvent(t, 1, fp, a);
             break;
         }
         // case TAU_KBD_DESENSE : break;
@@ -107,7 +112,7 @@ void EF_Tau::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
 
             // if was on, but no longer on
             if ((parent_.curMap()[w] & mask) && !(newmap[w] & mask)) {
-                fireTauKeyEvent(t, keybase + k, 0, 0, 0, 0);
+                fireTauKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
             }
         }
 
@@ -122,7 +127,8 @@ void EF_Tau::midi_data(unsigned long long t, const unsigned char *data, unsigned
 }
 
 void EF_Tau::pedal_down(unsigned long long t, unsigned pedal, unsigned value) {
-    parent_.firePedalEvent(t, pedal, value);
+    float fv = pedalToFloat(value);
+    parent_.firePedalEvent(t, pedal, fv);
 }
 
 }  // namespace EigenApi

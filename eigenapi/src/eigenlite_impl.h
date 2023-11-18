@@ -31,7 +31,7 @@ class EigenLite {
     void setDeviceFilter(bool baseStation, unsigned devenum);
 
     void setPollTime(unsigned pollTime);
-    void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
+    void setLED(const char* dev, unsigned course, unsigned key, unsigned colour);
 
     // logging
     static void logmsg(const char* msg);
@@ -41,10 +41,10 @@ class EigenLite {
 
     virtual void fireConnectEvent(const char* dev, Callback::DeviceType dt);
     virtual void fireDisconnectEvent(const char* dev);
-    virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
-    virtual void fireBreathEvent(const char* dev, unsigned long long t, unsigned val);
-    virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a);
-    virtual void firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, unsigned val);
+    virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y);
+    virtual void fireBreathEvent(const char* dev, unsigned long long t, float val);
+    virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, float val, bool a);
+    virtual void firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, float val);
     virtual void fireDeadEvent(const char* dev, unsigned reason);
 
     bool checkUsbDev();

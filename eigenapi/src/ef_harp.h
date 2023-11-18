@@ -50,14 +50,14 @@ class EF_Harp {
 
     bool stopping() { return stopping_; }
 
-    virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y);
-    virtual void fireBreathEvent(unsigned long long t, unsigned val);
-    virtual void fireStripEvent(unsigned long long t, unsigned strip, unsigned val, bool a);
-    virtual void firePedalEvent(unsigned long long t, unsigned pedal, unsigned val);
+    virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y);
+    virtual void fireBreathEvent(unsigned long long t, float val);
+    virtual void fireStripEvent(unsigned long long t, unsigned strip, float val, bool a);
+    virtual void firePedalEvent(unsigned long long t, unsigned pedal, float val);
     virtual void fireDeadEvent(unsigned reason);
 
     virtual void restartKeyboard() = 0;
-    virtual void setLED(unsigned course, unsigned int keynum, unsigned int colour) = 0;
+    virtual void setLED(unsigned course, unsigned keynum, unsigned colour) = 0;
 
     pic::usbdevice_t* usbDevice() { return pDevice_; }
 
@@ -109,8 +109,8 @@ class EF_Pico : public EF_Harp {
 
     void restartKeyboard() override;
 
-    void setLED(unsigned course, unsigned int keynum, unsigned int colour) override;
-    void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override;
+    void setLED(unsigned course, unsigned keynum, unsigned colour) override;
+    void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y) override;
 
     static std::vector<std::string> availableDevices();
 
@@ -135,6 +135,22 @@ class EF_Pico : public EF_Harp {
         void kbd_mode(unsigned long long t, unsigned key, unsigned m);
 
        private:
+        static constexpr float SENSOR_RANGE = 4096.f;
+        static constexpr float PRESSURE_RANGE = 4096.f;
+        static constexpr float ROLL_YAW_RANGE = 2048.f;
+
+        inline float clip(float v) {
+            v = std::max(v, -1.f);
+            v = std::min(v, 1.f);
+            return v;
+        }
+        inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
+        inline float rToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
+        inline float yToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
+        inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
+        inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
+        inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
+
         unsigned s_count_, s_threshold_, s_state_, s_last_;
         EF_Pico& parent_;
     } delegate_;
@@ -153,7 +169,7 @@ class EF_BaseStation : public EF_Harp {
 
     void restartKeyboard() override;
 
-    void setLED(unsigned course, unsigned int keynum, unsigned int colour) override;
+    void setLED(unsigned course, unsigned keynum, unsigned colour) override;
 
     static std::vector<std::string> availableDevices();
 
@@ -186,7 +202,24 @@ class EF_Alpha : public alpha2::active_t::delegate_t {
     void midi_data(unsigned long long t, const unsigned char* data, unsigned len);
 
    private:
-    void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
+    static constexpr float SENSOR_RANGE = 4096.f;
+    static constexpr float MID_SENSOR_RANGE = 2047.f;
+    static constexpr float PRESSURE_RANGE = 4096.f;
+    static constexpr float ROLL_YAW_RANGE = 1024.f;
+
+    inline float clip(float v) {
+        v = std::max(v, -1.f);
+        v = std::min(v, 1.f);
+        return v;
+    }
+    inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
+    inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
+    inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
+    inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
+
+    void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
     EF_BaseStation& parent_;
 };
 
@@ -204,7 +237,24 @@ class EF_Tau : public alpha2::active_t::delegate_t {
     void midi_data(unsigned long long t, const unsigned char* data, unsigned len);
 
    private:
-    void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
+    static constexpr float SENSOR_RANGE = 4096.f;
+    static constexpr float MID_SENSOR_RANGE = 2047.f;
+    static constexpr float PRESSURE_RANGE = 4096.f;
+    static constexpr float ROLL_YAW_RANGE = 1024.f;
+
+    inline float clip(float v) {
+        v = std::max(v, -1.f);
+        v = std::min(v, 1.f);
+        return v;
+    }
+    inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
+    inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
+    inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
+    inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
+
+    void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
     EF_BaseStation& parent_;
 };
 }  // namespace EigenApi

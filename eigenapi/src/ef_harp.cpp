@@ -107,11 +107,11 @@ bool EF_Harp::poll(long long t) {
     return true;
 }
 
-void EF_Harp::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {
+void EF_Harp::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y) {
     efd_.fireKeyEvent(pDevice_->name(), t, course, key, a, p, r, y);
 }
 
-void EF_Harp::fireBreathEvent(unsigned long long t, unsigned val) {
+void EF_Harp::fireBreathEvent(unsigned long long t, float val) {
     unsigned diff = std::abs((int)(lastBreath_ - val));
     if (diff > 10) {
         lastBreath_ = val;
@@ -119,7 +119,7 @@ void EF_Harp::fireBreathEvent(unsigned long long t, unsigned val) {
     }
 }
 
-void EF_Harp::fireStripEvent(unsigned long long t, unsigned strip, unsigned val, bool a) {
+void EF_Harp::fireStripEvent(unsigned long long t, unsigned strip, float val, bool a) {
     unsigned diff = std::abs((int)(lastStrip_[strip - 1] - val));
     if (diff > 10) {
         lastStrip_[strip - 1] = val;
@@ -127,7 +127,7 @@ void EF_Harp::fireStripEvent(unsigned long long t, unsigned strip, unsigned val,
     }
 }
 
-void EF_Harp::firePedalEvent(unsigned long long t, unsigned pedal, unsigned val) {
+void EF_Harp::firePedalEvent(unsigned long long t, unsigned pedal, float val) {
     unsigned diff = std::abs((int)(lastPedal_[pedal - 1] - val));
     if (diff > 10) {
         lastPedal_[pedal - 1] = val;
@@ -208,7 +208,7 @@ bool EF_Harp::processIHXLine(pic::usbdevice_t *pDevice, void *fd) {
 
     unsigned byteCount = 0;
     unsigned recType = 0;
-    unsigned int address;
+    unsigned address;
     char *data = 0;
     unsigned char expectedChecksum = 0;
     unsigned char checksum = 0;

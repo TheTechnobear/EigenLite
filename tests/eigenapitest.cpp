@@ -50,7 +50,7 @@ class PrinterCallback : public EigenApi::Callback {
         std::cout << "dev id " << dev << std::endl;
     }
 
-    void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) override {
+    void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y) override {
         std::cout << "key " << dev << " @ " << t << " - " << course << ":" << key << ' ' << a << ' ' << p << ' ' << r << ' ' << y << std::endl;
         if (course) {
             // mode key
@@ -68,15 +68,15 @@ class PrinterCallback : public EigenApi::Callback {
             }
         }
     }
-    void breath(const char* dev, unsigned long long t, unsigned val) override {
+    void breath(const char* dev, unsigned long long t, float val) override {
         std::cout << "breath " << dev << " @ " << t << " - " << val << std::endl;
     }
 
-    void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a) override {
+    void strip(const char* dev, unsigned long long t, unsigned strip, float val, bool a) override {
         std::cout << "strip " << dev << " @ " << t << " - " << strip << " = " << val << " " << a << std::endl;
     }
 
-    void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val) override {
+    void pedal(const char* dev, unsigned long long t, unsigned pedal, float val) override {
         std::cout << "pedal " << dev << " @ " << t << " - " << pedal << " = " << val << std::endl;
     }
 

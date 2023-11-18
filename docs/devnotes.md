@@ -84,5 +84,61 @@ this needs to be revisited and investigate, I may add in the future.
 
 
 
+//////////////////////////////////////
+
+
+# alpha/tau
+kbd_bundle.cpp
+
+```
+    static float __clip(float x,float l)
+    {
+        if(l<0.0001)
+        {
+            return 0;
+        }
+
+        x = std::max(x,-l);
+        x = std::min(x,l);
+        x = x*1.0/l;
+        x = std::max(x,-1.0f);
+        x = std::min(x,1.0f);
+
+        return x;
+    }
+```
+
+
+```
+ void kwire_t::update(const blob_t *b)
+ 
+        float p = float(b->p);
+        float r = 2047.0-float(b->r);
+        float y = 2047.0-float(b->y);
+
+        output_.add_value(2,piw::makefloat_bounded_nb(1,0,0,p/4096.0,t));
+        output_.add_value(3,piw::makefloat_bounded_nb(1,-1,0,__clip(r/1024.0,keyboard_->roll_axis_window_),t));
+        output_.add_value(4,piw::makefloat_bounded_nb(1,-1,0,__clip(y/1024.0,keyboard_->yaw_axis_window_),t));
+```
+
+
+# pico
+
+pkbd_bundle.cpp
+
+check   void breath_t::update(unsigned long long t, unsigned b)
+
+```
+
+    void kwire_t::key(unsigned long long t, bool a, unsigned p, int r, int y)
+
+            output_.add_value(2,piw::makefloat_bounded_nb(1.0,0.0,0.0,p/4096.0,t));
+            output_.add_value(3,piw::makefloat_bounded_nb(1.0,-1.0,0.0,r2,t));
+            output_.add_value(4,piw::makefloat_bounded_nb(1.0,-1.0,0.0,y2,t));
+
+       float r2 = __clip(((float)r)/2048.0,keyboard->roll_axis_window_);
+       float y2 = __clip(((float)y)/2048.0,keyboard->roll_axis_window_);
+```
+ 
 
 

@@ -117,7 +117,7 @@ bool EF_BaseStation::poll(long long t) {
     return true;
 }
 
-void EF_BaseStation::setLED(unsigned course, unsigned int key, unsigned int colour) {
+void EF_BaseStation::setLED(unsigned course, unsigned key, unsigned colour) {
     if (pLoop_ == NULL) return;
 
     unsigned keynum = course * (isAlpha_ ? 120 : 84) + key;

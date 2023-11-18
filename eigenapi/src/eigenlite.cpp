@@ -325,26 +325,28 @@ void EigenLite::fireDisconnectEvent(const char *dev) {
     }
 }
 
-void EigenLite::fireKeyEvent(const char *dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p,
-                             int r, int y) {
+void EigenLite::fireKeyEvent(const char *dev, unsigned long long t,
+                             unsigned course, unsigned key,
+                             bool a,
+                             float p, float r, float y) {
     for (auto cb : callbacks_) {
         cb->key(dev, t, course, key, a, p, r, y);
     }
 }
 
-void EigenLite::fireBreathEvent(const char *dev, unsigned long long t, unsigned val) {
+void EigenLite::fireBreathEvent(const char *dev, unsigned long long t, float val) {
     for (auto cb : callbacks_) {
         cb->breath(dev, t, val);
     }
 }
 
-void EigenLite::fireStripEvent(const char *dev, unsigned long long t, unsigned strip, unsigned val, bool a) {
+void EigenLite::fireStripEvent(const char *dev, unsigned long long t, unsigned strip, float val, bool a) {
     for (auto cb : callbacks_) {
         cb->strip(dev, t, strip, val, a);
     }
 }
 
-void EigenLite::firePedalEvent(const char *dev, unsigned long long t, unsigned pedal, unsigned val) {
+void EigenLite::firePedalEvent(const char *dev, unsigned long long t, unsigned pedal, float val) {
     for (auto cb : callbacks_) {
         cb->pedal(dev, t, pedal, val);
     }

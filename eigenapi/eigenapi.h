@@ -24,10 +24,10 @@ class Callback {
     virtual void connected(const char* dev, DeviceType dt){};
     virtual void disconnected(const char* dev){};
 
-    virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y){};
-    virtual void breath(const char* dev, unsigned long long t, unsigned val){};
-    virtual void strip(const char* dev, unsigned long long t, unsigned strip, unsigned val, bool a){};
-    virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, unsigned val){};
+    virtual void key(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y){};
+    virtual void breath(const char* dev, unsigned long long t, float val){};
+    virtual void strip(const char* dev, unsigned long long t, unsigned strip, float val, bool a){};
+    virtual void pedal(const char* dev, unsigned long long t, unsigned pedal, float val){};
     virtual void dead(const char* dev, unsigned reason){};
 };
 
@@ -52,7 +52,6 @@ class Eigenharp {
     void removeCallback(Callback* api);
     void clearCallbacks();
 
-
     enum LedColour {
         LED_OFF,
         LED_GREEN,
@@ -60,7 +59,7 @@ class Eigenharp {
         LED_ORANGE
     };
 
-    void setLED(const char* dev, unsigned course, unsigned int key, LedColour colour);
+    void setLED(const char* dev, unsigned course, unsigned key, LedColour colour);
 
     void setPollTime(unsigned pollTime);
 

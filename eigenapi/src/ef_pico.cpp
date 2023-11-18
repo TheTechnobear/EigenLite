@@ -11,7 +11,7 @@
 
 #define DEFAULT_DEBOUNCE 25000
 
-// these are all hardcode in eigend, rather than in pico_ubs :(
+// these are all hardcode in eigend, rather than in pico_usb :(
 
 #define PICO_PRE_LOAD 0x0001
 
@@ -96,7 +96,7 @@ void EF_Pico::restartKeyboard() {
     }
 }
 
-void EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, unsigned p, int r, int y) {
+void EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y) {
     if (course > 0) {
         if (lastMode_[key] == p) return;
         lastMode_[key] = p;
@@ -112,7 +112,7 @@ bool EF_Pico::poll(long long t) {
     return true;
 }
 
-void EF_Pico::setLED(unsigned course, unsigned int key, unsigned int colour) {
+void EF_Pico::setLED(unsigned course, unsigned key, unsigned colour) {
     if (pLoop_ == NULL) return;
     unsigned keynum = course * PICO_MAINKEYS + key;
     pLoop_->set_led(keynum, colour);
@@ -190,7 +190,11 @@ void EF_Pico::Delegate::kbd_dead(unsigned reason) {
 }
 
 void EF_Pico::Delegate::kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y) {
-    parent_.fireKeyEvent(t, 0, key, a, p, r, y);
+    // pic::logmsg() << "kbd_key fire" << key << " p " << p << " r " << r << " y " << y;
+    float fp = pToFloat(p);
+    float fr = rToFloat(r);
+    float fy = yToFloat(y);
+    parent_.fireKeyEvent(t, 0, key, a, fp, fr, fy);
 }
 
 void EF_Pico::Delegate::kbd_raw(bool resync, const pico::active_t::rawkbd_t &) {
@@ -241,7 +245,8 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
             // }
 
             if (std::abs(long(s) - s_last_) < 200 && s > s_threshold_) {
-                parent_.fireStripEvent(t, 1, s, s_state_ != 3);
+                float fv = stripToFloat(s);
+                parent_.fireStripEvent(t, 1, fv, s_state_ != 3);
             }
             s_state_ = 3;
             s_count_ = 80;
@@ -250,7 +255,7 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
         case 3:
             if (s < s_threshold_) {
                 // pic::logmsg() << "strip ending";
-                parent_.fireStripEvent(t, 1, 2048, s_state_ != 3);
+                parent_.fireStripEvent(t, 1, 0.0f, s_state_ != 3);
                 s_state_ = 0;
             } else {
                 s_state_ = 2;
@@ -261,12 +266,14 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
     s_last_ = s;
 }
 
-void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned b) {
-    parent_.fireBreathEvent(t, b);
+void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned v) {
+    float fv = breathToFloat(v);
+    parent_.fireBreathEvent(t, fv);
 }
 
 void EF_Pico::Delegate::kbd_mode(unsigned long long t, unsigned key, unsigned m) {
-    parent_.fireKeyEvent(t, 1, key - PICO_MAINKEYS, m > 0, m, 0, 0);
+    float mode_value = m > 0 ? 1.0f : 0.0f;
+    parent_.fireKeyEvent(t, 1, key - PICO_MAINKEYS, m, mode_value, 0, 0);
 }
 
 }  // namespace EigenApi
