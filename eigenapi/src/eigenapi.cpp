@@ -44,8 +44,8 @@ void Eigenharp::setPollTime(unsigned pollTime) {
     static_cast<EigenLite*>(impl)->setPollTime(pollTime);
 }
 
-void Eigenharp::setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour) {
-    static_cast<EigenLite*>(impl)->setLED(dev, course, key, colour);
+void Eigenharp::setLED(const char* dev, unsigned course, unsigned key, LedColour colour) {
+    static_cast<EigenLite*>(impl)->setLED(dev, course, key, (unsigned) colour);
 }
 
 void Eigenharp::setDeviceFilter(bool baseStation, unsigned devEnum) {

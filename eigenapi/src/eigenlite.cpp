@@ -357,7 +357,7 @@ void EigenLite::fireDeadEvent(const char *dev, unsigned reason) {
     }
 }
 
-void EigenLite::setLED(const char *dev, unsigned course, unsigned int key, unsigned int colour) {
+void EigenLite::setLED(const char *dev, unsigned course, unsigned key, unsigned colour) {
     for (auto pDevice : devices_) {
         if (dev == NULL || dev == pDevice->name() || strcmp(dev, pDevice->name()) == 0) {
             pDevice->setLED(course, key, colour);

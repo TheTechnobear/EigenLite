@@ -52,7 +52,15 @@ class Eigenharp {
     void removeCallback(Callback* api);
     void clearCallbacks();
 
-    void setLED(const char* dev, unsigned course, unsigned int key, unsigned int colour);
+
+    enum LedColour {
+        LED_OFF,
+        LED_GREEN,
+        LED_RED,
+        LED_ORANGE
+    };
+
+    void setLED(const char* dev, unsigned course, unsigned int key, LedColour colour);
 
     void setPollTime(unsigned pollTime);
 

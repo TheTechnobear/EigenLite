@@ -1,5 +1,6 @@
 #pragma once
 
+#include <eigenapi.h>
 #include <lib_alpha2/alpha2_active.h>
 #include <lib_pico/pico_active.h>
 #include <picross/pic_usb.h>
