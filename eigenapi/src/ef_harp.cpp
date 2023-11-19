@@ -36,7 +36,7 @@
 namespace EigenApi {
 
 EF_Harp::EF_Harp(EigenLite &efd)
-    : pDevice_(NULL), efd_(efd), stopping_(false) {
+    : pDevice_(NULL), stopping_(false), efd_(efd) {
     ;
 }
 
@@ -112,24 +112,28 @@ void EF_Harp::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, 
 }
 
 void EF_Harp::fireBreathEvent(unsigned long long t, float val) {
-    unsigned diff = std::abs((int)(lastBreath_ - val));
-    if (diff > 10) {
+    float diff = lastBreath_ - val;
+    if (diff < -BREATH_HYSTERISIS || diff > BREATH_HYSTERISIS) {
         lastBreath_ = val;
         efd_.fireBreathEvent(pDevice_->name(), t, val);
     }
 }
 
 void EF_Harp::fireStripEvent(unsigned long long t, unsigned strip, float val, bool a) {
-    unsigned diff = std::abs((int)(lastStrip_[strip - 1] - val));
-    if (diff > 10) {
-        lastStrip_[strip - 1] = val;
-        efd_.fireStripEvent(pDevice_->name(), t, strip, val, a);
+    if(a) {
+        float diff = lastStrip_[strip - 1] - val;
+        if (diff < -STRIP_HYSTERISIS || diff > STRIP_HYSTERISIS) {
+            lastStrip_[strip - 1] = val;
+            efd_.fireStripEvent(pDevice_->name(), t, strip, val, a);
+        }
+    } else {
+        efd_.fireStripEvent(pDevice_->name(), t, strip, lastStrip_[strip - 1] , a);
     }
 }
 
 void EF_Harp::firePedalEvent(unsigned long long t, unsigned pedal, float val) {
-    unsigned diff = std::abs((int)(lastPedal_[pedal - 1] - val));
-    if (diff > 10) {
+    float diff = lastPedal_[pedal - 1] - val;
+    if (diff < -PEDAL_HYSTERISIS || diff > PEDAL_HYSTERISIS) {
         lastPedal_[pedal - 1] = val;
         efd_.firePedalEvent(pDevice_->name(), t, pedal, val);
     }

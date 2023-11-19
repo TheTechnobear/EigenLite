@@ -64,8 +64,6 @@ class EF_Harp {
     bool loadFirmware(pic::usbdevice_t* pDevice, std::string ihxFile);
     static void logmsg(const char* msg);
 
-    EigenLite& efd_;
-
    protected:
    private:
     // for controlling firmware loading
@@ -79,6 +77,10 @@ class EF_Harp {
     static unsigned hexToInt(char* buf, int len);
     static char hexToChar(char* buf);
     bool processIHXLine(pic::usbdevice_t* pDevice, void* fd);
+
+    static constexpr float STRIP_HYSTERISIS = 0.01f;
+    static constexpr float PEDAL_HYSTERISIS = 0.01f;
+    static constexpr float BREATH_HYSTERISIS = 0.01f;
 
     class IHXException {
        public:
@@ -94,6 +96,9 @@ class EF_Harp {
     unsigned lastStrip_[2];
     unsigned lastPedal_[4];
     bool stopping_;
+
+   protected:
+    EigenLite& efd_;
 };
 
 class EF_Pico : public EF_Harp {
@@ -151,8 +156,8 @@ class EF_Pico : public EF_Harp {
         inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
         inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 
-        unsigned s_count_, s_threshold_, s_state_, s_last_;
         EF_Pico& parent_;
+        unsigned s_count_, s_threshold_, s_state_, s_last_;
     } delegate_;
 };
 
@@ -251,7 +256,7 @@ class EF_Tau : public alpha2::active_t::delegate_t {
     inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
     inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
     inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
-    inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float breathToFloat(int v) { return (float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
     inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 
     void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);

@@ -21,9 +21,9 @@
 
 namespace EigenApi {
 
-static const unsigned TAU_COLUMNCOUNT = 7;
-static const unsigned TAU_COLUMNS[TAU_COLUMNCOUNT] = {16, 16, 20, 20, 12, 4, 4};
-static const unsigned TAU_COURSEKEYS = 92;
+// static const unsigned TAU_COLUMNCOUNT = 7;
+// static const unsigned TAU_COLUMNS[TAU_COLUMNCOUNT] = {16, 16, 20, 20, 12, 4, 4};
+// static const unsigned TAU_COURSEKEYS = 92;
 
 void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y) {
     if (key == TAU_KBD_STRIP1)
@@ -74,6 +74,7 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
 
     switch (key) {
         case TAU_KBD_BREATH1: {
+            pic::logmsg() << "TAU_KBD_BREATH1 " << p;
             float fp = breathToFloat(p);
             parent_.fireBreathEvent(t, fp);
             break;
