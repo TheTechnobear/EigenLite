@@ -27,6 +27,7 @@ namespace EigenApi {
 
 void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y) {
     if (key == TAU_KBD_STRIP1)
+        // strip off (only)
         parent_.fireStripEvent(t, 1, 0.0f, 0);
     else {
         const int MAIN_KEYBASE = TAU_KBD_KEYS;  // CHECK
@@ -37,10 +38,6 @@ void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p
     }
 }
 
-void EF_Tau::kbd_dead(unsigned reason) {
-    parent_.fireDeadEvent(reason);
-    if (!parent_.stopping()) parent_.restartKeyboard();
-}
 
 void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {
     // pic::logmsg() << "kbd_key" << key << " p " << p << " r " << r << " y " << y;
@@ -74,7 +71,7 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
 
     switch (key) {
         case TAU_KBD_BREATH1: {
-            pic::logmsg() << "TAU_KBD_BREATH1 " << p;
+            // pic::logmsg() << "TAU_KBD_BREATH1 " << p;
             float fp = breathToFloat(p);
             parent_.fireBreathEvent(t, fp);
             break;
@@ -89,9 +86,6 @@ void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int 
         // case TAU_KBD_ACCEL   : break;
         default:;
     }
-}
-
-void EF_Tau::kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4) {
 }
 
 void EF_Tau::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
@@ -119,17 +113,6 @@ void EF_Tau::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
 
         parent_.curMap()[w] = newmap[w];
     }
-}
-
-void EF_Tau::kbd_mic(unsigned char s, unsigned long long t, const float *data) {
-}
-
-void EF_Tau::midi_data(unsigned long long t, const unsigned char *data, unsigned len) {
-}
-
-void EF_Tau::pedal_down(unsigned long long t, unsigned pedal, unsigned value) {
-    float fv = pedalToFloat(value);
-    parent_.firePedalEvent(t, pedal, fv);
 }
 
 }  // namespace EigenApi

@@ -314,4 +314,7 @@ bool EF_Harp::loadFirmware(pic::usbdevice_t *pDevice, std::string ihxFile) {
     return true;
 }
 
+
+
+
 }  // namespace EigenApi

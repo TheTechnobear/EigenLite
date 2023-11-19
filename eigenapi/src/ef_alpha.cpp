@@ -33,11 +33,6 @@ void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, flo
         parent_.fireKeyEvent(t, course, key - (course * MAIN_KEYBASE), a, p, r, y);
 }
 
-void EF_Alpha::kbd_dead(unsigned reason) {
-    parent_.fireDeadEvent(reason);
-    if (!parent_.stopping()) parent_.restartKeyboard();
-}
-
 void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {
     // pic::logmsg() << "kbd_key" << key << " p " << p << " r " << r << " y " << y;
 
@@ -82,8 +77,6 @@ void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, in
     }
 }
 
-void EF_Alpha::kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4) {
-}
 
 void EF_Alpha::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
     // char buf[121];
@@ -112,15 +105,6 @@ void EF_Alpha::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
     }
 }
 
-void EF_Alpha::kbd_mic(unsigned char s, unsigned long long t, const float *data) {
-}
 
-void EF_Alpha::midi_data(unsigned long long t, const unsigned char *data, unsigned len) {
-}
-
-void EF_Alpha::pedal_down(unsigned long long t, unsigned pedal, unsigned value) {
-    float fv = pedalToFloat(value);
-    parent_.firePedalEvent(t, pedal, fv);
-}
 
 }  // namespace EigenApi

@@ -139,24 +139,41 @@ class EF_Pico : public EF_Harp {
         void kbd_breath(unsigned long long t, unsigned b);
         void kbd_mode(unsigned long long t, unsigned key, unsigned m);
 
-       private:
+        static constexpr int STRIP_THRESH = 50;
+        static constexpr int STRIP_MIN = 110;
+        static constexpr int STRIP_MAX = 3050;
+        static constexpr float STRIP_RANGE = float(STRIP_MAX) - float(STRIP_MIN);
+
+
         static constexpr float SENSOR_RANGE = 4096.f;
+        static constexpr float MID_SENSOR_RANGE = 2047.f;
         static constexpr float PRESSURE_RANGE = 4096.f;
-        static constexpr float ROLL_YAW_RANGE = 2048.f;
+        static constexpr float ROLL_YAW_RANGE = 1024.f;
+        static constexpr float BREATH_GAIN = 1.4f;
 
         inline float clip(float v) {
             v = std::max(v, -1.f);
             v = std::min(v, 1.f);
             return v;
         }
+        inline float aclip(float v) {
+            v = std::max(v, 0.f);
+            v = std::min(v, 1.f);
+            return v;
+        }
+
+
         inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
         inline float rToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
         inline float yToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
-        inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
-        inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
+        inline float stripToFloat(int v) { return  aclip(float( v- STRIP_MIN) / STRIP_RANGE); }
+        inline float breathToFloat(int v) { return clip(((float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE) * BREATH_GAIN); }
         inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 
         EF_Pico& parent_;
+
+        int breathWarmUp_ = 0;
+        float breathZero_ = 0.f;
         unsigned s_count_, s_threshold_, s_state_, s_last_;
     } delegate_;
 };
@@ -171,7 +188,6 @@ class EF_BaseStation : public EF_Harp {
     bool start() override;
     bool stop() override;
     bool poll(long long t) override;
-
     void restartKeyboard() override;
 
     void setLED(unsigned course, unsigned keynum, unsigned colour) override;
@@ -193,55 +209,17 @@ class EF_BaseStation : public EF_Harp {
     bool isAlpha_;
 };
 
-class EF_Alpha : public alpha2::active_t::delegate_t {
+class EF_BaseDelegate : public alpha2::active_t::delegate_t {
    public:
-    EF_Alpha(EF_BaseStation& p) : parent_(p) { ; }
-
+    EF_BaseDelegate(EF_BaseStation& p) : parent_(p) {}
     // alpha2::active_t::delegate_t
-    void kbd_dead(unsigned reason);
-    void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
-    void kbd_mic(unsigned char s, unsigned long long t, const float* samples);
-    void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
-    void kbd_keydown(unsigned long long t, const unsigned short* bitmap);
-    void pedal_down(unsigned long long t, unsigned pedal, unsigned p);
-    void midi_data(unsigned long long t, const unsigned char* data, unsigned len);
+    void kbd_dead(unsigned reason) override;
+    void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4) override;
+    void pedal_down(unsigned long long t, unsigned pedal, unsigned p) override;
+    void midi_data(unsigned long long t, const unsigned char* data, unsigned len) override;
+    void kbd_mic(unsigned char s, unsigned long long t, const float* samples) override;
 
-   private:
-    static constexpr float SENSOR_RANGE = 4096.f;
-    static constexpr float MID_SENSOR_RANGE = 2047.f;
-    static constexpr float PRESSURE_RANGE = 4096.f;
-    static constexpr float ROLL_YAW_RANGE = 1024.f;
-
-    inline float clip(float v) {
-        v = std::max(v, -1.f);
-        v = std::min(v, 1.f);
-        return v;
-    }
-    inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
-    inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
-    inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
-    inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
-    inline float breathToFloat(int v) { return float(v) / SENSOR_RANGE; }
-    inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
-
-    void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
-    EF_BaseStation& parent_;
-};
-
-class EF_Tau : public alpha2::active_t::delegate_t {
-   public:
-    EF_Tau(EF_BaseStation& p) : parent_(p) { ; }
-
-    // alpha2::active_t::delegate_t
-    void kbd_dead(unsigned reason);
-    void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);
-    void kbd_mic(unsigned char s, unsigned long long t, const float* samples);
-    void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y);
-    void kbd_keydown(unsigned long long t, const unsigned short* bitmap);
-    void pedal_down(unsigned long long t, unsigned pedal, unsigned p);
-    void midi_data(unsigned long long t, const unsigned char* data, unsigned len);
-
-   private:
+   protected:
     static constexpr float SENSOR_RANGE = 4096.f;
     static constexpr float MID_SENSOR_RANGE = 2047.f;
     static constexpr float PRESSURE_RANGE = 4096.f;
@@ -259,7 +237,30 @@ class EF_Tau : public alpha2::active_t::delegate_t {
     inline float breathToFloat(int v) { return (float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
     inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 
-    void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
     EF_BaseStation& parent_;
 };
+
+class EF_Alpha : public EF_BaseDelegate {
+   public:
+    EF_Alpha(EF_BaseStation& p) : EF_BaseDelegate(p) {}
+
+    // alpha2::active_t::delegate_t
+    void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) override;
+    void kbd_keydown(unsigned long long t, const unsigned short* bitmap) override;
+
+   private:
+    void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
+};
+
+class EF_Tau : public EF_BaseDelegate {
+   public:
+    EF_Tau(EF_BaseStation& p) : EF_BaseDelegate(p) {}
+
+    void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) override;
+    void kbd_keydown(unsigned long long t, const unsigned short* bitmap) override;
+
+   private:
+    void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
+};
+
 }  // namespace EigenApi

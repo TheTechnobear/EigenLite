@@ -210,4 +210,23 @@ std::vector<std::string> EF_BaseStation::availableDevices() {
     return devList;
 }
 
+void EF_BaseDelegate::kbd_dead(unsigned reason) {
+    parent_.fireDeadEvent(reason);
+    if (!parent_.stopping()) parent_.restartKeyboard();
+}
+
+void EF_BaseDelegate::kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4) {
+}
+
+void EF_BaseDelegate::kbd_mic(unsigned char s, unsigned long long t, const float* data) {
+}
+
+void EF_BaseDelegate::midi_data(unsigned long long t, const unsigned char* data, unsigned len) {
+}
+
+void EF_BaseDelegate::pedal_down(unsigned long long t, unsigned pedal, unsigned value) {
+    float fv = pedalToFloat(value);
+    parent_.firePedalEvent(t, pedal, fv);
+}
+
 }  // namespace EigenApi

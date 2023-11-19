@@ -17,10 +17,6 @@
 
 #define PRODUCT_ID_PICO BCTPICO_USBPRODUCT
 
-#define STRIP_THRESH 50
-#define STRIP_MIN 110
-#define STRIP_MAX 3050
-
 #define PICO_MAINKEYS 18
 
 namespace EigenApi {
@@ -75,6 +71,7 @@ bool EF_Pico::start() {
     if (!EF_Harp::start()) return false;
 
     if (pLoop_ == NULL) return false;
+    pLoop_->load_calibration_from_device();
     pLoop_->start();
     logmsg("started loop");
     // todo - need device name
@@ -255,7 +252,8 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
         case 3:
             if (s < s_threshold_) {
                 // pic::logmsg() << "strip ending";
-                parent_.fireStripEvent(t, 1, 0.0f, s_state_ != 3);
+                float fv = stripToFloat(s_last_);
+                parent_.fireStripEvent(t, 1, fv, s_state_ != 3);
                 s_state_ = 0;
             } else {
                 s_state_ = 2;
@@ -268,7 +266,14 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
 
 void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned v) {
     float fv = breathToFloat(v);
-    parent_.fireBreathEvent(t, fv);
+    if (breathWarmUp_ < 1000) {
+        breathWarmUp_++;
+        if (breathWarmUp_ == 1000) {
+            breathZero_ = fv;
+        }
+    } else {
+        parent_.fireBreathEvent(t, fv - breathZero_);
+    }
 }
 
 void EF_Pico::Delegate::kbd_mode(unsigned long long t, unsigned key, unsigned m) {
