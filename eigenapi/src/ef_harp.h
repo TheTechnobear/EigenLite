@@ -147,7 +147,8 @@ class EF_Pico : public EF_Harp {
 
         static constexpr float SENSOR_RANGE = 4096.f;
         static constexpr float MID_SENSOR_RANGE = 2047.f;
-        static constexpr float PRESSURE_RANGE = 4096.f;
+        static constexpr float PRESSURE_RANGE = 3192.f;
+        // static constexpr float PRESSURE_RANGE = 4096.f;
         static constexpr float ROLL_YAW_RANGE = 1024.f;
         static constexpr float BREATH_GAIN = 1.4f;
 
@@ -163,7 +164,7 @@ class EF_Pico : public EF_Harp {
         }
 
 
-        inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
+        inline float pToFloat(int v) { return aclip(float(v) / PRESSURE_RANGE); }
         inline float rToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
         inline float yToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
         inline float stripToFloat(int v) { return  aclip(float( v- STRIP_MIN) / STRIP_RANGE); }
