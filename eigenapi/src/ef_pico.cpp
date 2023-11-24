@@ -84,6 +84,11 @@ bool EF_Pico::stop() {
     //    pLoop_->stop(); //??
     //    logmsg("stopped loop");
 
+    for (unsigned k = 0; k < PICO_MAINKEYS + 4; k++) {
+        pLoop_->set_led(k, 0);
+    }
+    // pLoop_->msg_flush();
+
     return EF_Harp::stop();
 }
 
@@ -198,6 +203,7 @@ void EF_Pico::Delegate::kbd_raw(bool resync, const pico::active_t::rawkbd_t &) {
 }
 
 void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
+    // pic::logmsg() << "kbd_strip s " << s;
     if (--s_count_ != 0) {
         return;
     }
@@ -206,8 +212,11 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
 
     switch (s_state_) {
         case 0:
-            if (s < s_threshold_)
+            // idle state, wait for input above threshold
+            if (s < s_threshold_) {
+                s_count_ = 100;
                 break;
+            }
 
             // pic::logmsg() << "strip starting: " << s;
             s_state_ = 1;
@@ -215,12 +224,14 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
             break;
 
         case 1:
+            // possibly starting, is it still above thresh?, if not return to idl
             if (s < s_threshold_) {
                 s_state_ = 0;
             } else {
                 // pic::logmsg() << "strip origin: " << s;
                 s_state_ = 2;
                 // origin_ = s;
+                s_last_ = s;
             }
             break;
 
@@ -241,21 +252,35 @@ void EF_Pico::Delegate::kbd_strip(unsigned long long t, unsigned s) {
             //     break;
             // }
 
-            if (std::abs(long(s) - s_last_) < 200 && s > s_threshold_) {
+            // if (std::abs(long(s) - s_last_) < 200 && s > s_threshold_) {
+            //     float fv = stripToFloat(s);
+            //     parent_.fireStripEvent(t, 1, fv, s_state_ != 3);
+            // }
+            // s_state_ = 3;
+            // s_count_ = 80;
+
+            // active, until we go below threshold
+            if (s < s_threshold_ || std::abs(long(s) - s_last_) > 200) {
+                // possibly ending...
+                s_state_ = 3;
+                s_count_ = 80;
+            } else {
+                // active still ...
                 float fv = stripToFloat(s);
                 parent_.fireStripEvent(t, 1, fv, s_state_ != 3);
             }
-            s_state_ = 3;
-            s_count_ = 80;
+
             break;
 
         case 3:
+            // possibly ending...
             if (s < s_threshold_) {
                 // pic::logmsg() << "strip ending";
-                float fv = stripToFloat(s_last_);
-                parent_.fireStripEvent(t, 1, fv, s_state_ != 3);
+                // float fv = stripToFloat(s_last_);
+                parent_.fireStripEvent(t, 1, 0.f, s_state_ != 3);
                 s_state_ = 0;
             } else {
+                // ok, we can resume
                 s_state_ = 2;
             }
             break;

@@ -143,7 +143,7 @@ class EF_Pico : public EF_Harp {
         static constexpr int STRIP_MIN = 110;
         static constexpr int STRIP_MAX = 3050;
         static constexpr float STRIP_RANGE = float(STRIP_MAX) - float(STRIP_MIN);
-
+        static constexpr int STRIP_MID_RANGE = STRIP_RANGE / 2.0f;
 
         static constexpr float SENSOR_RANGE = 4096.f;
         static constexpr float MID_SENSOR_RANGE = 2047.f;
@@ -167,7 +167,8 @@ class EF_Pico : public EF_Harp {
         inline float pToFloat(int v) { return aclip(float(v) / PRESSURE_RANGE); }
         inline float rToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
         inline float yToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
-        inline float stripToFloat(int v) { return  aclip(float( v- STRIP_MIN) / STRIP_RANGE); }
+        inline float stripToFloat(int v) { return clip(((float(v) - STRIP_MID_RANGE) / STRIP_MID_RANGE)); }
+        // inline float stripToFloat(int v) { return  aclip(float( v- STRIP_MIN) / STRIP_RANGE); }
         inline float breathToFloat(int v) { return clip(((float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE) * BREATH_GAIN); }
         inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 
@@ -234,7 +235,7 @@ class EF_BaseDelegate : public alpha2::active_t::delegate_t {
     inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
     inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
     inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
-    inline float stripToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float stripToFloat(int v) { return (float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
     inline float breathToFloat(int v) { return (float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
     inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 

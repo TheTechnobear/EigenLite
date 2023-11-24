@@ -106,8 +106,18 @@ bool EF_BaseStation::stop() {
     if (pLoop_ == NULL) return false;
     //    pLoop_->stop();
     //    logmsg("stopped loop");
+    if(isAlpha_) {
+        for (unsigned k = 0; k < 132; k++) {
+            pLoop_->msg_set_led(k, 0);
+        }
+    } else {
+        for (unsigned k = 0; k < 92; k++) {
+            pLoop_->msg_set_led(k, 0);
+        }
+    }
+    pLoop_->msg_flush();
 
-    return EF_Harp::stop();
+   return EF_Harp::stop();
 }
 
 bool EF_BaseStation::poll(long long t) {
