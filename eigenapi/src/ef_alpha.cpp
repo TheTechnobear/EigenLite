@@ -21,16 +21,20 @@
 
 namespace EigenApi {
 
-void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y) {
-    const int MAIN_KEYBASE = 120;
-    unsigned course = key >= MAIN_KEYBASE;
-
-    if (key == KBD_STRIP1)
+void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned k, bool a, float p, float r, float y) {
+    if (k == KBD_STRIP1)
         parent_.fireStripEvent(t, 1, 0.0f, 0);
-    else if (key == KBD_STRIP2)
+    else if (k == KBD_STRIP2)
         parent_.fireStripEvent(t, 2, 0.0f, 0);
-    else
-        parent_.fireKeyEvent(t, course, key - (course * MAIN_KEYBASE), a, p, r, y);
+    else {
+        const int MAIN_KEYBASE = 120;
+        unsigned course = k >= MAIN_KEYBASE;
+        unsigned key = k;
+        if (k > 0) {
+            key = k - MAIN_KEYBASE;
+        }
+        parent_.fireKeyEvent(t, course, key, a, p, r, y);
+    }
 }
 
 void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {
@@ -77,7 +81,6 @@ void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, in
     }
 }
 
-
 void EF_Alpha::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
     // char buf[121];
     // for(int i=0;i < 120;i++) {
@@ -104,7 +107,5 @@ void EF_Alpha::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
         parent_.curMap()[w] = newmap[w];
     }
 }
-
-
 
 }  // namespace EigenApi

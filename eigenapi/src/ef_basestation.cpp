@@ -120,7 +120,21 @@ bool EF_BaseStation::poll(long long t) {
 void EF_BaseStation::setLED(unsigned course, unsigned key, unsigned colour) {
     if (pLoop_ == NULL) return;
 
-    unsigned keynum = course * (isAlpha_ ? 120 : 84) + key;
+    unsigned keynum = 0;
+    if (isAlpha_) {
+        keynum = (course * 120) + key;
+    } else {
+        // tau
+        if (course == 0)
+            keynum = key;
+        else if (course == 1)
+            keynum = key + 72; // per
+        else {
+            // note this is different from key event
+            // due to sensors not having leds!?
+            keynum = key + 84; // mode
+        }
+    }
     pLoop_->msg_set_led(keynum, colour);
 }
 
