@@ -30,7 +30,7 @@ void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned k, bool a, float
         const int MAIN_KEYBASE = 120;
         unsigned course = k >= MAIN_KEYBASE;
         unsigned key = k;
-        if (k > 0) {
+        if (course > 0) {
             key = k - MAIN_KEYBASE;
         }
         parent_.fireKeyEvent(t, course, key, a, p, r, y);
