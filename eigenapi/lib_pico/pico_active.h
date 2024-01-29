@@ -21,13 +21,12 @@
 #ifndef __PICO_ACTIVE__
 #define __PICO_ACTIVE__
 
-#include <lib_pico/pico_exports.h>
 #include <picross/pic_usb.h>
 #include <resources/pico_decoder.h>
 
 namespace pico
 {
-    class PICO_DECLSPEC_CLASS active_t: public pic::pollable_t
+    class active_t: public pic::pollable_t
     {
         public:
             class impl_t;

@@ -24,7 +24,6 @@
 #include <picross/pic_usb.h>
 #include <lib_alpha2/alpha2_usb.h>
 #include <picross/pic_fastalloc.h>
-#include <lib_alpha2/alpha2_exports.h>
 #define KBD_KEYS 132
 
 #define KBD_DESENSE (KBD_KEYS+0)
@@ -50,7 +49,7 @@
 
 namespace alpha2
 {
-    class ALPHA2_DECLSPEC_CLASS active_t: virtual public pic::lckobject_t, public pic::pollable_t
+    class active_t: virtual public pic::lckobject_t, public pic::pollable_t
     {
         public:
             struct impl_t;
@@ -130,7 +129,7 @@ namespace alpha2
             impl_t *_impl;
     };
 
-    struct ALPHA2_DECLSPEC_CLASS printer_t : active_t::delegate_t
+    struct printer_t : active_t::delegate_t
     {
         void kbd_dead(unsigned reason);
         void kbd_raw(unsigned long long t, unsigned key, unsigned c1, unsigned c2, unsigned c3, unsigned c4);

@@ -20,12 +20,11 @@
 
 #ifndef __PICO_PASSIVE__
 #define __PICO_PASSIVE__
-#include <lib_pico/pico_exports.h>
 #include <string>
 
 namespace pico
 {
-    class PICO_DECLSPEC_CLASS passive_t
+    class passive_t
     {
         public:
             passive_t(const char *name, unsigned decim);

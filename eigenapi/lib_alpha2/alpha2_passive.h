@@ -21,12 +21,11 @@
 #ifndef __ALPHA2_PASSIVE__
 #define __ALPHA2_PASSIVE__
 
-#include <lib_alpha2/alpha2_exports.h>
 #include <string>
 
 namespace alpha2
 {
-    class ALPHA2_DECLSPEC_CLASS passive_t
+    class passive_t
     {
         public:
             struct impl_t;
