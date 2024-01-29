@@ -368,46 +368,6 @@ namespace pic
             ref_t<sinktype_t> _sink;
     };
 
-    template<class F> void indirect_clear(F &list)
-    {
-        indirect_sink_t<typename F::sig_t> *s = dynamic_cast<indirect_sink_t<typename F::sig_t> *>(list.get_sink().ptr());
-
-        if(s)
-        {
-            s->clear_target();
-        }
-    }
-
-    template<class F> void indirect_settarget(F &list, const F &tgt)
-    {
-        indirect_sink_t<typename F::sig_t> *s = dynamic_cast<indirect_sink_t<typename F::sig_t> *>(list.get_sink().ptr());
-
-        if(s)
-        {
-            s->set_target(tgt.get_sink());
-        }
-    }
-
-    template<class F> void functorlist_connect(F &list, const F &tgt)
-    {
-        list_sink_t<typename F::sig_t> *s = dynamic_cast<list_sink_t<typename F::sig_t> *>(list.get_sink().ptr());
-
-        if(s)
-        {
-            s->connect(tgt.get_sink());
-        }
-    }
-
-    template<class F> void functorlist_disconnect(F &list, const F &tgt)
-    {
-        list_sink_t<typename F::sig_t> *s = dynamic_cast<list_sink_t<typename F::sig_t> *>(list.get_sink().ptr());
-
-        if(s)
-        {
-            s->disconnect(tgt.get_sink());
-        }
-    }
-
     typedef functor_t<void()> notify_t;
     typedef functor_t<void(bool)> status_t;
     typedef functor_t<void(int)> f_int_t;
@@ -415,52 +375,6 @@ namespace pic
     typedef functor_t<float(float,float)> ff2f_t;
     typedef functor_t<float(float)> f2f_t;
     typedef functor_t<float(int)> i2f_t;
-
-    template <class FUNCTOR> class PIC_DECLSPEC_INLINE_CLASS flipflop_functor_t
-    {
-        public:
-            typedef FUNCTOR sink_functor_t;
-            typedef typename sink_functor_t::rt_t rt_t;
-            typedef typename sink_functor_t::p1_t p1_t;
-            typedef typename sink_functor_t::p2_t p2_t;
-            typedef typename sink_functor_t::p3_t p3_t;
-            typedef flipflop_t<sink_functor_t> sink_flipflop_t;
-            typedef typename sink_flipflop_t::guard_t sink_guard_t;
-
-        public:
-            flipflop_functor_t() {}
-            flipflop_functor_t(const flipflop_functor_t &f): _sink(f._sink) {}
-            flipflop_functor_t(const sink_functor_t &f): _sink(f) {}
-            flipflop_functor_t &operator=(const flipflop_functor_t &f) { set(f._sink); return *this; }
-            flipflop_functor_t &operator=(const sink_functor_t &f) { set(f); return *this; }
-
-            void set(const sink_functor_t &f) { _sink.alternate()=f; _sink.exchange(); }
-            void clear() { _sink.alternate().clear(); _sink.exchange(); }
-
-            rt_t invoke() const { sink_guard_t g(_sink); return g.value().invoke(); }
-            rt_t invoke(p1_t p1) const { sink_guard_t g(_sink); return g.value().invoke(p1); }
-            rt_t invoke(p1_t p1, p2_t p2) const { sink_guard_t g(_sink); return g.value().invoke(p1,p2); }
-            rt_t invoke(p1_t p1, p2_t p2, p3_t p3) const { sink_guard_t g(_sink); return g.value().invoke(p1,p2,p3); }
-
-            rt_t operator()() const { return invoke(); }
-            rt_t operator()(p1_t p1) const { return invoke(p1); }
-            rt_t operator()(p1_t p1, p2_t p2) const { return invoke(p1,p2); }
-            rt_t operator()(p1_t p1, p2_t p2, p3_t p3) const { return invoke(p1,p2,p3); }
-
-            int gc_clear()
-            {   
-                clear();
-                return 0;
-            }
-
-            int gc_traverse(void *visit, void *arg) const
-            {
-                return _sink.current().gc_traverse(visit,arg);
-            }
-
-        private:
-            sink_flipflop_t _sink;
-    };
 
 };
 
