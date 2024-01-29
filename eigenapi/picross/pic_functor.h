@@ -368,13 +368,13 @@ namespace pic
             ref_t<sinktype_t> _sink;
     };
 
-    typedef functor_t<void()> notify_t;
-    typedef functor_t<void(bool)> status_t;
-    typedef functor_t<void(int)> f_int_t;
+    typedef functor_t<void()> notify_t; // UNUSED
+    typedef functor_t<void(bool)> status_t; // UNUSED
+    typedef functor_t<void(int)> f_int_t; // UNUSED
     typedef functor_t<void(const char *)> f_string_t;
-    typedef functor_t<float(float,float)> ff2f_t;
-    typedef functor_t<float(float)> f2f_t;
-    typedef functor_t<float(int)> i2f_t;
+    typedef functor_t<float(float,float)> ff2f_t; // UNUSED
+    typedef functor_t<float(float)> f2f_t; // UNUSED
+    typedef functor_t<float(int)> i2f_t; // UNUSED
 
 };
 

@@ -134,6 +134,7 @@ namespace pic
             static void operator delete(void *ptr) { nb_free(ptr); }
     };
 
+    // UNUSED
     template<class T, unsigned N>
     class lckarray_t : public pic::nocopy_t
     {

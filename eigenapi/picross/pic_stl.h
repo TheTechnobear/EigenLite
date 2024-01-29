@@ -31,6 +31,7 @@
 
 namespace pic
 {
+    // UNUSED
     template <class K,class V, class C=std::less<K> > struct lckmap_t
     {
         typedef std::map<K,V,C,pic::stlnballocator_t<std::pair<const K,V> > > nbtype;
@@ -39,6 +40,7 @@ namespace pic
         typedef stdtype type;
     };
 
+    // UNUSED
     template <class K,class V,class C=std::less<K> > struct lckmultimap_t
     {
         typedef std::multimap<K,V,C,pic::stlnballocator_t<std::pair<const K,V> > > nbtype;
@@ -63,6 +65,7 @@ namespace pic
         typedef stdtype type;
     };
 
+    // UNUSED
     template <class V,class C=std::less<V> > struct lckset_t
     {
         typedef std::set<V,C,pic::stlnballocator_t<V> > nbtype;
@@ -71,6 +74,7 @@ namespace pic
         typedef stdtype type;
     };
 
+    // UNUSED
     template <class V,class C=std::less<V> > struct lckmultiset_t
     {
         typedef std::multiset<V,C,pic::stlnballocator_t<V> > nbtype;
