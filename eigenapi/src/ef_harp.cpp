@@ -20,7 +20,6 @@
 #endif
 
 #include <picross/pic_log.h>
-#include <picross/pic_resources.h>
 #include <picross/pic_time.h>
 #include <picross/pic_usb.h>
 

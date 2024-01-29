@@ -34,7 +34,6 @@ set(EIGENHARP_SRC
     picross/src/pic_log.cpp 
     picross/src/pic_fastalloc.cpp 
     picross/src/pic_mlock.cpp 
-    picross/src/pic_resources.cpp
     lib_alpha2/src/alpha2_passive.cpp 
     lib_alpha2/src/alpha2_active.cpp
     lib_pico/src/pico_passive.cpp 

@@ -2,7 +2,6 @@
 #include <lib_pico/pico_usb.h>
 #include <picross/pic_config.h>
 #include <picross/pic_log.h>
-#include <picross/pic_resources.h>
 #include <picross/pic_time.h>
 #include <picross/pic_usb.h>
 
