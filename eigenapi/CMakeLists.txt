@@ -62,8 +62,7 @@ set(EIGENHARP_SRC ${EIGENHARP_SRC}
     picross/src/pic_thread_posix.cpp 
     picross/src/pic_cfrunloop.cpp 
     picross/src/pic_usb_macosx.cpp 
-    picross/src/pic_tool_macosx.cpp
-    picross/src/pic_power_macosx.mm)
+    picross/src/pic_tool_macosx.cpp)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(EIGENHARP_SRC ${EIGENHARP_SRC} 
         picross/src/pic_thread_posix.cpp 
