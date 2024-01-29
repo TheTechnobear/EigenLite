@@ -61,19 +61,16 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 set(EIGENHARP_SRC ${EIGENHARP_SRC} 
     picross/src/pic_thread_posix.cpp 
     picross/src/pic_cfrunloop.cpp 
-    picross/src/pic_usb_macosx.cpp 
-    picross/src/pic_tool_macosx.cpp)
+    picross/src/pic_usb_macosx.cpp)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(EIGENHARP_SRC ${EIGENHARP_SRC} 
         picross/src/pic_thread_posix.cpp 
-        picross/src/pic_usb_linux.cpp 
-        picross/src/pic_tool_linux.cpp)
+        picross/src/pic_usb_linux.cpp)
 elseif(WIN32) 
     set(EIGENHARP_SRC ${EIGENHARP_SRC} 
         picross/src/pic_thread_win32.cpp
         picross/src/pic_usb_win32.cpp 
-        picross/src/pic_winloop.cpp 
-        picross/src/pic_tool_win32.cpp)
+        picross/src/pic_winloop.cpp)
 endif()
 
 
