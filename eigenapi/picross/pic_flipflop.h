@@ -22,7 +22,6 @@
 
 #include <picross/pic_atomic.h>
 #include <picross/pic_nocopy.h>
-#include <picross/pic_thread.h>
 
 namespace pic
 {
@@ -100,46 +99,6 @@ namespace pic
 
             void *alternate() { return _data[_alternate]; }
             const void *current() const { return _data[1-_alternate]; }
-    };
-
-    class guarded_t
-    {
-        public:
-            virtual ~guarded_t() {};
-            virtual void acquire() = 0;
-            virtual void release() = 0;
-    };
-
-    class untyped_guard_t
-    {
-        public:
-            untyped_guard_t(guarded_t *g): guarded_(g)
-            {
-                acquire();
-            }
-
-            untyped_guard_t(guarded_t &g): guarded_(&g)
-            {
-                acquire();
-            }
-
-            ~untyped_guard_t()
-            {
-                release();
-            }
-
-            void acquire()
-            {
-                guarded_->acquire();
-            }
-
-            void release()
-            {
-                guarded_->release();
-            }
-
-        private:
-            guarded_t *guarded_;
     };
 
     template <class X> class flipflop_t
@@ -249,56 +208,5 @@ namespace pic
             X _data[2];
     };
 
-#define SETMARK(d)  (((uintptr_t)(d))|((uintptr_t)1))
-#define ISMARKED(d) ((((uintptr_t)(d))&1)!=0)
-
-template<class T, void (*DATADROP_INCREF)(T), void (*DATADROP_DECREF)(T)>
-    class datadrop_t : public nocopy_t
-    {
-        public:
-            datadrop_t() : data_(0) {}
-
-            void set(T d)
-            {
-                volatile T *ptr = &data_;
-                T o;
-
-				DATADROP_INCREF(d);
-
-				do
-                {
-                    o = *ptr;
-                } while(!pic_atomicptrcas(&data_,o,d));
-
-                if(!ISMARKED(o))
-                {
-                    DATADROP_DECREF(o);
-                }
-            }
-
-            T get()
-            {
-                volatile T *ptr = &data_;
-                T u,m;
-
-				do
-                {
-                    u = *ptr;
-                    m = (T)SETMARK(u);
-                } while(ISMARKED(u) || !pic_atomicptrcas(&data_,u,m));
-
-                DATADROP_INCREF(u);
-
-				if(!pic_atomicptrcas(&data_,m,u))
-                {
-                    DATADROP_DECREF(u);
-                }
-                return u;
-            }
-
-        private:
-            T data_;
-    };
-};
-
+}
 #endif
