@@ -13,7 +13,3 @@
 #define PIC_DECLSPEC_FUNC(x) x
 #define PIC_DECLSPEC_INLINE_CLASS
 
-#define PI_PREFIX "NA"
-#define PI_RELEASE "NA"
-#define PI_COMPATIBLE "NA"
-
