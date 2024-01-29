@@ -30,30 +30,28 @@
 #include <signal.h>
 #include <io.h>
 
-#include "pic_exports.h"
-
 typedef DWORD pic_threadid_t;
 
-PIC_DECLSPEC_FUNC(void) pic_set_fpu(void);
-PIC_DECLSPEC_FUNC(void) pic_set_foreground(bool rt);
-PIC_DECLSPEC_FUNC(void) pic_set_interrupt(void);
-PIC_DECLSPEC_FUNC(void) pic_mlock_code(void);
-PIC_DECLSPEC_FUNC(void) pic_set_core_unlimited();
-PIC_DECLSPEC_FUNC(void) pic_init_dll_path(void);
+void pic_set_fpu(void);
+void pic_set_foreground(bool rt);
+void pic_set_interrupt(void);
+void pic_mlock_code(void);
+void pic_set_core_unlimited();
+void pic_init_dll_path(void);
 
-PIC_DECLSPEC_FUNC(void) pic_thread_lck_free(void *ptr, unsigned size);
-PIC_DECLSPEC_FUNC(void) *pic_thread_lck_malloc(unsigned size);
-PIC_DECLSPEC_FUNC(void) pic_thread_yield(void);
+void pic_thread_lck_free(void *ptr, unsigned size);
+void *pic_thread_lck_malloc(unsigned size);
+void pic_thread_yield(void);
 
-PIC_DECLSPEC_FUNC(pic_threadid_t) pic_current_threadid(void);
-PIC_DECLSPEC_FUNC(bool) pic_threadid_equal(pic_threadid_t, pic_threadid_t);
+pic_threadid_t pic_current_threadid(void);
+bool pic_threadid_equal(pic_threadid_t, pic_threadid_t);
 
 namespace pic
 {
     struct logger_t;
     struct nballocator_t;
 
-    class PIC_DECLSPEC_CLASS semaphore_t
+    class semaphore_t
     {
         public:
             semaphore_t();
@@ -65,7 +63,7 @@ namespace pic
             HANDLE sem_;
     };
 
-    class PIC_DECLSPEC_CLASS mutex_t
+    class mutex_t
     {
         public:
             class guard_t
@@ -95,7 +93,7 @@ namespace pic
             CRITICAL_SECTION data_;
     };
 
-    class PIC_DECLSPEC_CLASS rwmutex_t
+    class rwmutex_t
     {
         public:
             class rguard_t
@@ -154,7 +152,7 @@ namespace pic
             CRITICAL_SECTION lock_;
     };
 
-    class PIC_DECLSPEC_CLASS gate_t
+    class gate_t
     {
         public:
             gate_t();
@@ -170,7 +168,7 @@ namespace pic
             unsigned f_;
     };
 
-    class PIC_DECLSPEC_CLASS tsd_t
+    class tsd_t
     {
         public:
             tsd_t();
@@ -181,7 +179,7 @@ namespace pic
             DWORD index_;
     };
 
-    class PIC_DECLSPEC_CLASS thread_t
+    class thread_t
     {
         public:
             thread_t(int priority=PIC_THREAD_PRIORITY_NORMAL,int affinity_mask=0);
@@ -216,7 +214,7 @@ namespace pic
 			int affinity_mask_;
     };
 
-    class PIC_DECLSPEC_CLASS xgate_t
+    class xgate_t
     {
         public:
             xgate_t();

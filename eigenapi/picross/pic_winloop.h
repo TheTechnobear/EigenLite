@@ -20,7 +20,6 @@
 #ifndef __PIC_WinRUNLOOP__
 #define __PIC_WinRUNLOOP__
 
-#include "pic_exports.h"
 #include "pic_config.h"
 
 #ifdef PI_WINDOWS
@@ -30,7 +29,7 @@
 
 namespace pic
 {
-    class PIC_DECLSPEC_CLASS winloop_t: private thread_t
+    class winloop_t: private thread_t
     {
         public:
             winloop_t(unsigned realtime);

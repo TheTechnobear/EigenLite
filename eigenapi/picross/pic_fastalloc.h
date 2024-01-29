@@ -20,8 +20,6 @@
 #ifndef __PICROSS_PIC_FASTALLOC__
 #define __PICROSS_PIC_FASTALLOC__
 
-#include "pic_exports.h"
-
 #include <cstdlib>
 #include <cstddef>
 #include <cstdio>
@@ -44,7 +42,7 @@
 
 namespace pic
 {
-    struct PIC_DECLSPEC_CLASS nballocator_t
+    struct nballocator_t
     {
         virtual ~nballocator_t() {}
         typedef void (*deallocator_t)(void *, void *);
@@ -56,9 +54,9 @@ namespace pic
 
     };
 
-    PIC_DECLSPEC_FUNC(void) *nb_malloc(unsigned nb,nballocator_t *allocator, size_t size);
-    PIC_DECLSPEC_FUNC(void) *nb_malloc(unsigned nb,size_t size);
-    PIC_DECLSPEC_FUNC(void) nb_free(void *ptr);
+    void *nb_malloc(unsigned nb,nballocator_t *allocator, size_t size);
+    void *nb_malloc(unsigned nb,size_t size);
+    void nb_free(void *ptr);
 
     template<typename T> class stllckallocator_t
     {
@@ -126,7 +124,7 @@ namespace pic
     template<typename T> inline bool operator==(const stlnballocator_t<T>&, const stlnballocator_t<T>&) { return true; }
     template<typename T> inline bool operator!=(const stlnballocator_t<T>&, const stlnballocator_t<T>&) { return false; }
 
-    class PIC_DECLSPEC_CLASS lckobject_t
+    class lckobject_t
     {
         public:
             static void *operator new(size_t size, nballocator_t *allocator) { return nb_malloc(PIC_ALLOC_NB,allocator,size); }

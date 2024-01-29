@@ -21,8 +21,6 @@
 #ifndef __PIC_SAFEQ__
 #define __PIC_SAFEQ__
 
-#include "pic_exports.h"
-
 #include <picross/pic_nocopy.h>
 #include <picross/pic_atomic.h>
 #include <picross/pic_fastalloc.h>
@@ -33,7 +31,7 @@ namespace pic
 {
     class safe_t;
 
-    class PIC_DECLSPEC_CLASS safeq_t: public nocopy_t, virtual public lckobject_t
+    class safeq_t: public nocopy_t, virtual public lckobject_t
     {
         public:
             safeq_t();
@@ -50,7 +48,7 @@ namespace pic
             void *lasta4_;
     };
 
-    class PIC_DECLSPEC_CLASS safe_worker_t: public nocopy_t, public thread_t
+    class safe_worker_t: public nocopy_t, public thread_t
     {
         public:
             safe_worker_t(unsigned ping,unsigned priority);

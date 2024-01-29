@@ -24,19 +24,18 @@
 #include <string>
 
 #include "pic_config.h"
-#include "pic_exports.h"
 
 namespace pic
 {
-    PIC_DECLSPEC_FUNC(std::string) backtrace();
-    PIC_DECLSPEC_FUNC(void) maybe_abort(const char *,const char *,unsigned)
+    std::string backtrace();
+    void maybe_abort(const char *,const char *,unsigned)
 #ifndef PI_WINDOWS
 	__attribute__((noreturn))
 #endif
 	;
-    PIC_DECLSPEC_FUNC(void) exit(int);
+    void exit(int);
 
-    class PIC_DECLSPEC_CLASS error: public std::exception
+    class error: public std::exception
     {
         public:
             error() {}

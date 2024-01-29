@@ -20,8 +20,6 @@
 #ifndef __PIC_LOG__
 #define __PIC_LOG__
 
-#include "pic_exports.h"
-
 #include <exception>
 
 #include "pic_error.h"
@@ -31,7 +29,7 @@
 
 namespace pic
 {
-    struct PIC_DECLSPEC_CLASS logger_t
+    struct logger_t
     {
         virtual ~logger_t() {}
         virtual void log(const char *) = 0;
@@ -42,7 +40,7 @@ namespace pic
 
     };
 
-    class PIC_DECLSPEC_CLASS msg_t
+    class msg_t
     {
         private:
             struct rep_t: public pic::counted_t, public nbostringstream_t

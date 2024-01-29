@@ -20,7 +20,6 @@
 #ifndef __PIC_CFRUNLOOP__
 #define __PIC_CFRUNLOOP__
 
-#include "pic_exports.h"
 #include "pic_config.h"
 
 #ifdef PI_MACOSX
@@ -30,7 +29,7 @@
 
 namespace pic
 {
-    class PIC_DECLSPEC_CLASS cfrunloop_t: private thread_t
+    class cfrunloop_t: private thread_t
     {
         public:
             cfrunloop_t(unsigned realtime);

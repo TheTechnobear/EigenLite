@@ -20,7 +20,6 @@
 #ifndef __PIC_USB_H__
 #define __PIC_USB_H__
 
-#include "pic_exports.h"
 #include "pic_functor.h"
 #include "pic_error.h"
 #include <string>
@@ -35,7 +34,7 @@
 
 namespace pic
 {
-    class PIC_DECLSPEC_CLASS usbenumerator_t
+    class usbenumerator_t
     {
         public:
             struct impl_t;
@@ -59,12 +58,12 @@ namespace pic
             impl_t *impl_;
     };
 
-   class PIC_DECLSPEC_CLASS usbdevice_t
+   class usbdevice_t
     {
         public:
             struct impl_t;
 
-            struct PIC_DECLSPEC_CLASS iso_in_pipe_t
+            struct iso_in_pipe_t
             {
                 iso_in_pipe_t(unsigned name, unsigned size): name_(name), size_(size), fnum_(0),ftime_(0),history_(0),trigger_(0),frame_check_(true) {}
                 virtual ~iso_in_pipe_t() {}
@@ -89,7 +88,7 @@ namespace pic
                 bool frame_check_;
             };
 
-            struct PIC_DECLSPEC_CLASS power_t
+            struct power_t
             {
                 virtual ~power_t() {}
                 virtual void pipe_died(unsigned reason) {}
@@ -97,7 +96,7 @@ namespace pic
                 virtual void pipe_stopped() {}
             };
 
-            struct PIC_DECLSPEC_CLASS iso_out_pipe_t
+            struct iso_out_pipe_t
             {
                 iso_out_pipe_t(unsigned name, unsigned size): name_(name), size_(size) {}
                 unsigned out_pipe_name() { return name_; }
@@ -107,7 +106,7 @@ namespace pic
                 unsigned size_;
             };
 
-            struct PIC_DECLSPEC_CLASS bulk_out_pipe_t
+            struct bulk_out_pipe_t
             {
                 bulk_out_pipe_t(unsigned name, unsigned size): name_(name), size_(size) {}
                 unsigned out_pipe_name() { return name_; }
@@ -124,7 +123,7 @@ namespace pic
                 impl_t *impl_;
             };
 
-            class PIC_DECLSPEC_CLASS iso_out_guard_t: public pic::nocopy_t
+            class iso_out_guard_t: public pic::nocopy_t
             {
                 public:
                     iso_out_guard_t(usbdevice_t *device);
@@ -181,7 +180,7 @@ namespace pic
         virtual bool poll(unsigned long long) = 0;
     };
 
-    class PIC_DECLSPEC_CLASS poller_t: public nocopy_t
+    class poller_t: public nocopy_t
     {
         public:
             poller_t(pollable_t *pollable);
@@ -194,7 +193,7 @@ namespace pic
             impl_t *impl_;
     };
 
-    class PIC_DECLSPEC_CLASS bulk_queue_t
+    class bulk_queue_t
     {
         public:
             bulk_queue_t(unsigned size,usbdevice_t *dev, unsigned name, unsigned timeout, unsigned auto_flush);
@@ -209,9 +208,9 @@ namespace pic
             impl_t *impl_;
     };
 
-    PIC_DECLSPEC_FUNC(std::string) usb_string(usbdevice_t *device, unsigned index);
-    PIC_DECLSPEC_FUNC(std::string) usb_serial(usbdevice_t *device);
-    PIC_DECLSPEC_FUNC(std::string) usb_product(usbdevice_t *device);
+    std::string usb_string(usbdevice_t *device, unsigned index);
+    std::string usb_serial(usbdevice_t *device);
+    std::string usb_product(usbdevice_t *device);
 };
 
 #endif

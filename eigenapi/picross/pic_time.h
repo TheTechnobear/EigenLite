@@ -20,16 +20,14 @@
 #ifndef __PICROSS_TIME__
 #define __PICROSS_TIME__
 
-#include "pic_exports.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-PIC_DECLSPEC_FUNC(void) pic_init_time(void);
-PIC_DECLSPEC_FUNC(unsigned long long) pic_microtime(void);
-PIC_DECLSPEC_FUNC(void) pic_microsleep(unsigned long micro);
-PIC_DECLSPEC_FUNC(void) pic_nanosleep(unsigned long nano);
+void pic_init_time(void);
+unsigned long long pic_microtime(void);
+void pic_microsleep(unsigned long micro);
+void pic_nanosleep(unsigned long nano);
 
 #ifdef __cplusplus
 }

@@ -20,14 +20,12 @@
 #ifndef __PICROSS_PIC_BACKTRACE__
 #define __PICROSS_PIC_BACKTRACE__
 
-#include "pic_exports.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-PIC_DECLSPEC_FUNC(void) pic_backtrace(char *buffer, unsigned size);
-PIC_DECLSPEC_FUNC(void) pic_breakpoint(void);
+void pic_backtrace(char *buffer, unsigned size);
+void pic_breakpoint(void);
 
 #ifdef __cplusplus
 }
