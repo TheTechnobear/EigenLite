@@ -19,8 +19,15 @@
 // #define TAU_KBD_STRIP1  (TAU_KBD_KEYS+3)
 // #define TAU_KBD_ACCEL   (TAU_KBD_KEYS+4)
 
-#define TAU_PERC_KEYS_START 72
-#define TAU_MODE_KEYS_START (TAU_KBD_KEYS + TAU_KEYS_OFFSET)
+
+// main keys = 0  to 71
+// perc keys = 72 to 83
+// mode keys = 89 to 96
+static constexpr unsigned TAU_PERC_KEYS_START=72;
+static constexpr unsigned TAU_PERC_KEYS_END = (TAU_PERC_KEYS_START + 12) - 1;
+static constexpr unsigned TAU_MODE_KEYS_START = 89; // TAU_KBD_KEYS + TAU_KEYS_OFFSET
+static constexpr unsigned TAU_MODE_KEYS_END = (TAU_MODE_KEYS_START + TAU_MODE_KEYS) - 1;
+
 
 namespace EigenApi {
 
@@ -29,29 +36,24 @@ namespace EigenApi {
 // static const unsigned TAU_COURSEKEYS = 92;
 
 void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned k, bool a, float p, float r, float y) {
-    if (k == TAU_KBD_STRIP1)
-        // strip off (only)
-        parent_.fireStripEvent(t, 1, 0.0f, 0);
-    else {
-        unsigned course = k < TAU_PERC_KEYS_START ? 0 : (k < TAU_PERC_KEYS_START ? 1 : 2);
-        int key = 0;
-        switch (course) {
-            case 0: {
-                key = k;
-                break;
-            }
-            case 1: {
-                key = k - TAU_PERC_KEYS_START;
-                break;
-            }
-            case 2: {
-                key = k - TAU_MODE_KEYS_START;
-                break;
-            }
+    unsigned course = k < TAU_PERC_KEYS_START ? 0 : (k <= TAU_PERC_KEYS_END ? 1 : 2);
+    int key = 0;
+    switch (course) {
+        case 0: {
+            key = k;
+            break;
         }
-        // pic::logmsg() << "fireTauKeyEvent  - course " << course << " key " << key;
-        parent_.fireKeyEvent(t, course, key, a, p, r, y);
+        case 1: {
+            key = k - TAU_PERC_KEYS_START;
+            break;
+        }
+        case 2: {
+            key = k - TAU_MODE_KEYS_START;
+            break;
+        }
     }
+    // pic::logmsg() << "fireTauKeyEvent  - course " << course << " key " << key;
+    parent_.fireKeyEvent(t, course, key, a, p, r, y);
 }
 
 void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {
@@ -127,8 +129,13 @@ void EF_Tau::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
             if ((parent_.curMap()[w] & mask) && !(newmap[w] & mask)) {
                 unsigned key = keybase + k;
                 if (key == TAU_KBD_DESENSE) continue;
+                if (key == TAU_KBD_ACCEL) continue;  
 
-                fireTauKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
+                if (k == TAU_KBD_STRIP1) {
+                    parent_.fireStripEvent(t, 1, 0.0f, 0);
+                } else {
+                    fireTauKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
+                }
             }
         }
 
