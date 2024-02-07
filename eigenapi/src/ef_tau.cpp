@@ -131,7 +131,7 @@ void EF_Tau::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
                 if (key == TAU_KBD_DESENSE) continue;
                 if (key == TAU_KBD_ACCEL) continue;  
 
-                if (k == TAU_KBD_STRIP1) {
+                if (key == TAU_KBD_STRIP1) {
                     parent_.fireStripEvent(t, 1, 0.0f, 0);
                 } else {
                     fireTauKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
