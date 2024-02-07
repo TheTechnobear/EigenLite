@@ -13,17 +13,17 @@
 // #define TAU_KBD_KEYS 84 // normal keys(84)
 // #define TAU_KEYS_OFFSET 5
 // #define TAU_MODE_KEYS   8
-// #define TAU_KBD_DESENSE (TAU_KBD_KEYS+0)
-// #define TAU_KBD_BREATH1 (TAU_KBD_KEYS+1)
-// #define TAU_KBD_BREATH2 (TAU_KBD_KEYS+2)
-// #define TAU_KBD_STRIP1  (TAU_KBD_KEYS+3)
-// #define TAU_KBD_ACCEL   (TAU_KBD_KEYS+4)
+// #define TAU_KBD_DESENSE (TAU_KBD_KEYS+0) // 84
+// #define TAU_KBD_BREATH1 (TAU_KBD_KEYS+1) // 85
+// #define TAU_KBD_BREATH2 (TAU_KBD_KEYS+2) // 86
+// #define TAU_KBD_STRIP1  (TAU_KBD_KEYS+3) // 87
+// #define TAU_KBD_ACCEL   (TAU_KBD_KEYS+4) // 89
 
 
 // main keys = 0  to 71
 // perc keys = 72 to 83
 // mode keys = 89 to 96
-static constexpr unsigned TAU_PERC_KEYS_START=72;
+static constexpr unsigned TAU_PERC_KEYS_START = 72;
 static constexpr unsigned TAU_PERC_KEYS_END = (TAU_PERC_KEYS_START + 12) - 1;
 static constexpr unsigned TAU_MODE_KEYS_START = 89; // TAU_KBD_KEYS + TAU_KEYS_OFFSET
 static constexpr unsigned TAU_MODE_KEYS_END = (TAU_MODE_KEYS_START + TAU_MODE_KEYS) - 1;

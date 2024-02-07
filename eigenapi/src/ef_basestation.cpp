@@ -132,16 +132,29 @@ void EF_BaseStation::setLED(unsigned course, unsigned key, unsigned colour) {
 
     unsigned keynum = 0;
     if (isAlpha_) {
+        if(course == 0) {
+            if(key >= 120) return;
+        } else if(course == 1) {
+            if(key >= 12) return;
+        } else {
+            return;
+        }
+
         keynum = (course * 120) + key;
     } else {
         // tau
-        if (course == 0)
+        if (course == 0) {
+            if(key >= 72) return;
             keynum = key;
-        else if (course == 1)
-            keynum = key + 72; // per
+        }
+        else if (course == 1) {
+            if(key >= 12) return;
+            keynum = key + 72; // perc
+        }
         else {
             // note this is different from key event
             // due to sensors not having leds!?
+            if(key >= 8) return;
             keynum = key + 84; // mode
         }
     }

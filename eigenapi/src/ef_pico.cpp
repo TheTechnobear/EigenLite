@@ -116,6 +116,14 @@ bool EF_Pico::poll(long long t) {
 
 void EF_Pico::setLED(unsigned course, unsigned key, unsigned colour) {
     if (pLoop_ == NULL) return;
+    if(course == 0) {
+        if(key >= 18) return;
+    } else if (course == 1) {
+        if(key >= 4) return;
+    } else {
+        return;
+    }
+    
     unsigned keynum = course * PICO_MAINKEYS + key;
     pLoop_->set_led(keynum, colour);
 }
