@@ -19,8 +19,7 @@ void EigenLite::logmsg(const char *msg) {
 EigenLite::EigenLite() : EigenLite(nullptr) {
 }
 
-EigenLite::EigenLite(IFW_Reader *fwReader)
-    : pollTime_(100), fwReader_(fwReader) {
+EigenLite::EigenLite(IFW_Reader *fwReader) : pollTime_(100), fwReader_(fwReader) {
     if (fwReader_ == nullptr) {
         internalReader_ = new FWR_Embedded();
         fwReader_ = internalReader_;
@@ -40,9 +39,7 @@ const char *EigenLite::versionString() {
 void EigenLite::addCallback(EigenApi::Callback *api) {
     // do not allow callback to be added twice
     for (auto cb : callbacks_) {
-        if (cb == api) {
-            return;
-        }
+        if (cb == api) { return; }
     }
     callbacks_.push_back(api);
 }
@@ -59,9 +56,7 @@ void EigenLite::removeCallback(EigenApi::Callback *api) {
 
 void EigenLite::clearCallbacks() {
     std::vector<Callback *>::iterator iter;
-    while (!callbacks_.empty()) {
-        callbacks_.pop_back();
-    }
+    while (!callbacks_.empty()) { callbacks_.pop_back(); }
 }
 
 volatile bool discoverProcessRun = true;
@@ -124,7 +119,7 @@ bool EigenLite::checkUsbDev() {
     return false;
 }
 
-void EigenLite::setDeviceFilter(unsigned  allBasePico, unsigned devenum) {
+void EigenLite::setDeviceFilter(unsigned allBasePico, unsigned devenum) {
     filterAllBasePico_ = allBasePico;
     filterDeviceEnum_ = devenum;
 }
@@ -146,13 +141,9 @@ bool EigenLite::destroy() {
     if (discoverThread_.joinable()) {
         try {
             discoverThread_.join();
-        } catch (std::system_error &) {
-            logmsg("warn error whilst joining to discover thread");
-        }
+        } catch (std::system_error &) { logmsg("warn error whilst joining to discover thread"); }
     }
-    for (auto device : devices_) {
-        device->destroy();
-    }
+    for (auto device : devices_) { device->destroy(); }
     devices_.clear();
     return true;
 }
@@ -185,12 +176,11 @@ bool EigenLite::poll() {
             std::string picoUSBDev, baseUSBDev;
 
 
-
-                switch(filterAllBasePico_) {
-                case 0: { 
+            switch (filterAllBasePico_) {
+                case 0: {
                     // all
                     int filterIdx = filterDeviceEnum_ - 1;  // 0 = first
-                    filterIdx = filterIdx < 0 ? 0 : filterIdx;  
+                    filterIdx = filterIdx < 0 ? 0 : filterIdx;
                     if (filterIdx < availableBaseStations_.size()) {
                         newBase = true;
                         baseUSBDev = availableBaseStations_[filterIdx];
@@ -198,7 +188,6 @@ bool EigenLite::poll() {
                         filterIdx -= availableBaseStations_.size();
 
                         if (filterIdx < availablePicos_.size()) {
-                    
                             newPico = true;
                             picoUSBDev = availablePicos_[filterIdx];
                         }
@@ -208,11 +197,10 @@ bool EigenLite::poll() {
                 }
                 case 1: {
                     // base only
-                    int filterIdx = filterDeviceEnum_ - 1;  // 0 = first
-                    filterIdx = filterIdx < 0 ? 0 : filterIdx; // 
+                    int filterIdx = filterDeviceEnum_ - 1;      // 0 = first
+                    filterIdx = filterIdx < 0 ? 0 : filterIdx;  //
 
                     if (filterIdx < availableBaseStations_.size()) {
-                
                         newBase = true;
                         baseUSBDev = availableBaseStations_[filterIdx];
                     }
@@ -221,11 +209,10 @@ bool EigenLite::poll() {
 
                 case 2: {
                     // base only
-                    int filterIdx = filterDeviceEnum_ - 1;  // 0 = first
-                    filterIdx = filterIdx < 0 ? 0 : filterIdx; // 
+                    int filterIdx = filterDeviceEnum_ - 1;      // 0 = first
+                    filterIdx = filterIdx < 0 ? 0 : filterIdx;  //
 
                     if (filterIdx < availablePicos_.size()) {
-                
                         newPico = true;
                         picoUSBDev = availablePicos_[filterIdx];
                     }
@@ -235,12 +222,8 @@ bool EigenLite::poll() {
 
             // check not already connected.
             for (auto dev : devices_) {
-                if (picoUSBDev == dev->usbDevice()->name()) {
-                    newPico = false;
-                }
-                if (baseUSBDev == dev->usbDevice()->name()) {
-                    newBase = false;
-                }
+                if (picoUSBDev == dev->usbDevice()->name()) { newPico = false; }
+                if (baseUSBDev == dev->usbDevice()->name()) { newBase = false; }
             }
 
             EF_Harp *pDevice = nullptr;
@@ -305,9 +288,7 @@ bool EigenLite::poll() {
     if (diff > pollTime_) {
         lastPollTime_ = t;
         bool ret = true;
-        for (auto pDevice : devices_) {
-            ret &= pDevice->poll(0);
-        }
+        for (auto pDevice : devices_) { ret &= pDevice->poll(0); }
         return ret;
     }
     return false;
@@ -318,67 +299,45 @@ void EigenLite::setPollTime(unsigned pollTime) {
 }
 
 void EigenLite::fireBeginDeviceInfo() {
-    for (auto cb : callbacks_) {
-        cb->beginDeviceInfo();
-    }
+    for (auto cb : callbacks_) { cb->beginDeviceInfo(); }
 }
 
 void EigenLite::fireDeviceInfo(bool isPico, unsigned devNum, const char *dev) {
-    for (auto cb : callbacks_) {
-        cb->deviceInfo(isPico, devNum, dev);
-    }
+    for (auto cb : callbacks_) { cb->deviceInfo(isPico, devNum, dev); }
 }
 
 void EigenLite::fireEndDeviceInfo() {
-    for (auto cb : callbacks_) {
-        cb->endDeviceInfo();
-    }
+    for (auto cb : callbacks_) { cb->endDeviceInfo(); }
 }
 
 void EigenLite::fireConnectEvent(const char *dev, Callback::DeviceType dt) {
-    for (auto cb : callbacks_) {
-        cb->connected(dev, dt);
-    }
+    for (auto cb : callbacks_) { cb->connected(dev, dt); }
 }
 
 void EigenLite::fireDisconnectEvent(const char *dev) {
-    for (auto cb : callbacks_) {
-        cb->disconnected(dev);
-    }
+    for (auto cb : callbacks_) { cb->disconnected(dev); }
 }
 
-void EigenLite::fireKeyEvent(const char *dev, unsigned long long t,
-                             unsigned course, unsigned key,
-                             bool a,
-                             float p, float r, float y) {
-    for (auto cb : callbacks_) {
-        cb->key(dev, t, course, key, a, p, r, y);
-    }
+void EigenLite::fireKeyEvent(const char *dev, unsigned long long t, unsigned course, unsigned key, bool a, float p,
+                             float r, float y) {
+    for (auto cb : callbacks_) { cb->key(dev, t, course, key, a, p, r, y); }
 }
 
 void EigenLite::fireBreathEvent(const char *dev, unsigned long long t, float val) {
-    for (auto cb : callbacks_) {
-        cb->breath(dev, t, val);
-    }
+    for (auto cb : callbacks_) { cb->breath(dev, t, val); }
 }
 
 void EigenLite::fireStripEvent(const char *dev, unsigned long long t, unsigned strip, float val, bool a) {
-    for (auto cb : callbacks_) {
-        cb->strip(dev, t, strip, val, a);
-    }
+    for (auto cb : callbacks_) { cb->strip(dev, t, strip, val, a); }
 }
 
 void EigenLite::firePedalEvent(const char *dev, unsigned long long t, unsigned pedal, float val) {
-    for (auto cb : callbacks_) {
-        cb->pedal(dev, t, pedal, val);
-    }
+    for (auto cb : callbacks_) { cb->pedal(dev, t, pedal, val); }
 }
 
 void EigenLite::fireDeadEvent(const char *dev, unsigned reason) {
     deviceDead(dev, reason);
-    for (auto cb : callbacks_) {
-        cb->dead(dev, reason);
-    }
+    for (auto cb : callbacks_) { cb->dead(dev, reason); }
 }
 
 void EigenLite::setLED(const char *dev, unsigned course, unsigned key, unsigned colour) {
