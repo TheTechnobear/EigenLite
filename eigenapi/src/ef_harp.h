@@ -16,28 +16,22 @@
 namespace EigenApi {
 
 struct devcheck : virtual pic::tracked_t {
-    devcheck(const std::string& dev) : dev_(dev) {
-    }
-    void found(const std::string& device) {
-        found_ |= (dev_ == device);
-    }
+    devcheck(const std::string& dev) : dev_(dev) {}
+    void found(const std::string& device) { found_ |= (dev_ == device); }
     const std::string& dev_;
     bool found_ = false;
 };
 
 struct devfinder : virtual pic::tracked_t {
-    devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {
-    }
+    devfinder(std::vector<std::string>& devlist) : devlist_(devlist) {}
 
-    void found(const std::string& device) {
-        devlist_.push_back(device);
-    }
+    void found(const std::string& device) { devlist_.push_back(device); }
 
     std::vector<std::string>& devlist_;
 };
 
 class EF_Harp {
-   public:
+public:
     EF_Harp(EigenLite& efd);
     virtual ~EF_Harp();
 
@@ -64,8 +58,8 @@ class EF_Harp {
     bool loadFirmware(pic::usbdevice_t* pDevice, std::string ihxFile);
     static void logmsg(const char* msg);
 
-   protected:
-   private:
+protected:
+private:
     // for controlling firmware loading
     static void pokeFirmware(pic::usbdevice_t* pDevice, int address, int byteCount, void* data);
     static void firmwareCpucs(pic::usbdevice_t* pDevice, const char* mode);
@@ -83,11 +77,11 @@ class EF_Harp {
     static constexpr float BREATH_HYSTERISIS = 0.01f;
 
     class IHXException {
-       public:
+    public:
         IHXException(const std::string& reason) : reason_(reason) {}
         const std::string& reason() { return reason_; }
 
-       private:
+    private:
         std::string reason_;
     };
 
@@ -97,12 +91,12 @@ class EF_Harp {
     unsigned lastPedal_[4];
     bool stopping_;
 
-   protected:
+protected:
     EigenLite& efd_;
 };
 
 class EF_Pico : public EF_Harp {
-   public:
+public:
     EF_Pico(EigenLite& efd);
     virtual ~EF_Pico();
 
@@ -119,19 +113,15 @@ class EF_Pico : public EF_Harp {
 
     static std::vector<std::string> availableDevices();
 
-   private:
+private:
     bool checkFirmware(const std::string& usbdev);
     bool loadPicoFirmware(const std::string& usbdev);
     pico::active_t* pLoop_;
     unsigned lastMode_[4];
 
     class Delegate : public pico::active_t::delegate_t {
-       public:
-        Delegate(EF_Pico& p) : parent_(p),
-                               s_count_(100),
-                               s_threshold_(65),
-                               s_state_(0),
-                               s_last_(0) { ; }
+    public:
+        Delegate(EF_Pico& p) : parent_(p), s_count_(100), s_threshold_(65), s_state_(0), s_last_(0) { ; }
         void kbd_dead(unsigned reason);
         void kbd_raw(bool resync, const pico::active_t::rawkbd_t&);
         void kbd_key(unsigned long long t, unsigned key, bool a, unsigned p, int r, int y);
@@ -157,6 +147,7 @@ class EF_Pico : public EF_Harp {
             v = std::min(v, 1.f);
             return v;
         }
+
         inline float aclip(float v) {
             v = std::max(v, 0.f);
             v = std::min(v, 1.f);
@@ -167,9 +158,10 @@ class EF_Pico : public EF_Harp {
         inline float pToFloat(int v) { return aclip(float(v) / PRESSURE_RANGE); }
         inline float rToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
         inline float yToFloat(int v) { return clip(float(v) / ROLL_YAW_RANGE); }
-        inline float stripToFloat(int v) { return clip(((float(v) - STRIP_MID_RANGE) / STRIP_MID_RANGE)); }
-        // inline float stripToFloat(int v) { return  aclip(float( v- STRIP_MIN) / STRIP_RANGE); }
-        inline float breathToFloat(int v) { return clip(((float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE) * BREATH_GAIN); }
+        inline float stripToFloat(int v) { return 1.0f - aclip(float(v - STRIP_MIN) / STRIP_RANGE); }
+        inline float breathToFloat(int v) {
+            return clip(((float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE) * BREATH_GAIN);
+        }
         inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
 
         EF_Pico& parent_;
@@ -181,7 +173,7 @@ class EF_Pico : public EF_Harp {
 };
 
 class EF_BaseStation : public EF_Harp {
-   public:
+public:
     EF_BaseStation(EigenLite& efd);
     virtual ~EF_BaseStation();
 
@@ -199,10 +191,10 @@ class EF_BaseStation : public EF_Harp {
     unsigned short* curMap() { return curmap_; }
     unsigned short* skpMap() { return skpmap_; }
 
-   protected:
+protected:
     alpha2::active_t* loop() { return pLoop_; }
 
-   private:
+private:
     bool checkFirmware(const std::string& usbdevice);
     bool loadBaseStation(const std::string& usbdev, unsigned short bstype);
     std::shared_ptr<alpha2::active_t::delegate_t> delegate_;
@@ -212,7 +204,7 @@ class EF_BaseStation : public EF_Harp {
 };
 
 class EF_BaseDelegate : public alpha2::active_t::delegate_t {
-   public:
+public:
     EF_BaseDelegate(EF_BaseStation& p) : parent_(p) {}
     // alpha2::active_t::delegate_t
     void kbd_dead(unsigned reason) override;
@@ -221,7 +213,7 @@ class EF_BaseDelegate : public alpha2::active_t::delegate_t {
     void midi_data(unsigned long long t, const unsigned char* data, unsigned len) override;
     void kbd_mic(unsigned char s, unsigned long long t, const float* samples) override;
 
-   protected:
+protected:
     static constexpr float SENSOR_RANGE = 4096.f;
     static constexpr float MID_SENSOR_RANGE = 2047.f;
     static constexpr float PRESSURE_RANGE = 4096.f;
@@ -232,36 +224,43 @@ class EF_BaseDelegate : public alpha2::active_t::delegate_t {
         v = std::min(v, 1.f);
         return v;
     }
-    inline float pToFloat(int v) { return float(v) / PRESSURE_RANGE; }
+
+    inline float aclip(float v) {
+        v = std::max(v, 0.f);
+        v = std::min(v, 1.f);
+        return v;
+    }
+
+    inline float pToFloat(int v) { return aclip(float(v) / PRESSURE_RANGE); }
     inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
     inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
-    inline float stripToFloat(int v) { return (float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
-    inline float breathToFloat(int v) { return (float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
-    inline float pedalToFloat(int v) { return float(v) / SENSOR_RANGE; }
+    inline float stripToFloat(int v) { return 1.0f - aclip(float(v) / SENSOR_RANGE); }
+    inline float breathToFloat(int v) { return clip(float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
+    inline float pedalToFloat(int v) { return aclip(float(v) / SENSOR_RANGE); }
 
     EF_BaseStation& parent_;
 };
 
 class EF_Alpha : public EF_BaseDelegate {
-   public:
+public:
     EF_Alpha(EF_BaseStation& p) : EF_BaseDelegate(p) {}
 
     // alpha2::active_t::delegate_t
     void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) override;
     void kbd_keydown(unsigned long long t, const unsigned short* bitmap) override;
 
-   private:
+private:
     void fireAlphaKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
 };
 
 class EF_Tau : public EF_BaseDelegate {
-   public:
+public:
     EF_Tau(EF_BaseStation& p) : EF_BaseDelegate(p) {}
 
     void kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) override;
     void kbd_keydown(unsigned long long t, const unsigned short* bitmap) override;
 
-   private:
+private:
     void fireTauKeyEvent(unsigned long long t, unsigned key, bool a, float p, float r, float y);
 };
 
