@@ -48,8 +48,8 @@ void Eigenharp::setLED(const char* dev, unsigned course, unsigned key, LedColour
     static_cast<EigenLite*>(impl)->setLED(dev, course, key, (unsigned) colour);
 }
 
-void Eigenharp::setDeviceFilter(bool baseStation, unsigned devEnum) {
-    static_cast<EigenLite*>(impl)->setDeviceFilter(baseStation, devEnum);
+void Eigenharp::setDeviceFilter(unsigned allBasePico, unsigned devEnum) {
+    static_cast<EigenLite*>(impl)->setDeviceFilter(allBasePico, devEnum);
 }
 
 // basic logger, if its not overriden

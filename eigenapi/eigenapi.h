@@ -63,8 +63,9 @@ class Eigenharp {
 
     void setPollTime(unsigned pollTime);
 
-    // basestation = 0, pico =1
-    void setDeviceFilter(bool baseOrPico, unsigned devEnum);
+    // allBasePico 0= All, 1 = basestation only, 2 = pico only
+    // devEnum 0= All, 1-N = device 
+    void setDeviceFilter(unsigned allBasePico, unsigned devEnum);
 
    private:
     void* impl;

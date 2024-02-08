@@ -124,8 +124,8 @@ bool EigenLite::checkUsbDev() {
     return false;
 }
 
-void EigenLite::setDeviceFilter(bool baseOrPico, unsigned devenum) {
-    filterBaseStationOrPico_ = baseOrPico;
+void EigenLite::setDeviceFilter(unsigned  allBasePico, unsigned devenum) {
+    filterAllBasePico_ = allBasePico;
     filterDeviceEnum_ = devenum;
 }
 
@@ -184,30 +184,52 @@ bool EigenLite::poll() {
             bool newBase = false;
             std::string picoUSBDev, baseUSBDev;
 
-            if (filterDeviceEnum_ == 0) {
-                // attempt to connect to all devices
-                if (availableBaseStations_.size() > 0) {
-                    newBase = true;
-                    baseUSBDev = availableBaseStations_[0];
+
+
+                switch(filterAllBasePico_) {
+                case 0: { 
+                    // all
+                    int filterIdx = filterDeviceEnum_ - 1;  // 0 = first
+                    filterIdx = filterIdx < 0 ? 0 : filterIdx;  
+                    if (filterIdx < availableBaseStations_.size()) {
+                        newBase = true;
+                        baseUSBDev = availableBaseStations_[filterIdx];
+                    } else {
+                        filterIdx -= availableBaseStations_.size();
+
+                        if (filterIdx < availablePicos_.size()) {
+                    
+                            newPico = true;
+                            picoUSBDev = availablePicos_[filterIdx];
+                        }
+                    }
+
+                    break;
+                }
+                case 1: {
+                    // base only
+                    int filterIdx = filterDeviceEnum_ - 1;  // 0 = first
+                    filterIdx = filterIdx < 0 ? 0 : filterIdx; // 
+
+                    if (filterIdx < availableBaseStations_.size()) {
+                
+                        newBase = true;
+                        baseUSBDev = availableBaseStations_[filterIdx];
+                    }
+                    break;
                 }
 
-                if (availablePicos_.size() > 0) {
-                    newPico = true;
-                    picoUSBDev = availablePicos_[0];
-                }
+                case 2: {
+                    // base only
+                    int filterIdx = filterDeviceEnum_ - 1;  // 0 = first
+                    filterIdx = filterIdx < 0 ? 0 : filterIdx; // 
 
-            } else {
-                // 0 = no filter, so 1-N devices
-                unsigned devIdx = filterDeviceEnum_ - 1;
-                // basestation = 0, pico =0
-                if (filterBaseStationOrPico_ == 0) {
-                    // basestation
-                    newBase = devIdx < availableBaseStations_.size();
-                    if (newBase) baseUSBDev = availableBaseStations_[devIdx];
-                } else {
-                    // pico
-                    newPico = devIdx < availablePicos_.size();
-                    if (newPico) picoUSBDev = availablePicos_[devIdx];
+                    if (filterIdx < availablePicos_.size()) {
+                
+                        newPico = true;
+                        picoUSBDev = availablePicos_[filterIdx];
+                    }
+                    break;
                 }
             }
 

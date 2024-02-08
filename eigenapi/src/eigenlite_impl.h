@@ -28,7 +28,7 @@ class EigenLite {
     virtual bool poll();
 
     const char* versionString();
-    void setDeviceFilter(bool baseStation, unsigned devenum);
+    void setDeviceFilter(unsigned allBasePico, unsigned devenum);
 
     void setPollTime(unsigned pollTime);
     void setLED(const char* dev, unsigned course, unsigned key, unsigned colour);
@@ -64,7 +64,7 @@ class EigenLite {
     std::vector<std::string> availableBaseStations_;
     volatile bool usbDevChange_ = false;
 
-    bool filterBaseStationOrPico_ = false;
+    unsigned filterAllBasePico_ = 0;
     unsigned filterDeviceEnum_ = 0;
 
     std::set<std::string> deadDevices_;
