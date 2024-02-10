@@ -235,7 +235,7 @@ protected:
     inline float rToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
     inline float yToFloat(int v) { return clip((MID_SENSOR_RANGE - float(v)) / ROLL_YAW_RANGE); }
     inline float stripToFloat(int v) { return 1.0f - aclip(float(v) / SENSOR_RANGE); }
-    inline float breathToFloat(int v) { return clip(float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE; }
+    inline float breathToFloat(int v) { return clip((float(v) - MID_SENSOR_RANGE) / MID_SENSOR_RANGE); }
     inline float pedalToFloat(int v) { return aclip(float(v) / SENSOR_RANGE); }
 
     EF_BaseStation& parent_;

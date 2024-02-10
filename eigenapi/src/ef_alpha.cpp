@@ -22,19 +22,13 @@
 namespace EigenApi {
 
 void EF_Alpha::fireAlphaKeyEvent(unsigned long long t, unsigned k, bool a, float p, float r, float y) {
-    if (k == KBD_STRIP1)
-        parent_.fireStripEvent(t, 1, 0.0f, 0);
-    else if (k == KBD_STRIP2)
-        parent_.fireStripEvent(t, 2, 0.0f, 0);
-    else {
-        const int MAIN_KEYBASE = 120;
-        unsigned course = k >= MAIN_KEYBASE;
-        unsigned key = k;
-        if (course > 0) {
-            key = k - MAIN_KEYBASE;
-        }
-        parent_.fireKeyEvent(t, course, key, a, p, r, y);
+    const int MAIN_KEYBASE = 120;
+    unsigned course = k >= MAIN_KEYBASE;
+    unsigned key = k;
+    if (course > 0) {
+        key = k - MAIN_KEYBASE;
     }
+    parent_.fireKeyEvent(t, course, key, a, p, r, y);
 }
 
 void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {
@@ -61,6 +55,7 @@ void EF_Alpha::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, in
     switch (key) {
         case KBD_BREATH1: {
             float fp = breathToFloat(p);
+            // pic::logmsg() << "breath " << p  << "   " << fp;
             parent_.fireBreathEvent(t, fp);
             break;
         }
@@ -100,7 +95,19 @@ void EF_Alpha::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
 
             // if was on, but no longer on
             if ((parent_.curMap()[w] & mask) && !(newmap[w] & mask)) {
-                fireAlphaKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
+                unsigned key = keybase + k;
+
+                if (key == KBD_ACCEL) continue;
+                if (key == KBD_DESENSE) continue;  
+
+                if (key == KBD_STRIP1) {
+                    parent_.fireStripEvent(t, 1, 0.0f, 0);
+                } else if (key == KBD_STRIP2) {
+                    parent_.fireStripEvent(t, 2, 0.0f, 0);
+                }
+                else {
+                    fireAlphaKeyEvent(t, key, 0, 0.f, 0.f, 0.f);
+                }
             }
         }
 
