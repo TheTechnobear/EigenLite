@@ -23,6 +23,8 @@ EigenLite::EigenLite(IFW_Reader *fwReader) : pollTime_(100), fwReader_(fwReader)
     if (fwReader_ == nullptr) {
         internalReader_ = new FWR_Embedded();
         fwReader_ = internalReader_;
+    } else {
+        internalReader_ = nullptr;
     }
 }
 
