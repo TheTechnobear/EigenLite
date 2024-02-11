@@ -99,6 +99,7 @@ class FWR_Posix : public EigenApi::IFW_Reader {
 class FWR_Embedded : public EigenApi::IFW_Reader {
    public:
     explicit FWR_Embedded();
+    virtual ~FWR_Embedded();
 
     bool open(const char* deviceihx, int oFlags, void** fd) override;
     long read(void* fd, void* data, long byteCount) override;

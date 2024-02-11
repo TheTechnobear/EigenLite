@@ -27,9 +27,13 @@ EigenLite::EigenLite(IFW_Reader *fwReader) : pollTime_(100), fwReader_(fwReader)
 }
 
 EigenLite::~EigenLite() {
+    logmsg("~EigenLite() - destroy");
     destroy();
+    logmsg("~EigenLite() - post destroy");
     delete internalReader_;
+    logmsg("~EigenLite() - post reader done");
     internalReader_ = fwReader_ = nullptr;
+    logmsg("~EigenLite() - done");
 }
 
 const char *EigenLite::versionString() {

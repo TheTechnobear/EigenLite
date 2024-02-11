@@ -15,6 +15,9 @@ namespace EigenApi {
 FWR_Embedded::FWR_Embedded() {
 }
 
+FWR_Embedded::~FWR_Embedded() {
+}
+
 bool FWR_Embedded::open(const char* devicefile, int oFlags, void** fd) {
     std::string filename = devicefile;
     position_ = 0;
