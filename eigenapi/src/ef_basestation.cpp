@@ -84,6 +84,7 @@ bool EF_BaseStation::destroy() {
         pLoop_ = NULL;
     }
     logmsg("destroyed basestation");
+    connected_ = false;
     efd_.fireDisconnectEvent(usbDevice()->name());
     return EF_Harp::destroy();
 }
@@ -97,6 +98,7 @@ bool EF_BaseStation::start() {
     logmsg("started basestation loop");
 
     // todo - need device name
+    connected_ = false;
     efd_.fireConnectEvent(usbDevice()->name(), isAlpha_ ? Callback::DeviceType::ALPHA : Callback::DeviceType::TAU);
 
     return true;
@@ -106,16 +108,18 @@ bool EF_BaseStation::stop() {
     if (pLoop_ == NULL) return false;
     //    pLoop_->stop();
     //    logmsg("stopped loop");
-    if(isAlpha_) {
-        for (unsigned k = 0; k < 132; k++) {
-            pLoop_->msg_set_led(k, 0);
+    if(connected_) {
+        if(isAlpha_) {
+            for (unsigned k = 0; k < 132; k++) {
+                pLoop_->msg_set_led(k, 0);
+            }
+        } else {
+            for (unsigned k = 0; k < 92; k++) {
+                pLoop_->msg_set_led(k, 0);
+            }
         }
-    } else {
-        for (unsigned k = 0; k < 92; k++) {
-            pLoop_->msg_set_led(k, 0);
-        }
+        pLoop_->msg_flush();
     }
-    pLoop_->msg_flush();
 
    return EF_Harp::stop();
 }

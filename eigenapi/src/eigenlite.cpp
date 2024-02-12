@@ -21,6 +21,7 @@ EigenLite::EigenLite() : EigenLite(nullptr) {
 
 EigenLite::EigenLite(IFW_Reader *fwReader) : pollTime_(100), fwReader_(fwReader) {
     if (fwReader_ == nullptr) {
+        logmsg("create embedded fw reader");
         internalReader_ = new FWR_Embedded();
         fwReader_ = internalReader_;
     } else {
@@ -29,13 +30,13 @@ EigenLite::EigenLite(IFW_Reader *fwReader) : pollTime_(100), fwReader_(fwReader)
 }
 
 EigenLite::~EigenLite() {
-    logmsg("~EigenLite() - destroy");
     destroy();
-    logmsg("~EigenLite() - post destroy");
-    delete internalReader_;
-    logmsg("~EigenLite() - post reader done");
+    if(internalReader_!=nullptr) {
+        logmsg("destroy embedded fw reader");
+        delete internalReader_;
+    }
     internalReader_ = fwReader_ = nullptr;
-    logmsg("~EigenLite() - done");
+    logmsg("EigenLite destroyed");
 }
 
 const char *EigenLite::versionString() {

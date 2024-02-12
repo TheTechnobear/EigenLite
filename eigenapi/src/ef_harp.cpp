@@ -140,6 +140,7 @@ void EF_Harp::firePedalEvent(unsigned long long t, unsigned pedal, float val) {
 }
 
 void EF_Harp::fireDeadEvent(unsigned reason) {
+    connected_ = false;
     efd_.fireDeadEvent(pDevice_->name(), reason);
 }
 

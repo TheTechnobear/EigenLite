@@ -93,6 +93,7 @@ private:
 
 protected:
     EigenLite& efd_;
+    bool connected_=false;
 };
 
 class EF_Pico : public EF_Harp {

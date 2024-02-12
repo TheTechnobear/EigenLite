@@ -58,11 +58,12 @@ bool EF_Pico::create(const std::string &usbdev) {
 bool EF_Pico::destroy() {
     logmsg("destroy pico....");
     EF_Pico::stop();
-    {
+    if(pLoop_!=nullptr) {
         delete pLoop_;
         pLoop_ = NULL;
     }
     logmsg("destroyed pico");
+    connected_ = false;
     efd_.fireDisconnectEvent(usbDevice()->name());
     return EF_Harp::destroy();
 }
@@ -75,6 +76,7 @@ bool EF_Pico::start() {
     pLoop_->start();
     logmsg("started loop");
     // todo - need device name
+    connected_ = true;
     efd_.fireConnectEvent(usbDevice()->name(), Callback::DeviceType::PICO);
     return true;
 }
@@ -84,8 +86,11 @@ bool EF_Pico::stop() {
     //    pLoop_->stop(); //??
     //    logmsg("stopped loop");
 
-    for (unsigned k = 0; k < PICO_MAINKEYS + 4; k++) {
-        pLoop_->set_led(k, 0);
+    // turn off leds on normal close
+    if(connected_) {
+        for (unsigned k = 0; k < PICO_MAINKEYS + 4; k++) {
+            pLoop_->set_led(k, 0);
+        }
     }
     // pLoop_->msg_flush();
 
