@@ -3,7 +3,6 @@
 *.lock
 profile
 **/build/*
-build*
 
 **/*.sublime-workspace
 cmake-build*/
@@ -30,11 +29,8 @@ Podfile.lock
 !default.perspectivev3
 *.xccheckout
 
-**/*.pd_linux
-**/*.pd_darwin
-**/*.dll
-**/*.o
 build/**/*.so
 build/**/*.dylib
+dist/*
 
 

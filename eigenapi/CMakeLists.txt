@@ -3,6 +3,24 @@ project (eigenapi)
 # USE_DUMMY_PICO - if you do not want to use prebuilt binaries (advanced use only), implies dynamic!
 # USE_DYNAMIC - use shared libraries for pico decoder
 
+
+# REL_DIR not supported currently
+set(REL_DIR "${CMAKE_SOURCE_DIR}/release/eigenapi")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    set(REL_DIR "${REL_DIR}/macOs/${CMAKE_OSX_ARCHITECTURES}")
+    set(REL_FILE "eigenapi-macOs-${CMAKE_OSX_ARCHITECTURES}")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(REL_DIR "${REL_DIR}/linux/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    set(REL_FILE "eigenapi-linux-${CMAKE_HOST_SYSTEM_PROCESSOR}")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(REL_DIR "${REL_DIR}/windows/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    set(REL_FILE "eigenapi-win-${CMAKE_HOST_SYSTEM_PROCESSOR}")
+else()
+    set(REL_DIR "${REL_DIR}/unknown/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    set(REL_FILE "eigenapi-unknown-${CMAKE_HOST_SYSTEM_PROCESSOR}")
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     #temporary, so I can see 'real' errors
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
@@ -87,7 +105,10 @@ target_include_directories(eigenapi PUBLIC
         .
         )
 
-
+add_custom_command(TARGET eigenapi POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/dist
+COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:eigenapi> ${CMAKE_SOURCE_DIR}/dist/${REL_FILE}.a
+)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   target_link_libraries(eigenapi atomic)
