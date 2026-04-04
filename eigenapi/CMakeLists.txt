@@ -8,8 +8,8 @@ project (eigenapi)
 set(REL_DIR "${CMAKE_SOURCE_DIR}/release/eigenapi")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
-    set(REL_DIR "${REL_DIR}/macOs/${CMAKE_OSX_ARCHITECTURES}")
-    set(REL_FILE "eigenapi-macOs-${CMAKE_OSX_ARCHITECTURES}")
+    set(REL_DIR "${REL_DIR}/macOs/${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    set(REL_FILE "eigenapi-macOs-${CMAKE_HOST_SYSTEM_PROCESSOR}")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(REL_DIR "${REL_DIR}/linux/${CMAKE_HOST_SYSTEM_PROCESSOR}")
     set(REL_FILE "eigenapi-linux-${CMAKE_HOST_SYSTEM_PROCESSOR}")
@@ -67,7 +67,7 @@ set(EIGENHARP_SRC
     src/fwr_posix.cpp
 )
 
-set(EMB_FW_SRC_DIR "${CMAKE_SOURCE_DIR}/resources/firmware/cpp")
+set(EMB_FW_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources/firmware/cpp")
 
 set(EIGENHARP_SRC ${EIGENHARP_SRC} 
     src/fwr_embedded.cpp
@@ -120,10 +120,11 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(eigenapi  "libusb" "pthread")
 endif()
 
+
 # Binary version of picodecoder
-set(PICODECODER_DIR "${CMAKE_SOURCE_DIR}/resources/picodecoder")
+set(PICODECODER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources/picodecoder")
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
-    set(PICODECODER_DIR "${PICODECODER_DIR}/macOs/${CMAKE_OSX_ARCHITECTURES}")
+    set(PICODECODER_DIR "${PICODECODER_DIR}/macOs/${CMAKE_HOST_SYSTEM_PROCESSOR}")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(PICODECODER_DIR "${PICODECODER_DIR}/linux/${CMAKE_HOST_SYSTEM_PROCESSOR}")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -135,10 +136,11 @@ endif()
 if(USE_DUMMY_PICO)
     message("using dummy picodecoder")
     add_subdirectory(lib_picodecoder)
-else(USE_DUMMY_PICO)
+else()
     message("using PICODECODER_DIR : ${PICODECODER_DIR}")
-    ADD_LIBRARY(picodecoder_static STATIC IMPORTED)
+    ADD_LIBRARY(picodecoder_static STATIC IMPORTED GLOBAL)
     SET_TARGET_PROPERTIES(picodecoder_static PROPERTIES IMPORTED_LOCATION "${PICODECODER_DIR}/libpicodecoder_static.a")
+    target_link_libraries(eigenapi picodecoder_static)
 endif()
 
 add_subdirectory(tests)

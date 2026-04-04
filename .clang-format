@@ -7,9 +7,13 @@ UseTab: Never
 ---
 Language: Cpp
 
+SortIncludes: false
+IncludeBlocks: Preserve
+
 AccessModifierOffset: -4
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: InlineOnly
 
 BreakBeforeBraces: Custom
