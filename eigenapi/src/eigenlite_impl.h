@@ -54,6 +54,9 @@ class EigenLite {
    private:
     void deviceDead(const char* dev, unsigned reason);
 
+    bool connectNewBaseStation();
+    bool connectNewPico();
+
     unsigned long long lastPollTime_;
     unsigned pollTime_;
     std::vector<Callback*> callbacks_;
