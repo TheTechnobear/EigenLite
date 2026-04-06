@@ -45,6 +45,7 @@ public:
     bool stopping() { return stopping_; }
 
     virtual void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y);
+    virtual void fireButtonEvent(unsigned long long t,  unsigned key, bool a);
     virtual void fireBreathEvent(unsigned long long t, float val);
     virtual void fireStripEvent(unsigned long long t, unsigned strip, float val, bool a);
     virtual void firePedalEvent(unsigned long long t, unsigned pedal, float val);
@@ -110,15 +111,13 @@ public:
     void restartKeyboard() override;
 
     void setLED(unsigned course, unsigned keynum, unsigned colour) override;
-    void fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y) override;
-
+ 
     static std::vector<std::string> availableDevices();
 
 private:
     bool checkFirmware(const std::string& usbdev);
     bool loadPicoFirmware(const std::string& usbdev);
     pico::active_t* pLoop_;
-    unsigned lastMode_[4];
 
     class Delegate : public pico::active_t::delegate_t {
     public:
@@ -170,6 +169,8 @@ private:
         int breathWarmUp_ = 0;
         float breathZero_ = 0.f;
         unsigned s_count_, s_threshold_, s_state_, s_last_;
+        unsigned lastMode_[4];
+
     } delegate_;
 };
 

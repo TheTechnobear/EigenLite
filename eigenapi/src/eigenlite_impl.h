@@ -42,6 +42,8 @@ class EigenLite {
     virtual void fireConnectEvent(const char* dev, Callback::DeviceType dt);
     virtual void fireDisconnectEvent(const char* dev);
     virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y);
+    virtual void fireButtonEvent(const char* dev, unsigned long long t,  unsigned key, bool a);
+
     virtual void fireBreathEvent(const char* dev, unsigned long long t, float val);
     virtual void fireStripEvent(const char* dev, unsigned long long t, unsigned strip, float val, bool a);
     virtual void firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, float val);

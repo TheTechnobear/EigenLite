@@ -111,6 +111,10 @@ void EF_Harp::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, 
     efd_.fireKeyEvent(pDevice_->name(), t, course, key, a, p, r, y);
 }
 
+void EF_Harp::fireButtonEvent(unsigned long long t, unsigned key, bool a) {
+    efd_.fireButtonEvent(pDevice_->name(), t, key, a);
+}
+
 void EF_Harp::fireBreathEvent(unsigned long long t, float val) {
     float diff = lastBreath_ - val;
     if (diff < -BREATH_HYSTERISIS || diff > BREATH_HYSTERISIS) {

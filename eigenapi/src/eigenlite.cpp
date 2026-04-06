@@ -355,6 +355,11 @@ void EigenLite::fireKeyEvent(const char* dev, unsigned long long t, unsigned cou
     for (auto cb : callbacks_) { cb->key(dev, t, course, key, a, p, r, y); }
 }
 
+void EigenLite::fireButtonEvent(const char* dev, unsigned long long t,  unsigned key, bool a) {
+    for (auto cb : callbacks_) { cb->button(dev, t, key, a); }
+}
+
+
 void EigenLite::fireBreathEvent(const char* dev, unsigned long long t, float val) {
     for (auto cb : callbacks_) { cb->breath(dev, t, val); }
 }

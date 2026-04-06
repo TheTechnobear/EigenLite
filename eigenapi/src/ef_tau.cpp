@@ -38,22 +38,24 @@ namespace EigenApi {
 void EF_Tau::fireTauKeyEvent(unsigned long long t, unsigned k, bool a, float p, float r, float y) {
     unsigned course = k < TAU_PERC_KEYS_START ? 0 : (k <= TAU_PERC_KEYS_END ? 1 : 2);
     int key = 0;
+    // pic::logmsg() << "fireTauKeyEvent  - course " << course << " key " << key;
     switch (course) {
         case 0: {
             key = k;
+            parent_.fireKeyEvent(t, course, key, a, p, r, y);
             break;
         }
         case 1: {
             key = k - TAU_PERC_KEYS_START;
+            parent_.fireKeyEvent(t, course, key, a, p, r, y);
             break;
         }
         case 2: {
             key = k - TAU_MODE_KEYS_START;
+            parent_.fireButtonEvent(t,key,a);
             break;
         }
     }
-    // pic::logmsg() << "fireTauKeyEvent  - course " << course << " key " << key;
-    parent_.fireKeyEvent(t, course, key, a, p, r, y);
 }
 
 void EF_Tau::kbd_key(unsigned long long t, unsigned key, unsigned p, int r, int y) {

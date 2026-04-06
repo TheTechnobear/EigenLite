@@ -103,15 +103,6 @@ void EF_Pico::restartKeyboard() {
     }
 }
 
-void EF_Pico::fireKeyEvent(unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y) {
-    if (course > 0) {
-        if (lastMode_[key] == p) return;
-        lastMode_[key] = p;
-    }
-
-    EF_Harp::fireKeyEvent(t, course, key, a, p, r, y);
-}
-
 bool EF_Pico::poll(long long t) {
     if (!EF_Harp::poll(t)) return false;
     pLoop_->poll(t);
@@ -315,8 +306,10 @@ void EF_Pico::Delegate::kbd_breath(unsigned long long t, unsigned v) {
 }
 
 void EF_Pico::Delegate::kbd_mode(unsigned long long t, unsigned key, unsigned m) {
-    float mode_value = m > 0 ? 1.0f : 0.0f;
-    parent_.fireKeyEvent(t, 1, key - PICO_MAINKEYS, m, mode_value, 0, 0);
+    unsigned mode_key = key - PICO_MAINKEYS;
+    bool fire = m > 0 |  lastMode_[mode_key] != m;
+    lastMode_[mode_key]  = m;
+    if(fire) parent_.fireButtonEvent(t,mode_key, m > 0);
 }
 
 }  // namespace EigenApi

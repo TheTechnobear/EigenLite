@@ -28,6 +28,9 @@ public:
                      float /*p*/, float /*r*/, float /*y*/) {
         ;
     }
+    virtual void button(const char* /*dev*/, unsigned long long /*t*/,  unsigned /*key*/, bool /*a*/) {
+        ;
+    }
     virtual void breath(const char* /*dev*/, unsigned long long /*t*/, float /*val*/) { ; }
     virtual void strip(const char* /*dev*/, unsigned long long /*t*/, unsigned /*strip*/, float /*val*/, bool /*a*/) {
         ;
