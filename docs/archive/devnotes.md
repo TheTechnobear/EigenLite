@@ -14,6 +14,69 @@ expose all possibilities eigenD code offers, but easier.
 keep it light, so less possibilties of bugs.
 
 
+# Technical notes
+
+EigenLite is derived from the much larger EigenD project, EigenD is open source
+https://github.com/thetechnobear/EigenD
+
+Its purpose is to give a programmatic api for teh Eigenharps without the overhead and dependancies of EigenD, and more modern toolset.
+so we use Cmake, not Scon, and have no dependancy on Python
+
+essentially, I have copied the low level Eigenharp code, then I have adapted python to C++ where necessary.
+
+as I also maintain EigenD, I want to have as little divergence on this low level code as possible.
+even if this (for now) means putting up with compiler warnings.
+
+the primary directories from EigenD are
+- ./eigenapi/lib_alpha2
+- ./eigenapi/lib_pico
+- ./eigenapi/picross
+
+the main eigenlite api is in ./eigenapi/src, and presents the abstraction others will use
+
+also we need to handle lib_picoencoder as a special case.
+
+lib_picoencoder is closed source, we only have access to the prebuilt libraries.
+to allow this project to be under an open source library, Ive created a compatible 'stub' library that is included in this project.
+which means the project is fully buildable without closed source libraries etc.
+
+
+# EigenD 
+I am the primary maintainer of EigenD, and the latest code and version is in my repo  https://github.com/thetechnobear/EigenD
+(the original EigenLabs version is outdated, and without a maintainer, so there is no point in pushing changes, or sending PRs)
+
+the current release is on the 2.2 branch - and this code is based on that release.
+however, Ive been working active on a new version 3.0 which contains many modernisations - this is on the 3.0 branch
+it can be found locally on ~/projects/EigenD
+
+generally, if have improvements for the EigenD code (as detailed above), it should be in done in the EigenD project.
+and then I 'copy' over to this project.
+
+I want to retain the indepenence of this project to EigenD, do I do not want to include as a submodule etc.
+
+TODO: 
+I really should have an automated task to 
+- compare EigenD and EigenLite sources
+- allow me to copy as necessary
+- potentially patch, if they need changes that are incompatible with EigenD (Ive avoided this so far)
+
+document these shared files
+also, for some of the EigenLite specific code, I should document / link to the equivelent C++ / python code in EigenD.
+ideally, we could then check there is equivilence where necessary.
+
+# Eigenharp firmware
+Eigenharps (pico, tau, alpha) all have a 2 stage intialisation process.
+- initially power on with a bootloader firmware, as a specific usb product type
+- EigenLite/EigenD then uploads the 'real' firmware to them, and they re-initialise as the  usb device that the users sees, and that we interact with.
+
+traditionally, this firmware was held in ihx files, which can be found in this project.
+in recent versions, Ive converted these into C++ files which can be (optionally, by default) statically linked into eigenlite.
+
+this is so that EigenLite can run without needing to be concerned about filesystems, and can be used as at static library.
+
+as the Eigenharp firmware is no longer being developed, statically linking poses no disadvantages to the end user/developer
+
+
 
 # EigenLite vs EigenD/Drivers behaviour
 
