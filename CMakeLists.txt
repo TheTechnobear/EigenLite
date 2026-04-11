@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.22)
 
 # USE_DUMMY_PICO - if you do not want to use prebuilt binaries (advanced use only), implies dynamic!
 # USE_DYNAMIC - use shared libraries for pico decoder

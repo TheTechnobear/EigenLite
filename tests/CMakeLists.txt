@@ -10,9 +10,6 @@ else()
 endif()
 
 message("using PICODECODER_DIR : ${PICODECODER_DIR}")
-ADD_LIBRARY(picodecoder_static STATIC IMPORTED)
-SET_TARGET_PROPERTIES(picodecoder_static PROPERTIES IMPORTED_LOCATION "${PICODECODER_DIR}/libpicodecoder_static.a")
-
 
 set(EIGENAPITEST_SRC "eigenapitest.cpp")
 include_directories ("${PROJECT_SOURCE_DIR}/eigenapi")
@@ -22,9 +19,9 @@ target_link_libraries (eigenapitest eigenapi)
 
 if(USE_DYNAMIC)
 	target_link_libraries (eigenapitest picodecoder)
-else(USE_DYNAMIC)
+else()
 	target_link_libraries(eigenapitest picodecoder_static)
-endif(USE_DYNAMIC)
+endif()
 
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
