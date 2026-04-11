@@ -1,40 +1,57 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "picodump",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceRoot}/build/release/bin/picodump",
-      "cwd": "${workspaceRoot}",
-      "stopAtEntry": false,
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "lldb",
-      "preLaunchTask": "build all"
-    },
-    {
-      "name": "a2dump",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceRoot}/build/release/bin/a2dump",
-      "cwd": "${workspaceRoot}",
-      "stopAtEntry": false,
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "lldb",
-      "preLaunchTask": "build all"
-    },
-    {
-      "name": "eigenapitest",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceRoot}/build/release/bin/eigenapitest",
-      "cwd": "${workspaceRoot}",
-      "stopAtEntry": false,
-      "externalConsole": false,
-      "MIMode": "lldb",
-      "preLaunchTask": "build all"
-    },
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "picodump (Debug)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build-debug/release/bin/picodump",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Build EigenLite (Debug)"
+        },
+        {
+            "name": "a2dump (Debug)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build-debug/release/bin/a2dump",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Build EigenLite (Debug)"
+        },
+        {
+            "name": "eigenapitest (Debug)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build-debug/release/bin/eigenapitest",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Build EigenLite (Debug)"
+        },
+        {
+            "name": "eigenapitest (RelWithDebInfo)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/release/bin/eigenapitest",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Build EigenLite"
+        }
+    ]
 }

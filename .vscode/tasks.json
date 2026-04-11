@@ -1,14 +1,67 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "cmake",
-			"label": "build all",
-			"command": "build",
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake: Configure (build)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--preset", "relwithdebinfo"],
+            "isBackground": false
+        },
+        {
+            "label": "CMake: Configure (build-debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--preset", "debug"],
+            "isBackground": false
+        },
+        {
+            "label": "CMake: Configure (build-release)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--preset", "release"],
+            "isBackground": false
+        },
+        {
+            "label": "CMake: Build EigenLite (Debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--build", "--preset", "debug"],
+            "isBackground": false,
+            "dependsOn": "CMake: Configure (build-debug)",
+            "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            },
-            "problemMatcher": "$gcc"		}
-	]
+            }
+        },
+        {
+            "label": "CMake: Build EigenLite",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--build", "--preset", "relwithdebinfo"],
+            "isBackground": false,
+            "dependsOn": "CMake: Configure (build)",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "CMake: Build EigenLite (Release)",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--build", "--preset", "release"],
+            "isBackground": false,
+            "dependsOn": "CMake: Configure (build-release)",
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: Rebuild EigenLite",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--build", "--preset", "relwithdebinfo", "--clean-first"],
+            "isBackground": false,
+            "dependsOn": "CMake: Configure (build)",
+            "problemMatcher": []
+        }
+    ]
 }

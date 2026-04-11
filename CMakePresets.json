@@ -1,0 +1,148 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "relwithdebinfo",
+      "displayName": "RelWithDebInfo",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "bela-debug",
+      "displayName": "BELA Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-bela-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BELA": "ON"
+      }
+    },
+    {
+      "name": "bela-release",
+      "displayName": "BELA Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-bela-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BELA": "ON"
+      }
+    },
+    {
+      "name": "salt-debug",
+      "displayName": "SALT Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-salt-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SALT": "ON"
+      }
+    },
+    {
+      "name": "salt-release",
+      "displayName": "SALT Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-salt-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "SALT": "ON"
+      }
+    },
+    {
+      "name": "pepper-debug",
+      "displayName": "PEPPER Debug",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-pepper-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "PEPPER": "ON"
+      }
+    },
+    {
+      "name": "pepper-release",
+      "displayName": "PEPPER Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-pepper-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "PEPPER": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "jobs": 8
+    },
+    {
+      "name": "relwithdebinfo",
+      "configurePreset": "relwithdebinfo",
+      "jobs": 8
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "jobs": 8
+    },
+    {
+      "name": "bela-debug",
+      "configurePreset": "bela-debug",
+      "jobs": 8
+    },
+    {
+      "name": "bela-release",
+      "configurePreset": "bela-release",
+      "jobs": 8
+    },
+    {
+      "name": "salt-debug",
+      "configurePreset": "salt-debug",
+      "jobs": 8
+    },
+    {
+      "name": "salt-release",
+      "configurePreset": "salt-release",
+      "jobs": 8
+    },
+    {
+      "name": "pepper-debug",
+      "configurePreset": "pepper-debug",
+      "jobs": 8
+    },
+    {
+      "name": "pepper-release",
+      "configurePreset": "pepper-release",
+      "jobs": 8
+    }
+  ]
+}

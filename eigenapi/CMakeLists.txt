@@ -3,6 +3,13 @@ project(eigenapi)
 # USE_DUMMY_PICO - if you do not want to use prebuilt binaries (advanced use only), implies dynamic!
 # USE_DYNAMIC - use shared libraries for pico decoder
 
+# Default ON when EigenLite is the top-level project, OFF when consumed as a submodule
+if(CMAKE_PROJECT_NAME STREQUAL "eigenlite")
+    option(EIGENLITE_BUILD_TESTS "Build EigenLite test tools" ON)
+else()
+    option(EIGENLITE_BUILD_TESTS "Build EigenLite test tools" OFF)
+endif()
+
 
 # REL_DIR not supported currently
 set(REL_DIR "${CMAKE_SOURCE_DIR}/release/eigenapi")
@@ -97,15 +104,14 @@ elseif(WIN32)
 endif()
 
 
-include_directories(. ./picross ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder)
-
 add_library(eigenapi STATIC ${EIGENHARP_SRC} ${EIGENHARP_HDRS})
 
-target_include_directories(eigenapi PUBLIC
-    .
+target_include_directories(eigenapi
+    PUBLIC .
+    PRIVATE ./picross ./src ./lib_alpha2 ./lib_pico ./lib_picodecoder
 )
 
-if(CREATE_DIR)
+if(CREATE_DIST)
     add_custom_command(TARGET eigenapi POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/dist
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:eigenapi> ${CMAKE_SOURCE_DIR}/dist/${REL_FILE}.a
@@ -145,7 +151,9 @@ else()
     target_link_libraries(eigenapi picodecoder_static)
 endif()
 
-add_subdirectory(tests)
+if(EIGENLITE_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
 
 

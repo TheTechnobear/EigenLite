@@ -4,12 +4,6 @@
 profile
 **/build/*
 
-**/*.sublime-workspace
-cmake-build*/
-
-.idea/workspace.xml
-.idea/tasks.xml
-
 #Xcode
 xcuserdata
 #contents.xcworkspacedata
@@ -29,8 +23,8 @@ Podfile.lock
 !default.perspectivev3
 *.xccheckout
 
-build/**/*.so
-build/**/*.dylib
+build*/
+build*/
 dist/*
 
 

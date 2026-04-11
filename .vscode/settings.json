@@ -1,4 +1,25 @@
 {
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.useCMakePresets": "always",
+    "cmake.configurePreset": "debug",
+    "cmake.buildPreset": "debug",
+    "cmake.buildTask": false,
+    "cmake.saveBeforeBuild": false,
+    "cmake.configureOnOpen": true,
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build-debug/compile_commands.json",
+    "[c]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    },
+    "[cpp]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    },
+    "clangd.arguments": [
+        "--compile-commands-dir=build-debug"
+    ],
+    "files.exclude": {
+        ".cache/**": true,
+        "build*/**": true
+    },
     "files.associations": {
         "stdexcept": "cpp",
         "string": "cpp",
