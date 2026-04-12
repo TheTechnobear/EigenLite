@@ -125,5 +125,37 @@ endif()
 
 
 add_subdirectory(eigenapi)
+
+include(CTest)
+if(BUILD_TESTING)
+    include(FetchContent)
+    FetchContent_Declare(googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.14.0)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
 add_subdirectory(tests)
+
+if(NOT DISABLE_EIGENHARP)
+    add_executable(eigenlite-capture tools/capture/capture_main.cpp)
+    target_include_directories(eigenlite-capture PRIVATE eigenapi eigenapi/src)
+    target_link_libraries(eigenlite-capture PRIVATE eigenapi)
+    if(USE_DYNAMIC)
+        target_link_libraries(eigenlite-capture PRIVATE picodecoder)
+    else()
+        target_link_libraries(eigenlite-capture PRIVATE picodecoder_static)
+    endif()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        target_link_libraries(eigenlite-capture PRIVATE
+            "-framework CoreServices -framework CoreFoundation -framework IOKit -framework CoreAudio")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_link_libraries(eigenlite-capture PRIVATE libusb dl pthread)
+    endif()
+endif()
+
+# convert: no hardware deps, always built
+add_executable(eigenlite-convert tools/convert/convert_main.cpp)
+target_include_directories(eigenlite-convert PRIVATE eigenapi/src)
 

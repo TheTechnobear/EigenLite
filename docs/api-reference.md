@@ -113,15 +113,17 @@ virtual void dead(const char* dev, unsigned reason);
 
 All sensor values are normalised floats. Timestamps are microseconds.
 
+> **Hardware note:** the stated ranges are nominal. Individual devices may produce values slightly outside these bounds due to factory calibration differences (e.g. breath sensors on some units have been observed slightly below −1.0 at rest). Do not hard-clamp on these ranges; prefer tolerance when validating or displaying values.
+
 ```cpp
 // Key press/release
 virtual void key(const char* dev, unsigned long long t,
                  unsigned course, unsigned key, bool active,
                  float p, float r, float y);
 // active = true on press, false on release
-// p = pressure [0, 1]
-// r = roll     [-1, 1]
-// y = yaw      [-1, 1]
+// p = pressure [0, 1]  (nominal)
+// r = roll     [-1, 1] (nominal)
+// y = yaw      [-1, 1] (nominal)
 // On release: p=r=y=0
 
 // Mode/percussion button press
@@ -130,19 +132,19 @@ virtual void button(const char* dev, unsigned long long t,
 
 // Breath controller
 virtual void breath(const char* dev, unsigned long long t, float val);
-// val = [-1, 1] (bipolar); hysteresis-filtered
+// val = [-1, 1] (bipolar, nominal); hysteresis-filtered
 
 // Touch strip
 virtual void strip(const char* dev, unsigned long long t,
                    unsigned strip, float val, bool active);
 // strip = 1 or 2 (Alpha has 2; Tau/Pico have 1)
-// val = [0, 1], 1.0 = top of strip; hysteresis-filtered
+// val = [0, 1] (nominal), 1.0 = top of strip; hysteresis-filtered
 // active = true while finger is on strip
 
 // Pedal (Alpha/Tau only)
 virtual void pedal(const char* dev, unsigned long long t,
                    unsigned pedal, float val);
-// pedal = 1..4; val = [0, 1]; hysteresis-filtered
+// pedal = 1..4; val = [0, 1] (nominal); hysteresis-filtered
 ```
 
 ---

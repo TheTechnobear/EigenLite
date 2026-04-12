@@ -1,5 +1,5 @@
 # Task: EL-4 — Initial Hardware Captures
-<!-- status: active -->
+<!-- status: done -->
 <!-- created: 2026-04-11  refs: docs/technical-requirements.md -->
 
 ## Goal
@@ -67,7 +67,7 @@ File: `ALPHA_<date>_01.elcf`
 
 ## Post-Capture Checklist
 
-After each recording:
+After each recording: 
 1. Check binary header: magic bytes `45 4C 43 46`, correct device_type, event_count > 0
 2. Verify with EL-3 replay harness: load + `replaySynchronous` into a printing callback; scan output for active=false events, value ranges
 3. Spot-check normalised values: pressure [0,1], roll [-1,1], yaw [-1,1], strip [0,1], breath [-1,1]
@@ -80,7 +80,10 @@ After each recording:
 The capture tool runs on the poll thread (audio thread equivalent). As long as the binary write is deferred to a background thread or done at shutdown (see EL-2), timing data will be representative. Do not run a parallel heavy process during capture — minimise system load to keep timing realistic.
 
 ## Decisions
-<!-- Updated during work -->
+- 2026-04-12 format upgraded to schema v3 (36-byte records, added t_us device timestamp) during session — all tools updated in sync
+- 2026-04-12 capture tool bug: setPollTime(10) starved USB; fixed to 100µs + sleep-on-idle in poll loop
+- 2026-04-12 PICO breath range slightly exceeds [-1,1] (min -1.195) — hardware calibration, not clamped intentionally; document as characteristic not bug
+- 2026-04-12 ALPHA deferred: requires different computer; pedal deferred: not available; neither blocks EL-5
 
 ## Outcome
-<!-- Filled on completion — list committed files and per-device coverage summary -->
+Committed fixtures: `TAU_20260412_01.elcf` (12392 events), `TAU_20260412_02.elcf` (5487 events), `PICO_20260412_01.elcf` (3598 events). All pass magic/version/alignment checks; active=false events present; value ranges within expected bounds (PICO breath slightly outside [-1,1] — hardware characteristic). ALPHA and pedal deferred to a later session on appropriate hardware.

@@ -4,6 +4,18 @@ Active limitations and deferred work. Sourced from code analysis and `docs/archi
 
 ---
 
+## Normalisation Violations
+
+### Pico Breath Not Clamped After Gain (FINDING-1)
+- Spec (`technical-requirements.md`): breath must be clamped to [-1, 1].
+- Pico applies a 1.4× gain to the raw breath value. The result is **not** clamped.
+- Observed in captures: min -1.195 (= raw -0.854 × 1.4).
+- Impact: callers receiving `breath()` from a Pico device may see values slightly outside [-1, 1].
+- Fix: add `std::clamp(val, -1.f, 1.f)` in `ef_pico.cpp` after gain application.
+- Workaround: contract tests use [-1.3, 1.3] tolerance pending the fix.
+
+---
+
 ## Unimplemented Hardware Features
 
 ### Headphone Support (Alpha/Tau)

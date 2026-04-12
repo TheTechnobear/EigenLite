@@ -1,5 +1,5 @@
 # Task: EL-3 — Synchronous Replay Harness
-<!-- status: active -->
+<!-- status: done -->
 <!-- created: 2026-04-11  refs: docs/technical-requirements.md, docs/design-notes.md -->
 
 ## Goal
@@ -197,7 +197,9 @@ cmake --build build --target EigenLiteTests
 All harness self-tests pass. No hardware required.
 
 ## Decisions
-<!-- Updated during work -->
+- 2026-04-12 `connected` takes `DeviceType` enum not string — adjusted from task spec; derive enum from header's device_type field
+- 2026-04-12 `key/breath/strip/button/pedal` callbacks take `unsigned long long t` — pass `ev.t_ms` cast to ull
+- 2026-04-12 include path: tests use `PROJECT_SOURCE_DIR/eigenapi` base; harness.cpp uses `../eigenapi.h`
 
 ## Outcome
-<!-- Filled on completion -->
+Implemented `ReplayHarness` in `eigenapi/src/replay_harness.{h,cpp}`. Added to `eigenapi` library sources. 8 harness self-tests in `tests/ReplayHarnessTest.cpp` — all pass. No hardware required. Nothing deferred.

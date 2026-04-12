@@ -1,5 +1,5 @@
 # Task: EL-1 — Add GTest Infrastructure
-<!-- status: active -->
+<!-- status: complete -->
 <!-- created: 2026-04-11  refs: docs/technical-requirements.md, docs/design-notes.md -->
 
 ## Goal
@@ -94,4 +94,4 @@ Expected: `[  PASSED  ] 1 test.`
 <!-- Updated during work -->
 
 ## Outcome
-<!-- Filled on completion -->
+GTest v1.14 added via FetchContent; `EigenLiteTests` target builds and passes (`[  PASSED  ] 1 test.`). `eigenapitest` unchanged. Prerequisite for EL-2 through EL-5 satisfied.

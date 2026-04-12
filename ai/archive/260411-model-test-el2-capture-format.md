@@ -1,5 +1,5 @@
 # Task: EL-2 — Capture Format + CLI Capture Tool
-<!-- status: active -->
+<!-- status: complete -->
 <!-- created: 2026-04-11  refs: docs/technical-requirements.md, docs/design-notes.md -->
 
 ## Goal
@@ -163,7 +163,18 @@ Add picodecoder link (static or dynamic, matching `eigenapitest` pattern).
 `<DEVICE>_<YYYYMMDD>_<N>.elcf` — e.g. `TAU_20260411_01.elcf`. Stored in `tests/fixtures/`.
 
 ## Decisions
-<!-- Updated during work -->
+- 2026-04-12 use `std::vector<EventRecord>` + write-at-shutdown (ring buffer complexity not justified for a CLI tool)
+- 2026-04-12 `#pragma pack(push,1)` used for both structs; `static_assert` confirms 32-byte size
+- 2026-04-12 `--device` arg accepted but ignored; device type auto-detected from `connected()` callback
+- 2026-04-12 picodecoder link follows existing `eigenapitest` pattern (static default, dynamic with `USE_DYNAMIC`)
 
 ## Outcome
-<!-- Filled on completion — include path to first committed capture file -->
+Implemented and builds cleanly (macOS arm64 verified).
+
+Delivered:
+- `docs/reference/capture-format.md` — binary schema spec
+- `tools/capture/capture_main.cpp` — CLI capture tool
+- `tests/fixtures/` — fixture directory (`.gitkeep`)
+- Root `CMakeLists.txt` — `eigenlite-capture` target added
+
+Deferred: committed `.elcf` fixture file — requires physical Eigenharp hardware to capture.

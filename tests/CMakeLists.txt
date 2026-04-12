@@ -24,9 +24,32 @@ else()
 endif()
 
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_libraries(eigenapitest  "-framework CoreServices -framework CoreFoundation -framework IOKit -framework CoreAudio")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	target_link_libraries(eigenapitest  "libusb" "dl" "pthread")
+endif()
+
+if(BUILD_TESTING)
+    add_executable(EigenLiteTests
+        main_test.cpp
+        SmokeTest.cpp
+        ReplayHarnessTest.cpp
+        ApiContractTest.cpp
+    )
+    target_compile_definitions(EigenLiteTests PRIVATE
+        FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+    include_directories("${PROJECT_SOURCE_DIR}/eigenapi")
+    target_link_libraries(EigenLiteTests PRIVATE
+        eigenapi
+        GTest::gtest
+    )
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        target_link_libraries(EigenLiteTests PRIVATE
+            "-framework CoreServices -framework CoreFoundation -framework IOKit -framework CoreAudio")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_link_libraries(EigenLiteTests PRIVATE libusb dl pthread)
+    endif()
+    add_test(NAME EigenLiteTests COMMAND EigenLiteTests)
 endif()
 

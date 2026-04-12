@@ -87,9 +87,9 @@ private:
     };
 
     pic::usbdevice_t* pDevice_;
-    unsigned lastBreath_;
-    unsigned lastStrip_[2];
-    unsigned lastPedal_[4];
+    float lastBreath_ = 0.f;
+    float lastStrip_[2] = {0.f, 0.f};
+    float lastPedal_[4] = {0.f, 0.f, 0.f, 0.f};
     bool stopping_;
 
 protected:

@@ -135,6 +135,8 @@ void EF_Tau::kbd_keydown(unsigned long long t, const unsigned short *newmap) {
 
                 if (key == TAU_KBD_STRIP1) {
                     parent_.fireStripEvent(t, 1, 0.0f, 0);
+                } else if (key == TAU_KBD_BREATH1 || key == TAU_KBD_BREATH2) {
+                    // breath is a continuous value sensor; no key-off action needed
                 } else {
                     fireTauKeyEvent(t, keybase + k, 0, 0.f, 0.f, 0.f);
                 }

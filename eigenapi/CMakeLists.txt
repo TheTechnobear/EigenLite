@@ -72,6 +72,7 @@ set(EIGENHARP_SRC
     src/ef_pico.cpp
     src/eigenapi.cpp
     src/fwr_posix.cpp
+    src/replay_harness.cpp
 )
 
 set(EMB_FW_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources/firmware/cpp")
