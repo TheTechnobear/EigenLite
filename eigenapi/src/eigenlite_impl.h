@@ -61,7 +61,19 @@ class EigenLite {
 
     unsigned long long lastPollTime_;
     unsigned pollTime_;
-    std::vector<Callback*> callbacks_;
+    std::vector<Callback*> callbacks_[2];
+    int callbacksReadIdx_ = 0;
+    int callbacksWriteIdx_ = 0;
+    bool callbacksIterating_ = false;
+    void beginCallbackIteration() {
+        callbacksWriteIdx_ = callbacksReadIdx_;
+        callbacksIterating_ = true;
+    }
+    void endCallbackIteration() {
+        if (callbacksWriteIdx_ != callbacksReadIdx_)
+            callbacksReadIdx_ = callbacksWriteIdx_;
+        callbacksIterating_ = false;
+    }
     std::vector<EF_Harp*> devices_;
     std::thread discoverThread_;
 

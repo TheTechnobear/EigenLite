@@ -44,26 +44,38 @@ const char* EigenLite::versionString() {
 }
 
 void EigenLite::addCallback(EigenApi::Callback* api) {
-    // do not allow callback to be added twice
-    for (auto cb : callbacks_) {
+    if (callbacksIterating_ && callbacksWriteIdx_ == callbacksReadIdx_) {
+        callbacksWriteIdx_ = 1 - callbacksReadIdx_;
+        callbacks_[callbacksWriteIdx_] = callbacks_[callbacksReadIdx_];
+    }
+    auto& wb = callbacks_[callbacksWriteIdx_];
+    for (auto cb : wb) {
         if (cb == api) { return; }
     }
-    callbacks_.push_back(api);
+    wb.push_back(api);
+    if (!callbacksIterating_) { callbacksReadIdx_ = callbacksWriteIdx_; }
 }
 
 void EigenLite::removeCallback(EigenApi::Callback* api) {
-    std::vector<Callback*>::iterator iter;
-    for (iter = callbacks_.begin(); iter != callbacks_.end(); iter++) {
-        if (*iter == api) {
-            callbacks_.erase(iter);
+    if (callbacksIterating_ && callbacksWriteIdx_ == callbacksReadIdx_) {
+        callbacksWriteIdx_ = 1 - callbacksReadIdx_;
+        callbacks_[callbacksWriteIdx_] = callbacks_[callbacksReadIdx_];
+    }
+    auto& wb = callbacks_[callbacksWriteIdx_];
+    for (auto it = wb.begin(); it != wb.end(); ++it) {
+        if (*it == api) {
+            wb.erase(it);
+            if (!callbacksIterating_) { callbacksReadIdx_ = callbacksWriteIdx_; }
             return;
         }
     }
 }
 
 void EigenLite::clearCallbacks() {
-    std::vector<Callback*>::iterator iter;
-    while (!callbacks_.empty()) { callbacks_.pop_back(); }
+    callbacks_[0].clear();
+    callbacks_[1].clear();
+    callbacksReadIdx_ = 0;
+    callbacksWriteIdx_ = 0;
 }
 
 volatile bool discoverProcessRun = true;
@@ -260,7 +272,8 @@ bool EigenLite::poll() {
     if (!usbDevCheckSpinLock.test_and_set()) {
         if (usbDevChange_) {
             bool newDevice = false;
-            for (auto& cb : callbacks_) {
+            beginCallbackIteration();
+            for (auto& cb : callbacks_[callbacksReadIdx_]) {
                 cb->beginDeviceInfo();
                 int i = 0;
                 for (auto& usb : availablePicos_) {
@@ -275,6 +288,7 @@ bool EigenLite::poll() {
                 }
                 cb->endDeviceInfo();
             }
+            endCallbackIteration();
 
             if (filterAllBasePico_ == 0 || filterAllBasePico_ == 1) {  // base
                 newDevice = connectNewBaseStation();
@@ -331,50 +345,72 @@ void EigenLite::setPollTime(unsigned pollTime) {
 }
 
 void EigenLite::fireBeginDeviceInfo() {
-    for (auto cb : callbacks_) { cb->beginDeviceInfo(); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->beginDeviceInfo(); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireDeviceInfo(bool isPico, unsigned devNum, const char* dev) {
-    for (auto cb : callbacks_) { cb->deviceInfo(isPico, devNum, dev); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->deviceInfo(isPico, devNum, dev); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireEndDeviceInfo() {
-    for (auto cb : callbacks_) { cb->endDeviceInfo(); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->endDeviceInfo(); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireConnectEvent(const char* dev, Callback::DeviceType dt) {
-    for (auto cb : callbacks_) { cb->connected(dev, dt); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->connected(dev, dt); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireDisconnectEvent(const char* dev) {
-    for (auto cb : callbacks_) { cb->disconnected(dev); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->disconnected(dev); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, float p,
                              float r, float y) {
-    for (auto cb : callbacks_) { cb->key(dev, t, course, key, a, p, r, y); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->key(dev, t, course, key, a, p, r, y); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireButtonEvent(const char* dev, unsigned long long t,  unsigned key, bool a) {
-    for (auto cb : callbacks_) { cb->button(dev, t, key, a); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->button(dev, t, key, a); }
+    endCallbackIteration();
 }
 
 
 void EigenLite::fireBreathEvent(const char* dev, unsigned long long t, float val) {
-    for (auto cb : callbacks_) { cb->breath(dev, t, val); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->breath(dev, t, val); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireStripEvent(const char* dev, unsigned long long t, unsigned strip, float val, bool a) {
-    for (auto cb : callbacks_) { cb->strip(dev, t, strip, val, a); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->strip(dev, t, strip, val, a); }
+    endCallbackIteration();
 }
 
 void EigenLite::firePedalEvent(const char* dev, unsigned long long t, unsigned pedal, float val) {
-    for (auto cb : callbacks_) { cb->pedal(dev, t, pedal, val); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->pedal(dev, t, pedal, val); }
+    endCallbackIteration();
 }
 
 void EigenLite::fireDeadEvent(const char* dev, unsigned reason) {
     deviceDead(dev, reason);
-    for (auto cb : callbacks_) { cb->dead(dev, reason); }
+    beginCallbackIteration();
+    for (auto cb : callbacks_[callbacksReadIdx_]) { cb->dead(dev, reason); }
+    endCallbackIteration();
 }
 
 void EigenLite::setLED(const char* dev, unsigned course, unsigned key, unsigned colour) {
