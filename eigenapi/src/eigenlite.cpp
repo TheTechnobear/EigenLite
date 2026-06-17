@@ -6,9 +6,10 @@
 #include "ef_harp.h"
 #include "eigenlite_impl.h"
 
-#define VERSION_STRING "1.0.0"
+#define VERSION_STRING "1.1.0"
 
-#define VERSION_DESC "EigenLite v" VERSION_STRING " for Alpha/Tau/Pico - Author: TheTechnobear"
+#define VERSION_DESC "EigenLite v" VERSION_STRING " for Alpha/Tau/Pico"
+#define REPO_DESC "https://github.com/TheTechnobear/EigenLite"
 
 namespace EigenApi {
 void EigenLite::logmsg(const char* msg) {
@@ -145,6 +146,7 @@ void EigenLite::setDeviceFilter(unsigned allBasePico, unsigned devenum) {
 
 bool EigenLite::create() {
     logmsg(VERSION_DESC);
+    logmsg(REPO_DESC);
     logmsg("start EigenLite");
     pic_init_time();
     discoverProcessRun = true;
