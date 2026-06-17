@@ -35,11 +35,11 @@ struct RecordedEvent {
     float       p = 0.f, r = 0.f, y = 0.f, value = 0.f;
 };
 
-class RecordingCallback : public EigenApi::Callback {
+class RecordingCallback : public EigenApi::LifecycleCallback, public EigenApi::Callback {
 public:
     std::vector<RecordedEvent> events;
 
-    void connected(const char*, DeviceType) override {
+    void connected(const char*, EigenApi::DeviceType) override {
         events.push_back({"connected"});
     }
     void disconnected(const char*) override {
@@ -88,7 +88,7 @@ protected:
 
     bool loadAndReplay(const std::string& name) {
         if (!harness_.loadCapture(fixturePath(name))) return false;
-        harness_.replaySynchronous(&cb_);
+        harness_.replaySynchronous(&cb_, &cb_);
         return true;
     }
 
@@ -382,7 +382,7 @@ protected:
         if (!harness_.loadCapture(fixturePath("ALPHA_20260412_01.elcf"))) {
             GTEST_SKIP() << "ALPHA capture not available — run EL-4 on Alpha hardware";
         }
-        harness_.replaySynchronous(&cb_);
+        harness_.replaySynchronous(&cb_, &cb_);
     }
 };
 

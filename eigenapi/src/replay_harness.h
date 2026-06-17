@@ -3,7 +3,10 @@
 #include <vector>
 #include <functional>
 
-namespace EigenApi { class Callback; }
+namespace EigenApi {
+class Callback;
+class LifecycleCallback;
+}
 
 namespace EigenLite {
 
@@ -40,13 +43,15 @@ public:
     bool loadCapture(const std::string& path);
 
     // Fire all events synchronously — ignores both t_ms and t_us.
-    // target must not be null.
-    void replaySynchronous(EigenApi::Callback* target) const;
+    // lifecycle and input targets may be the same object (via multiple inheritance).
+    void replaySynchronous(EigenApi::LifecycleCallback* lifecycle,
+                           EigenApi::Callback* input) const;
 
     // Fire events honouring t_ms (wall-clock) delays.
     // sleepFn(ms) called between events; nullptr uses std::this_thread::sleep_for.
     // See timing model above for t_ms vs t_us trade-offs.
-    void replayTimed(EigenApi::Callback* target,
+    void replayTimed(EigenApi::LifecycleCallback* lifecycle,
+                     EigenApi::Callback* input,
                      std::function<void(double ms)> sleepFn = nullptr) const;
 
     int eventCount() const;
@@ -70,7 +75,7 @@ private:
         uint64_t t_us;           // device timestamp in microseconds
     };
 
-    void dispatch(const Event& ev, EigenApi::Callback* target) const;
+    void dispatch(const Event& ev, EigenApi::LifecycleCallback* lifecycle, EigenApi::Callback* input) const;
 
     std::vector<Event> events_;
     std::string        deviceType_;

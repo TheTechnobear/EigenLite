@@ -166,7 +166,7 @@ static void displayLoop(DisplayState& ds, const std::atomic<bool>& stop,
 
 static std::atomic<bool> gStop(false);
 
-class CaptureCallback : public EigenApi::Callback {
+class CaptureCallback : public EigenApi::LifecycleCallback, public EigenApi::Callback {
 public:
     explicit CaptureCallback(std::string outPath)
         : outPath_(std::move(outPath)), started_(false) {
@@ -175,14 +175,14 @@ public:
 
     DisplayState& display() { return disp_; }
 
-    void connected(const char*, DeviceType dt) override {
+    void connected(const char*, EigenApi::DeviceType dt) override {
         {
             std::lock_guard<std::mutex> lk(disp_.mu);
             if (disp_.device_type.empty()) {
                 switch (dt) {
-                    case PICO:  devType_ = disp_.device_type = "PICO";  break;
-                    case TAU:   devType_ = disp_.device_type = "TAU";   break;
-                    case ALPHA: devType_ = disp_.device_type = "ALPHA"; break;
+                    case EigenApi::PICO:  devType_ = disp_.device_type = "PICO";  break;
+                    case EigenApi::TAU:   devType_ = disp_.device_type = "TAU";   break;
+                    case EigenApi::ALPHA: devType_ = disp_.device_type = "ALPHA"; break;
                 }
             }
             ++disp_.event_count;
@@ -335,6 +335,7 @@ int main(int argc, char** argv) {
     eh.setPollTime(100);
 
     CaptureCallback cb(outPath);
+    eh.addLifecycleCallback(&cb);
     eh.addCallback(&cb);
 
     if (!eh.start()) {

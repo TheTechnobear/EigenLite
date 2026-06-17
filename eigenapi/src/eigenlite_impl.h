@@ -23,6 +23,11 @@ class EigenLite {
     void addCallback(Callback* api);
     void removeCallback(Callback* api);
     void clearCallbacks();
+
+    void addLifecycleCallback(LifecycleCallback* api);
+    void removeLifecycleCallback(LifecycleCallback* api);
+    void clearLifecycleCallbacks();
+
     virtual bool create();
     virtual bool destroy();
     virtual bool poll();
@@ -39,7 +44,7 @@ class EigenLite {
     virtual void fireDeviceInfo(bool isPico, unsigned devNum, const char* dev);
     virtual void fireEndDeviceInfo();
 
-    virtual void fireConnectEvent(const char* dev, Callback::DeviceType dt);
+    virtual void fireConnectEvent(const char* dev, DeviceType dt);
     virtual void fireDisconnectEvent(const char* dev);
     virtual void fireKeyEvent(const char* dev, unsigned long long t, unsigned course, unsigned key, bool a, float p, float r, float y);
     virtual void fireButtonEvent(const char* dev, unsigned long long t,  unsigned key, bool a);
@@ -61,19 +66,8 @@ class EigenLite {
 
     unsigned long long lastPollTime_;
     unsigned pollTime_;
-    std::vector<Callback*> callbacks_[2];
-    int callbacksReadIdx_ = 0;
-    int callbacksWriteIdx_ = 0;
-    bool callbacksIterating_ = false;
-    void beginCallbackIteration() {
-        callbacksWriteIdx_ = callbacksReadIdx_;
-        callbacksIterating_ = true;
-    }
-    void endCallbackIteration() {
-        if (callbacksWriteIdx_ != callbacksReadIdx_)
-            callbacksReadIdx_ = callbacksWriteIdx_;
-        callbacksIterating_ = false;
-    }
+    std::vector<Callback*> callbacks_;
+    std::vector<LifecycleCallback*> lifecycleCallbacks_;
     std::vector<EF_Harp*> devices_;
     std::thread discoverThread_;
 

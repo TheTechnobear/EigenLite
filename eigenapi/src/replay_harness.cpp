@@ -90,36 +90,39 @@ bool ReplayHarness::loadCapture(const std::string& path) {
 
 // --- dispatch ---
 
-static EigenApi::Callback::DeviceType resolveDeviceType(const std::string& dt) {
-    if (dt == "TAU")   return EigenApi::Callback::TAU;
-    if (dt == "ALPHA") return EigenApi::Callback::ALPHA;
-    return EigenApi::Callback::PICO;
+static EigenApi::DeviceType resolveDeviceType(const std::string& dt) {
+    if (dt == "TAU")   return EigenApi::TAU;
+    if (dt == "ALPHA") return EigenApi::ALPHA;
+    return EigenApi::PICO;
 }
 
-void ReplayHarness::dispatch(const Event& ev, EigenApi::Callback* target) const {
+void ReplayHarness::dispatch(const Event& ev, EigenApi::LifecycleCallback* lifecycle,
+                             EigenApi::Callback* input) const {
     const char* dev = deviceType_.c_str();
     auto t = static_cast<unsigned long long>(ev.t_ms);
     switch (ev.type) {
-        case ELCF::ET_KEY:          target->key(dev, t, ev.course, ev.key, ev.active, ev.pressure, ev.roll, ev.yaw); break;
-        case ELCF::ET_BREATH:       target->breath(dev, t, ev.value); break;
-        case ELCF::ET_STRIP:        target->strip(dev, t, ev.strip_idx, ev.value, ev.active); break;
-        case ELCF::ET_BUTTON:       target->button(dev, t, ev.key, ev.active); break;
-        case ELCF::ET_PEDAL:        target->pedal(dev, t, ev.pedal_idx, ev.value); break;
-        case ELCF::ET_CONNECTED:    target->connected(dev, resolveDeviceType(deviceType_)); break;
-        case ELCF::ET_DISCONNECTED: target->disconnected(dev); break;
+        case ELCF::ET_KEY:          if (input) input->key(dev, t, ev.course, ev.key, ev.active, ev.pressure, ev.roll, ev.yaw); break;
+        case ELCF::ET_BREATH:       if (input) input->breath(dev, t, ev.value); break;
+        case ELCF::ET_STRIP:        if (input) input->strip(dev, t, ev.strip_idx, ev.value, ev.active); break;
+        case ELCF::ET_BUTTON:       if (input) input->button(dev, t, ev.key, ev.active); break;
+        case ELCF::ET_PEDAL:        if (input) input->pedal(dev, t, ev.pedal_idx, ev.value); break;
+        case ELCF::ET_CONNECTED:    if (lifecycle) lifecycle->connected(dev, resolveDeviceType(deviceType_)); break;
+        case ELCF::ET_DISCONNECTED: if (lifecycle) lifecycle->disconnected(dev); break;
         default: break;
     }
 }
 
 // --- replay modes ---
 
-void ReplayHarness::replaySynchronous(EigenApi::Callback* target) const {
+void ReplayHarness::replaySynchronous(EigenApi::LifecycleCallback* lifecycle,
+                                      EigenApi::Callback* input) const {
     for (const auto& ev : events_) {
-        dispatch(ev, target);
+        dispatch(ev, lifecycle, input);
     }
 }
 
-void ReplayHarness::replayTimed(EigenApi::Callback* target,
+void ReplayHarness::replayTimed(EigenApi::LifecycleCallback* lifecycle,
+                                EigenApi::Callback* input,
                                 std::function<void(double ms)> sleepFn) const {
     uint32_t prev_t = 0;
     for (const auto& ev : events_) {
@@ -132,7 +135,7 @@ void ReplayHarness::replayTimed(EigenApi::Callback* target,
                     std::chrono::microseconds(static_cast<int64_t>(gap * 1000)));
             }
         }
-        dispatch(ev, target);
+        dispatch(ev, lifecycle, input);
         prev_t = ev.t_ms;
     }
 }

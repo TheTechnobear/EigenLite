@@ -77,7 +77,7 @@ bool EF_Pico::start() {
     logmsg("started loop");
     // todo - need device name
     connected_ = true;
-    efd_.fireConnectEvent(usbDevice()->name(), Callback::DeviceType::PICO);
+    efd_.fireConnectEvent(usbDevice()->name(), PICO);
     return true;
 }
 

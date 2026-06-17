@@ -97,7 +97,7 @@ static std::string writeTempFile(const std::vector<uint8_t>& data) {
 
 // --- counting callback ---
 
-struct CountingCallback : EigenApi::Callback {
+struct CountingCallback : EigenApi::LifecycleCallback, EigenApi::Callback {
     int keys = 0, breaths = 0, strips = 0, buttons = 0, pedals = 0;
     int connected_ = 0, disconnected_ = 0;
 
@@ -126,7 +126,7 @@ struct CountingCallback : EigenApi::Callback {
     void pedal(const char*, unsigned long long, unsigned idx, float v) override {
         ++pedals; lastPedalIdx = idx; lastPedal = v;
     }
-    void connected(const char*, DeviceType) override { ++connected_; }
+    void connected(const char*, EigenApi::DeviceType) override { ++connected_; }
     void disconnected(const char*) override { ++disconnected_; }
 };
 
@@ -198,7 +198,7 @@ TEST(ReplayHarness, UnknownEventTypeSkipped) {
     EXPECT_EQ(h.eventCount(), 3);
 
     CountingCallback cb;
-    h.replaySynchronous(&cb);
+    h.replaySynchronous(&cb, &cb);
     EXPECT_EQ(cb.connected_,    1);
     EXPECT_EQ(cb.disconnected_, 1);
     std::remove(path.c_str());
@@ -221,7 +221,7 @@ TEST(ReplayHarness, SynchronousDispatch) {
     EXPECT_EQ(h.eventCount(), 7);
 
     CountingCallback cb;
-    h.replaySynchronous(&cb);
+    h.replaySynchronous(&cb, &cb);
 
     EXPECT_EQ(cb.connected_,    1);
     EXPECT_EQ(cb.keys,          1);
@@ -254,7 +254,7 @@ TEST(ReplayHarness, TimedReplayCallsSleepFn) {
 
     double totalSleep = 0.0;
     CountingCallback cb;
-    h.replayTimed(&cb, [&](double ms) { totalSleep += ms; });
+    h.replayTimed(&cb, &cb, [&](double ms) { totalSleep += ms; });
 
     EXPECT_NEAR(totalSleep, 100.0, 1e-3);
     EXPECT_EQ(cb.connected_,    1);

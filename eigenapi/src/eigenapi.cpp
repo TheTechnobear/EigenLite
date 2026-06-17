@@ -40,6 +40,18 @@ void Eigenharp::clearCallbacks() {
     static_cast<EigenLite*>(impl)->clearCallbacks();
 }
 
+void Eigenharp::addLifecycleCallback(LifecycleCallback* api) {
+    static_cast<EigenLite*>(impl)->addLifecycleCallback(api);
+}
+
+void Eigenharp::removeLifecycleCallback(LifecycleCallback* api) {
+    static_cast<EigenLite*>(impl)->removeLifecycleCallback(api);
+}
+
+void Eigenharp::clearLifecycleCallbacks() {
+    static_cast<EigenLite*>(impl)->clearLifecycleCallbacks();
+}
+
 void Eigenharp::setPollTime(unsigned pollTime) {
     static_cast<EigenLite*>(impl)->setPollTime(pollTime);
 }

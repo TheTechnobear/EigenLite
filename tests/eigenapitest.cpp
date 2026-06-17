@@ -5,7 +5,7 @@
 #include <iostream>
 #include <thread>
 
-class PrinterCallback : public EigenApi::Callback {
+class PrinterCallback : public EigenApi::LifecycleCallback, public EigenApi::Callback {
    public:
     PrinterCallback(EigenApi::Eigenharp& eh) : eh_(eh), led_(false) {
     }
@@ -29,16 +29,16 @@ class PrinterCallback : public EigenApi::Callback {
         std::cout << "=====================================================" << std::endl;
     }
 
-    void connected(const char* dev, DeviceType dt) override {
+    void connected(const char* dev, EigenApi::DeviceType dt) override {
         std::cout << "dev id " << dev << " ( " << dt << " )" << std::endl;
         switch (dt) {
-            case PICO:
+            case EigenApi::PICO:
                 maxLeds_ = 16;
                 break;
-            case TAU:
+            case EigenApi::TAU:
                 maxLeds_ = 84;
                 break;
-            case ALPHA:
+            case EigenApi::ALPHA:
                 maxLeds_ = 120;
                 break;
             default:
@@ -136,7 +136,9 @@ int main(int ac, char** av) {
 
     EigenApi::Eigenharp myD(&fwr);
     myD.setPollTime(100);
-    myD.addCallback(new PrinterCallback(myD));
+    auto* cb = new PrinterCallback(myD);
+    myD.addLifecycleCallback(cb);
+    myD.addCallback(cb);
 
     // no filter , dev num =0 (default)
     // myD.setDeviceFilter(false, 0);
